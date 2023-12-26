@@ -39,9 +39,9 @@ def main():
         hole_in_one=10
     )
 
-    scoring_system_2.fetch_testing_data("WM_2.json")
-    scoring_system_2.fetch_testing_data("Honda_2.json")
-    scoring_system_2.fetch_testing_data("Genesis_2.json")
+    scoring_system_2.fetch_testing_data("WM.json", "WM_2.json")
+    scoring_system_2.fetch_testing_data("Honda.json", "Honda_2.json")
+    scoring_system_2.fetch_testing_data("Genesis.json", "Genesis_2.json")
 
     scoring_system_3 = ScoringSystem(
         fedex_multiplier=0,
@@ -58,9 +58,9 @@ def main():
         hole_in_one=10
     )
 
-    scoring_system_3.fetch_testing_data("WM_3.json")
-    scoring_system_3.fetch_testing_data("Honda_3.json")
-    scoring_system_3.fetch_testing_data("Genesis_3.json")
+    scoring_system_3.fetch_testing_data("WM.json", "WM_3.json")
+    scoring_system_3.fetch_testing_data("Honda.json", "Honda_3.json")
+    scoring_system_3.fetch_testing_data("Genesis.json", "Genesis_3.json")
 
 if __name__ == '__main__':
     main()
