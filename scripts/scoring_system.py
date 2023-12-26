@@ -19,9 +19,9 @@ def main():
         hole_in_one=10
     )
 
-    scoring_system_1.fetch_testing_data("WM.json")
-    scoring_system_1.fetch_testing_data("Honda.json")
-    scoring_system_1.fetch_testing_data("Genesis.json")
+    scoring_system_1.fetch_testing_data("WM.json", "WM.json")
+    scoring_system_1.fetch_testing_data("Honda.json", "Honda.json")
+    scoring_system_1.fetch_testing_data("Genesis.json", "Genesis.json")
 
     # Birdie is one and par is zero, fedex multiplier is 0.025
     scoring_system_2 = ScoringSystem(

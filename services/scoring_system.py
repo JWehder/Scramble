@@ -7,13 +7,36 @@ class ScoringSystem(Base):
         # Initialization code
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    @staticmethod
+    def build_temp_player_dict(player: dict) -> dict[str, int]:
+        player_dict = {
+                'player_name': player['Name'],
+                'player_id': player['PlayerID'],
+                'fedex_points': player['FedExPoints'],
+                'birdies': 0,
+                'pars': 0,
+                'bogeys': 0,
+                'score': 0,
+                'double_bogeys': 0,
+                'hole_in_ones': 0,
+                'double_eagles': 0,
+                'eagles': 0,
+                'worse_than_double_bogeys': 0,
+                'round_1_score': 0,
+                'round_2_score': 0,
+                'round_3_score': 0,
+                'round_4_score': 0
+        }
+
+        return player_dict
         
-    def fetch_testing_data(self, file_name):
+    def fetch_testing_data(self, read_file, write_file):
         # Get the absolute path of the current script
         dir_path = os.path.dirname(os.path.abspath(__file__))
 
         # Construct the absolute path to the data file
-        file_path = os.path.join(dir_path, '..', 'data', file_name)
+        file_path = os.path.join(dir_path, '..', 'data', read_file)
         
         with open(file_path, "r") as file:
             data = json.load(file)
@@ -31,24 +54,9 @@ class ScoringSystem(Base):
         # Iterate over each player in the 'Players' array
         # when we come up with a db, we can use actual player objects
         for player in data['Players']:
-            player_dict = {
-                'player_name': player['Name'],
-                'player_id': player['PlayerID'],
-                'fedex_points': player['FedExPoints'],
-                'birdies': 0,
-                'pars': 0,
-                'bogeys': 0,
-                'score': 0,
-                'double_bogeys': 0,
-                'hole_in_ones': 0,
-                'double_eagles': 0,
-                'eagles': 0,
-                'worse_than_double_bogeys': 0,
-                'round_1_score': 0,
-                'round_2_score': 0,
-                'round_3_score': 0,
-                'round_4_score': 0
-            }
+
+            player_dict = self.build_temp_player_dict(player)
+            
 
             if self.fedex_multiplier and player_dict['fedex_points']:
                 score = int((player_dict['fedex_points'] * self.fedex_multiplier))
@@ -57,17 +65,19 @@ class ScoringSystem(Base):
             # Iterate over each round in the player's 'Rounds' array
             for round in player['Rounds']:
                 for hole in round['Holes']:
+                    round_number = round['Number']
                     if hole["Birdie"]:
                         player_dict['birdies'] += 1
                         player_dict['score'] += self.birdie
-                        if round['Number'] == 1:
-                            player_dict['round_1_score'] -= 1
-                        if round['Number'] == 2:
-                            player_dict['round_2_score'] -= 1
-                        if round['Number'] == 3:
-                            player_dict['round_3_score'] -= 1
-                        if round['Number'] == 4:
-                            player_dict['round_4_score'] -= 1
+                        player_dict[f'round_{round_number}_score'] -= 1
+                        # if round['Number'] == 1:
+                        #     player_dict['round_1_score'] -= 1
+                        # if round['Number'] == 2:
+                        #     player_dict['round_2_score'] -= 1
+                        # if round['Number'] == 3:
+                        #     player_dict['round_3_score'] -= 1
+                        # if round['Number'] == 4:
+                        #     player_dict['round_4_score'] -= 1
                     elif hole["IsPar"]:
                         player_dict['pars'] += 1
                         player_dict['score'] += self.par
@@ -147,7 +157,6 @@ class ScoringSystem(Base):
             tournament_results['players'].append(player_dict)
 
         
-
         # Sort the players based on their round_1_score in descending order without modifying the original list
         sorted_players = sorted(tournament_results['players'], key=lambda player: player['round_1_score'], reverse=True)
 
@@ -175,7 +184,7 @@ class ScoringSystem(Base):
         # Get the absolute path of the current script
         dir_path = os.path.dirname(os.path.abspath(__file__))
 
-        output_file_name = f"../results/{file_name}"
+        output_file_name = f"../results/{write_file}"
 
         # Construct the absolute path to the data file
         file_path = os.path.join(dir_path, '..', 'results', output_file_name)
@@ -217,3 +226,4 @@ class ScoringSystem(Base):
     def present_summary(self, scores):
         # Code to format and present the summary of scores
         pass
+
