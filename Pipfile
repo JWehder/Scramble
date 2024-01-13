@@ -5,6 +5,11 @@ name = "pypi"
 
 [packages]
 requests = "*"
+flask = "*"
+flask-migrate = "*"
+flask-restful = "*"
+flask-sqlalchemy = "*"
+flask-cors = "*"
 
 [dev-packages]
 

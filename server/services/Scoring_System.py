@@ -101,7 +101,6 @@ class ScoringSystem(Base):
                         player_dict['score'] += 3
 
             tournament_results['players'].append(player_dict)
-
         
         # Sort the players based on their round_1_score in descending order without modifying the original list
         sorted_players = sorted(tournament_results['players'], key=lambda player: player['round_1_score'], reverse=True)
@@ -109,22 +108,22 @@ class ScoringSystem(Base):
         # Get the player with the highest score on day 1 from the sorted list and add 10 points
         sorted_players[0]['score'] += 10
 
-        # Sort the players based on their round_1_score in descending order without modifying the original list
+        # Sort the players based on their round_2_score in descending order without modifying the original list
         sorted_players_2 = sorted(tournament_results['players'], key=lambda player: player['round_2_score'], reverse=True)
 
-        # Get the player with the highest score on day 1 from the sorted list and add 10 points
+        # Get the player with the highest score on day 2 from the sorted list and add 10 points
         sorted_players_2[0]['score'] += 10
         
-        # Sort the players based on their round_1_score in descending order without modifying the original list
+        # Sort the players based on their round_3_score in descending order without modifying the original list
         sorted_players_3 = sorted(tournament_results['players'], key=lambda player: player['round_3_score'], reverse=True)
 
-        # Get the player with the highest score on day 1 from the sorted list and add 10 points
+        # Get the player with the highest score on day 3 from the sorted list and add 10 points
         sorted_players_3[0]['score'] += 10
         
-        # Sort the players based on their round_1_score in descending order without modifying the original list
+        # Sort the players based on their round_4_score in descending order without modifying the original list
         sorted_players_4 = sorted(tournament_results['players'], key=lambda player: player['round_4_score'], reverse=True)
 
-        # Get the player with the highest score on day 1 from the sorted list and add 10 points
+        # Get the player with the highest score on day 4 from the sorted list and add 10 points
         sorted_players_4[0]['score'] += 10
 
         # write the results for each round a player plays in the tournament to 
@@ -150,7 +149,6 @@ class ScoringSystem(Base):
         elif r_or_w == 'w':
             output_file_name = f"../results/{file_name}"
 
-
             try:
                 # Construct the absolute path to the data file
                 file_path = os.path.join(dir_path, '..', 'results', output_file_name)
@@ -163,7 +161,7 @@ class ScoringSystem(Base):
                 # Add the output file to .gitignore
                 gitignore_file = "../.gitignore"
                 with open(gitignore_file, "a") as gitignore:
-                    gitignore.write(f"\n{output_file_name}")
+                    gitignore.write(f"\n{file_name}")
 
                 print(f"Data written to {output_file_name}")
 
