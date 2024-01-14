@@ -4,7 +4,6 @@ from sqlalchemy.exc import IntegrityError
 import traceback
 from functools import wraps
 from config import app, db, api
-from models import Set, Flashcard
 from config import Flask, SQLAlchemy, db
 
 #HTTP Constants 
@@ -18,7 +17,7 @@ HTTP_CONFLICT = 409
 HTTP_SERVER_ERROR = 500
 HTTP_UNPROCESSABLE_ENTITY = 422
 
-@app.route('/hello_world', methods=['GET'])
+@app.route('/', methods=['GET'])
 def hello_world():
     return {"routes": "working!"}
 
@@ -26,25 +25,8 @@ def hello_world():
 def modify_sets(set_id):
     if request.method == 'GET':
         # retrieve the terms by the particular set that was selected
-        _set = Set.query.filter_by(id=set_id).first()
-        if _set is None:
-            return {'error': 'set not found'}, HTTP_NOT_FOUND
-        
-        return _set.to_dict(), HTTP_SUCCESS
-    elif request.method == 'POST':
+        # _set = Set.query.filter_by(id=set_id).first()
         pass
-    elif request.method == 'DELETE':
-        pass
-
-@app.route('/sets/<int:id>', methods=['GET', 'POST', 'DELETE'])
-def modify_sets(set_id):
-    if request.method == 'GET':
-        # retrieve the terms by the particular set that was selected
-        _set = Set.query.filter_by(id=set_id).first()
-        if _set is None:
-            return {'error': 'set not found'}, HTTP_NOT_FOUND
-        
-        return _set.to_dict(), HTTP_SUCCESS
     elif request.method == 'POST':
         pass
     elif request.method == 'DELETE':
