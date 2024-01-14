@@ -2,3 +2,6 @@
 WM.json
 Genesis.json
 Honda.json
+
+# Ignore DS Store
+.DS_Store
