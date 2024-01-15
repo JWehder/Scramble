@@ -10,6 +10,8 @@ flask-migrate = "*"
 flask-restful = "*"
 flask-sqlalchemy = "*"
 flask-cors = "*"
+importlib-resources = "*"
+ipdb = "*"
 
 [dev-packages]
 

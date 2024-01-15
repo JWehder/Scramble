@@ -4,18 +4,17 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import Test from './components/Test'
 
-function App() {
+export default function App() {
   const [count, setCount] = useState(0)
-  // const [test, setTest] = useState([])
+  const [test, setTest] = useState([])
 
-  // useEffect(() => {
-  //   fetch('test url')
-  //   .then(r => r.json())
-  //   .then(data => setTest(data))
-  // }, [])
+  useEffect(() => {
+    fetch('http://127.0.0.1:5555/dummy')
+    .then(r => r.json())
+    .then(data => setTest(data))
+    .catch(err => console.log(err))
+  }, [])
 
-
-  // console.log(test)
   return (
     <>
       <div>
@@ -38,11 +37,9 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      {/* <div>
-        {test.length > 0 ? test.map(e => <Test key={e} name={e} />) : null}
-      </div> */}
+      <div>
+        {test.length !== 0 ? test.players.map(e => <Test key={e.player_name} name={e.player_name} />) : null}
+      </div>
     </>
   )
 }
-
-export default App
