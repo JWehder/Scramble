@@ -9,7 +9,7 @@ export default function App() {
   const [test, setTest] = useState([])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5555/dummy')
+    fetch('/api/dummy')
     .then(r => r.json())
     .then(data => setTest(data))
     .catch(err => console.log(err))
