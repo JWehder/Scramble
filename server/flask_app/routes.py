@@ -22,6 +22,18 @@ def hello_world():
     return {"routes": "working!"}
     
 
+@app.route('/dummy', methods=['GET'])
+def dummy():
+    import json
+    with open('./results/test.json') as f:
+        data = json.load(f)
+    response = make_response(
+        data,
+        200
+    )
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
 @app.route('/sets/<int:id>', methods=['GET', 'POST', 'DELETE'])
 def modify_sets(set_id):
     if request.method == 'GET':
