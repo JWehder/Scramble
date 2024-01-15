@@ -24,7 +24,7 @@ def hello_world():
 @app.route('/dummy', methods=['GET'])
 def dummy():
     import json
-    with open('../results/test.json') as f:
+    with open('./results/test.json') as f:
         data = json.load(f)
     response = make_response(
         data,
