@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Test from './components/Test'
 import SideBar from './components/SideBar'
+import imgUrl from './assets/i.png'
+import imgUrl2 from './assets/i-1.png'
 
 export default function App() {
   const [test, setTest] = useState([])
@@ -20,6 +22,8 @@ export default function App() {
       <div className="flex">
         <SideBar />
       </div>
+
+
 
       <div>
         {test.length !== 0 ? test.players.map(e => <Test key={e.player_name} name={e.player_name} />) : null}
