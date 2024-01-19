@@ -1,13 +1,12 @@
 import PropTypes from 'prop-types';
+import SideBarTooltip from './SideBarTooltip';
 
 export default function SideIcon({ icon, text = 'tooltip' }) {
     return (
         <div className="sidebar-icon group">
             {icon}
 
-            <span className="sidebar-tooltip group-hover:scale-100">
-                {text}
-            </span>
+            <SideBarTooltip title= {text} />
 
         </div>
 
