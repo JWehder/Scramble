@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import DropoutItem from './DropoutItem';
-import Message from './Message';
 
 export default function SideBarTooltip({ title }) {
     // receive data from data source
@@ -12,10 +11,8 @@ export default function SideBarTooltip({ title }) {
             <div 
             className='w-full p-1 rounded text-center hover:bg-gray-700 my-1'
             >
-                League 1
-                <DropoutItem />
+                <DropoutItem title={title} />
             </div>
-            <Message />
         </div>
     )
 }

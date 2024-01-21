@@ -1,33 +1,31 @@
-import Avatar from "./Avatar"
-import imgUrl from "../assets/i.png"
-import imgUrl2 from "../assets/i-1.png"
+import PropTypes from 'prop-types'
+import Message from './Message';
+import LeaguePreview from './LeaguePreview';
+import DropdownLi from './DropdownLi';
 
-export default function DropoutItem() {
+export default function DropoutItem({ title }) {
 
-    return (
-        <div className="flex">
-            <div>
-                Team 1 
-                <div className='flex my-1 align-center justify-center'>
-                    <Avatar imgUrl={imgUrl} name="Justin Thomas" />
-                    <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
-                    <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
-                </div>
-                <span>108.08</span>
-            </div>
-            <div className="mx-1">
-            vs 
-            </div>
-            <div>
-                Team 2
-                <div className='flex my-1 align-center justify-center'>
-                    <Avatar imgUrl={imgUrl} name="Justin Thomas" />
-                    <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
-                    <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
-                </div>
-                <span>108.08</span>
-            </div>
-            
-        </div>
-    )
+    let type = null;
+
+    switch (title) {
+        case "Messages":
+            type = <Message />;
+            break;
+        case "Leagues":
+            type = <LeaguePreview />;
+            break;
+        case "Play":
+            type = <DropdownLi />
+            break;
+        default:
+            type = "typical";
+            break;
+    }
+
+    return type;
+
+}
+
+DropoutItem.propTypes = {
+    title: PropTypes.string.isRequired
 }
