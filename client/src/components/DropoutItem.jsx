@@ -13,6 +13,7 @@ export default function DropoutItem() {
                     <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
                     <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
                 </div>
+                <span>108.08</span>
             </div>
             <div className="mx-1">
             vs 
@@ -24,7 +25,9 @@ export default function DropoutItem() {
                     <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
                     <Avatar imgUrl={imgUrl2} name="Scottie Scheffler" />
                 </div>
+                <span>108.08</span>
             </div>
+            
         </div>
     )
 }
