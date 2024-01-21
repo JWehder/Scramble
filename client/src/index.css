@@ -2,11 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.avatar {
-    border-radius: 20100px;
-}
-
-
 @layer components {
 
     .sidebar-icon {

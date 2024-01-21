@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 
-
 export default function Avatar({ imgUrl, name }) {
     return (
         <div 

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import Test from './components/Test'
 import SideBar from './components/SideBar'
-import imgUrl from './assets/i.png'
-import imgUrl2 from './assets/i-1.png'
 
 export default function App() {
   const [test, setTest] = useState([])
