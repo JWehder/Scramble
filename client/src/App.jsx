@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Test from './components/Test'
-import SideBar from './components/SideBar'
+import SideBar from './components/Sidebar/SideBar'
 
 export default function App() {
   const [test, setTest] = useState([])

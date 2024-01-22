@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import Message from './Message';
 import LeaguePreview from './LeaguePreview';
 import DropdownLi from './DropdownLi';
+import News from './News';
 
 export default function DropoutItem({ title }) {
 
@@ -18,7 +19,7 @@ export default function DropoutItem({ title }) {
             type = <DropdownLi />
             break;
         default:
-            type = "typical";
+            type = <News />
             break;
     }
 

@@ -8,6 +8,7 @@ export default function SideBar() {
         <>
             <div className="fixed top-0 left-0 h-screen w-16 flex flex-col 
                             bg-gray-900 text-white shadow-lg">
+                <div className="my-10" />
                 <SideIcon icon={ <GiGolfFlag size="28" />} text="Leagues" />
                 <SideIcon icon={<GiGolfTee size="28" />} text="Play"/>
                 <SideIcon icon={<BiMessage size="28" />} text="Messages"/>

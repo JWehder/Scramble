@@ -1,6 +1,6 @@
 import Avatar from "./Avatar"
-import imgUrl from "../assets/i.png"
-import imgUrl2 from "../assets/i-1.png"
+import imgUrl from "../../assets/i.png"
+import imgUrl2 from "../../assets/i-1.png"
 
 export default function LeaguePreview() {
 
