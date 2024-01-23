@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Test from './components/Test'
 import SideBar from './components/Sidebar/SideBar'
+import Tooltip from './components/Sidebar/Tooltip'
 
 export default function App() {
   const [test, setTest] = useState([])
@@ -19,6 +20,13 @@ export default function App() {
       </h1>
       <div className="flex">
         <SideBar />
+      </div>
+      <div className='items-center justify-items-center'>
+        <Tooltip tooltip='I am a tooltip'>
+          <button className='bg-gray-900 text-white p-3 rounded'>
+            Show Me Tooltip
+          </button>
+        </Tooltip>
       </div>
 
 

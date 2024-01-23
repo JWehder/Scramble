@@ -14,7 +14,7 @@ export default function SideBar() {
                 <SideIcon icon={<BiMessage size="28" />} text="Messages"/>
                 <SideIcon icon={<BiNews size="28" />} text="News"/>
                 <div 
-                className= "fixed bottom-0 left-0 flex items-center justify-center"
+                className= "fixed bottom-0 flex items-center justify-center"
                 >
                     <SideIcon icon={<BiSolidUser size="28" />} />
                 </div>
