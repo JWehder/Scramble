@@ -13,9 +13,9 @@ export default function CreateLeague() {
     }
 
     return (
-        <div className="p-10">
-            <h3>Create A League</h3>
-            <div>
+        <div className="pt-20 pb-20">
+            <p className="ml-96 pl-32 pb-4 text-2xl font-bold">Create A League</p>
+            <div className="grid justify-items-center">
                 {createLeagueSteps()}
             </div>
         </div>

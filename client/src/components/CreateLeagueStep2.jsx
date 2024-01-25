@@ -11,12 +11,14 @@ export default function CreateLeagueStep2({ setCreateLeagueStep }) {
 
     return (
         <div>
-            <h2>Rules</h2>
-            <div className="border overflow-y-auto h-40">
+            <p className="text-xl font-bold pb-3">Rules</p>
+            <div className="border border-black overflow-y-auto h-60 w-96">
                 {rules().map(e => <CheckList key={e} element={e} />)}
             </div>
-            <button className="border hover:bg-black" onClick={() => setCreateLeagueStep(3)}>Next</button>
-            <button className="border hover:bg-black" onClick={() => setCreateLeagueStep(1)}>Back</button>
+            <div className="grid justify-end pt-3">
+                <button className="border font-bold bg-gray-400 hover:bg-white w-40" onClick={() => setCreateLeagueStep(3)}>Next</button>
+                <button className="border font-bold bg-gray-400 hover:bg-white w-40" onClick={() => setCreateLeagueStep(1)}>Back</button>
+            </div>
         </div>
     )
 }
