@@ -6,8 +6,8 @@ export default function CreateLeagueStep1({ setCreateLeagueStep }) {
     const showPasscodeInput = () => {
         if(isPrivate) return (
             <div>
-                <label for="pass-code">Pass Code</label>
-                <input class="border" name="pass-code" type="text" placeholder="pass code"/>
+                <label htmlFor="pass-code">Pass Code</label>
+                <input className="border" name="pass-code" type="text" placeholder="pass code"/>
             </div>
         )
         else return null
@@ -17,19 +17,19 @@ export default function CreateLeagueStep1({ setCreateLeagueStep }) {
         <div>
             <div>
                 <div>
-                    <label for="league-name">League Name</label>
-                    <input class="border" name="league-name" type="text" placeholder="league name" />
+                    <label htmlFor="league-name">League Name</label>
+                    <input className="border" name="league-name" type="text" placeholder="league name" />
                 </div>
                 <div>
-                    <label for="private-check">Private</label>
-                    <input class="border" name="private-check" type="checkbox" checked={isPrivate} onChange={() => setIsPrivate(!isPrivate)} />
+                    <label htmlFor="private-check">Private</label>
+                    <input className="border" name="private-check" type="checkbox" checked={isPrivate} onChange={() => setIsPrivate(!isPrivate)} />
                 </div>
                 {showPasscodeInput()}
                 <div>
-                    <label for="share-link">Copy this link to share with friends</label>
-                    <input class="border" name="share-link" type="text" placeholder="premade link" />
+                    <label htmlFor="share-link">Copy this link to share with friends</label>
+                    <input className="border" name="share-link" type="text" placeholder="premade link" />
                 </div>
-                <button class="border hover:bg-black" onClick={() => setCreateLeagueStep(2)}>Next</button>
+                <button className="border hover:bg-black" onClick={() => setCreateLeagueStep(2)}>Next</button>
             </div>
         </div>
     )
