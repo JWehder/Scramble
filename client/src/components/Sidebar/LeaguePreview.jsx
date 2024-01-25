@@ -20,7 +20,7 @@ export default function LeaguePreview() {
                 <Avatar 
                 imgUrl={imgUrl} 
                 name="Justin Thomas" 
-                borderColor="ring-green"
+                borderColor="#C70039"
                 size="14"
                 />
                 <Avatar 
