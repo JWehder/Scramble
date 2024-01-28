@@ -18,6 +18,8 @@ export default function DropoutItem({ title }) {
         case "Play":
             type = <DropdownLi />
             break;
+        case "User":
+            
         default:
             type = <News />
             break;
