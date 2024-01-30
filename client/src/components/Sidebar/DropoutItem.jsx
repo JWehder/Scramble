@@ -3,6 +3,7 @@ import Message from './Message';
 import LeaguePreview from './LeaguePreview';
 import DropdownLi from './DropdownLi';
 import News from './News';
+import User from './User'
 
 export default function DropoutItem({ title }) {
 
@@ -16,12 +17,13 @@ export default function DropoutItem({ title }) {
             type = <LeaguePreview />;
             break;
         case "Play":
-            type = <DropdownLi />
+            type = <DropdownLi />;
             break;
         case "User":
-            
+            type = <User />;
+            break;
         default:
-            type = <News />
+            type = <News />;
             break;
     }
 

@@ -3,6 +3,8 @@ import { propTypes } from "react-bootstrap/esm/Image";
 
 export default function VerticalTooltip({ children }) {
 
+    console.log("welcome")
+
     const container = useRef();
     const tooltipRef = useRef();
 
@@ -10,9 +12,12 @@ export default function VerticalTooltip({ children }) {
         <div 
         ref = {container}
         onMouseEnter={() => {
+            console.log("hitting here")
             if (!tooltipRef || !container.current) return;
 
-            tooltipRef.current.style.top = -15 + "px";
+            console.log(container.current.getBoundingClientRect());
+
+            tooltipRef.current.style.left = 25 + "px";
         }}
         className='group/item relative inline-block text-center'
         >

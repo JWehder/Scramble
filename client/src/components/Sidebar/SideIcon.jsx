@@ -2,7 +2,8 @@ import PropTypes from 'prop-types';
 import SideBarTooltip from './SideBarTooltip';
 import VerticalTooltip from './VerticalTooltip';
 
-export default function SideIcon({ icon, text = 'tooltip', user }) {
+export default function SideIcon({ icon, type = 'tooltip', user }) {
+
     return (
         <div className="sidebar-icon group">
             {icon}
@@ -10,17 +11,15 @@ export default function SideIcon({ icon, text = 'tooltip', user }) {
             { user ?
                 <VerticalTooltip /> 
                 :
-                <SideBarTooltip title= {text} />
+                <SideBarTooltip title= {type} direction={'top-14'} />
             }
             
-
         </div>
-
     )
 }
 
 SideIcon.propTypes = {
     icon: PropTypes.element.isRequired,
-    text: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
     user: PropTypes.bool.isRequired
 }
