@@ -5,11 +5,9 @@ import DropdownLi from './DropdownLi';
 import News from './News';
 import User from './User'
 
-export default function DropoutItem({ title }) {
+export default function DropoutItem({ type }) {
 
-    let type = null;
-
-    switch (title) {
+    switch (type) {
         case "Messages":
             type = <Message />;
             break;

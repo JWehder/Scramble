@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import DropoutItem from './DropoutItem';
 
-export default function SideBarTooltip({ title, direction }) {
+export default function TooltipContent({ title, direction }) {
     // receive data from data source
 
     return (
-        <div className={`sidebar-tooltip group-hover:scale-100 ${direction}`}>
+        <div className={`tooltip group-hover:scale-100 ${direction}`}>
             <h3 className='p-1 text-center'>{title}</h3>
             <hr />
             <div 

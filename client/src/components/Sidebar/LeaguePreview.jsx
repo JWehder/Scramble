@@ -1,6 +1,7 @@
 import Avatar from "./Avatar"
 import imgUrl from "../../assets/i.png"
 import imgUrl2 from "../../assets/i-1.png"
+import GlowingWrapper from "./GlowingWrapper"
 
 export default function LeaguePreview() {
 
@@ -9,25 +10,21 @@ export default function LeaguePreview() {
     // createPlayerAvatars: mapping function for displaying player avatars
     // function createPlayerAvatars() {};
 
-    // function determining the player's border color
-    // function determineBorderColor() {}
+    // if players are playing, they will receive a glowingwrapper
 
     return (
         <div className="flex p-2">
         <div>
             Team 1 
             <div className='flex my-1 align-center justify-center'>
+                <Tooltip>
+                    
+                </Tooltip>
                 <Avatar 
                 imgUrl={imgUrl} 
                 name="Justin Thomas" 
-                borderColor="#C70039"
                 size="14"
-                />
-                <Avatar 
-                imgUrl={imgUrl2} 
-                name="Scottie Scheffler" 
-                borderColor="border-gray-700"
-                size="14"
+                score={-2}
                 />
                 <Avatar 
                 imgUrl={imgUrl2} 
@@ -37,7 +34,12 @@ export default function LeaguePreview() {
                 <Avatar 
                 imgUrl={imgUrl2} 
                 name="Scottie Scheffler" 
-                borderColor="border-green-700"
+                size="14"
+                score={2}
+                />
+                <Avatar 
+                imgUrl={imgUrl2} 
+                name="Scottie Scheffler" 
                 size="14"
                 />
             </div>
@@ -52,25 +54,21 @@ export default function LeaguePreview() {
                 <Avatar 
                 imgUrl={imgUrl} 
                 name="Justin Thomas" 
-                borderColor="border-green-700"
                 size="14"
                 />
                 <Avatar 
                 imgUrl={imgUrl2} 
                 name="Scottie Scheffler" 
-                borderColor="border-green-700"
                 size="14"
                 />
                 <Avatar 
                 imgUrl={imgUrl2} 
                 name="Scottie Scheffler" 
-                borderColor="border-red-700"
                 size="14"
                 />
                 <Avatar 
                 imgUrl={imgUrl2} 
                 name="Scottie Scheffler" 
-                borderColor="border-green-700"
                 size="14"
                 />
             </div>
