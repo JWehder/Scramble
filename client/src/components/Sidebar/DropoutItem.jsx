@@ -30,5 +30,5 @@ export default function DropoutItem({ type }) {
 }
 
 DropoutItem.propTypes = {
-    title: PropTypes.string.isRequired
+    type: PropTypes.string.isRequired
 }

@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import Tooltip2 from './Tooltip2'
 
 export default function Avatar({ imgUrl, name, score = 0, size }) {
     // take in the current score and output either green, gray, or red for 
@@ -18,7 +17,6 @@ export default function Avatar({ imgUrl, name, score = 0, size }) {
     const newSize = Number(size) * 4;
 
     return (
-        <Tooltip2 tooltip={name}>
             <div 
                 className={`flex relative items-center justify-center rounded-full overflow-hidden hover:cursor-pointer mx-1`}
                 style={{
@@ -40,7 +38,6 @@ export default function Avatar({ imgUrl, name, score = 0, size }) {
                     <span className='text-xs'>{score}</span>
                 </div>
             </div>
-        </Tooltip2>
     )
 }
 
@@ -48,5 +45,5 @@ Avatar.propTypes = {
     imgUrl: PropTypes.string.isRequired,
     name: PropTypes.string,
     borderColor: PropTypes.string,
-    size: PropTypes.number
+    size: PropTypes.string
 }

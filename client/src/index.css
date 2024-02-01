@@ -4,11 +4,23 @@
 
 @layer components {
 
-    .tooltip-container {
+    .sidebar-tooltip-container {
         @apply relative flex items-center justify-center
         h-12 w-12 mx-auto shadow-lg bg-gray-800 
         hover:bg-green-600 hover:text-white hover:cursor-pointer
         rounded-3xl hover:rounded-xl transition-all duration-300 ease-linear;
+    }
+
+    .sidebar-tooltip {
+        @apply absolute w-auto p-2 m-2 min-w-max rounded-md
+        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 origin-left;
+    }
+
+    .tooltip-container {
+        @apply relative items-center justify-center
+        inline-block mx-auto
+        hover:text-white hover:cursor-pointer
+        rounded-3xl transition-all duration-300 ease-linear;
     }
 
     .tooltip {

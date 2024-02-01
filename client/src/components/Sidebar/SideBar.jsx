@@ -17,6 +17,7 @@ export default function SideBar() {
                         <Tooltip 
                         direction = "left"
                         icon = {<GiGolfFlag size="28" />}
+                        sidebar
                         >
                             <SidebarContent type={"Leagues"} />
                         </Tooltip>
@@ -27,7 +28,9 @@ export default function SideBar() {
                         <GlowingWrapper color = "green">
                         <Tooltip 
                         icon = {<GiGolfTee size="28" />} 
-                        direction = "left">
+                        direction = "left"
+                        sidebar
+                        >
                             <SidebarContent type={"Play"} />
                         </Tooltip> 
                         </GlowingWrapper>
@@ -37,7 +40,9 @@ export default function SideBar() {
                         <GlowingWrapper color = "green">
                             <Tooltip 
                             icon = {<BiMessage size="28" />} 
-                            direction = "left">
+                            direction = "left"
+                            sidebar
+                            >
                                 <SidebarContent type={"Messages"} />
                             </Tooltip> 
                         </GlowingWrapper>
@@ -45,7 +50,11 @@ export default function SideBar() {
 
                     <div className="mb-2 mt-2">
                         <GlowingWrapper color = "green">
-                        <Tooltip icon = {<BiNews size="28" />} direction = "left">
+                        <Tooltip 
+                        icon = {<BiNews size="28" />} 
+                        direction = "left"
+                        sidebar
+                        >
                             <SidebarContent type={"News"} />
                         </Tooltip>
                         </GlowingWrapper>
@@ -57,7 +66,9 @@ export default function SideBar() {
                         <GlowingWrapper color = "green">
                         <Tooltip 
                         icon = {<BiSolidUser size="28" />} 
-                        direction = "left">
+                        direction = "left"
+                        sidebar
+                        >
                             <SidebarContent type={"User"} />
                         </Tooltip>
                         </GlowingWrapper>

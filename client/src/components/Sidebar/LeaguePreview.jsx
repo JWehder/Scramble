@@ -2,6 +2,8 @@ import Avatar from "./Avatar"
 import imgUrl from "../../assets/i.png"
 import imgUrl2 from "../../assets/i-1.png"
 import GlowingWrapper from "./GlowingWrapper"
+import Tooltip from "./Tooltip"
+import PlayerContent from "./PlayerContent"
 
 export default function LeaguePreview() {
 
@@ -17,15 +19,20 @@ export default function LeaguePreview() {
         <div>
             Team 1 
             <div className='flex my-1 align-center justify-center'>
-                <Tooltip>
-                    
+                <Tooltip 
+                icon={
+                    <Avatar 
+                    imgUrl={imgUrl} 
+                    name="Justin Thomas" 
+                    size="14"
+                    score={-2}
+                    />
+                }
+                direction = "top"
+                >
+                    <PlayerContent />
                 </Tooltip>
-                <Avatar 
-                imgUrl={imgUrl} 
-                name="Justin Thomas" 
-                size="14"
-                score={-2}
-                />
+
                 <Avatar 
                 imgUrl={imgUrl2} 
                 name="Scottie Scheffler" 

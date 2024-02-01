@@ -1,5 +1,5 @@
 import DropoutItem from "./DropoutItem"
-
+import PropTypes from 'prop-types';
 
 export default function SidebarContent({ type = 'tooltip' }) {
     return (
@@ -13,4 +13,9 @@ export default function SidebarContent({ type = 'tooltip' }) {
             </div>
         </>
     )
+}
+
+SidebarContent.propTypes = {
+    title: PropTypes.string.isRequired,
+    direction: PropTypes.string.isRequired
 }

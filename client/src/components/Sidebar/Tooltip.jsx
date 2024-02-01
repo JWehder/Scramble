@@ -1,6 +1,14 @@
 import PropTypes from 'prop-types';
 
-export default function Tooltip({ children, icon, direction }) {
+export default function Tooltip({ children, icon, direction, sidebar }) {
+
+    let tooltipContainerClass = 'tooltip-container';
+    let tooltipClass = 'tooltip'; 
+
+    if (sidebar) {
+        tooltipContainerClass = 'sidebar-tooltip-container';
+        tooltipClass = 'sidebar-tooltip';
+    }
 
     switch (direction) {
         case "top":
@@ -20,11 +28,14 @@ export default function Tooltip({ children, icon, direction }) {
             break;
     }
 
+    let groupContainer = 'group-' + tooltipClass;
+    let groupChild = 'group-' + tooltipClass + '-hover:scale:100'
+
     return (
-        <div className="tooltip-container group">
+        <div className={`${tooltipContainerClass} ${groupContainer}`}>
             {icon}
 
-            <div className={`tooltip group-hover:scale-100 ${direction}`}>
+            <div className={`${tooltipClass} ${groupChild} ${direction}`}>
                 {children}
             </div>
             
@@ -34,5 +45,6 @@ export default function Tooltip({ children, icon, direction }) {
 
 Tooltip.propTypes = {
     children: PropTypes.node.isRequired,
-    direction: PropTypes.string
+    direction: PropTypes.string,
+    sidebar: PropTypes.bool
 }
