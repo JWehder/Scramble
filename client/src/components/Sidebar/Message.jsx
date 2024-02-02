@@ -1,4 +1,4 @@
-import Avatar from "./Avatar";
+import Avatar from "../Utils/Avatar";
 import imgUrl from "../../assets/i.png"
 
 export default function Message({ message }) {
