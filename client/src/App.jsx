@@ -22,14 +22,6 @@ export default function App() {
       <div className="flex">
         <SideBar />
       </div>
-      <div className='flex justify-center items-center'>
-        <Player 
-          imgUrl={imgUrl}        
-          name="Justin Thomas" 
-          size="14"
-          score={-2}
-        />
-      </div>
       <div>
         {test.length !== 0 ? test.players.map(e => <Test key={e.player_name} name={e.player_name} />) : null}
       </div>

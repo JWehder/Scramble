@@ -1,8 +1,6 @@
 import Avatar from "./Avatar"
 import imgUrl from "../../assets/i.png"
 import imgUrl2 from "../../assets/i-1.png"
-import PlayerContent from "./PlayerContent"
-import AvatarTooltip from "./PlayerTooltip"
 import Player from "./Player"
 
 export default function LeaguePreview() {
@@ -25,40 +23,22 @@ export default function LeaguePreview() {
                     size="14"
                     score={-2}
                 />
-                <AvatarTooltip
-                avatar={
-                    <Avatar 
+                <Player 
                     imgUrl={imgUrl2} 
                     name="Scottie Scheffler" 
                     size="14"
-                    />
-                }
-                >
-                    <PlayerContent />
-                </AvatarTooltip>
-                <AvatarTooltip 
-                avatar={
-                    <Avatar 
+                />
+                <Player
                     imgUrl={imgUrl2} 
                     name="Scottie Scheffler" 
                     size="14"
-                    score={2}
-                    />
-                }
-                >
-                    <PlayerContent />
-                </AvatarTooltip>
-                <AvatarTooltip 
-                avatar={
-                    <Avatar 
+                    score={'+' + '2'}
+                />
+                <Player 
                     imgUrl={imgUrl2} 
                     name="Scottie Scheffler" 
                     size="14"
-                    />
-                }
-                >
-                    <PlayerContent />
-                </AvatarTooltip>
+                />
             </div>
             <span>108.08</span>
         </div>
@@ -68,51 +48,26 @@ export default function LeaguePreview() {
         <div>
             Team 2
             <div className='flex my-1 align-center justify-center'>
-                <AvatarTooltip
-                avatar={
-                    <Avatar 
+                <Player 
                     imgUrl={imgUrl} 
                     name="Justin Thomas" 
                     size="14"
-                    />
-                }
-                >
-                    <PlayerContent />
-                </AvatarTooltip>
-                <AvatarTooltip
-                avatar={
-                    <Avatar 
+                />
+                <Player
                     imgUrl={imgUrl2} 
                     name="Scottie Scheffler" 
                     size="14"
-                    />
-                }
-                >
-                    <PlayerContent />
-                </AvatarTooltip>
-                <AvatarTooltip 
-                avatar={
-                    <Avatar 
+                />
+                <Player
                     imgUrl={imgUrl2} 
                     name="Scottie Scheffler" 
                     size="14"
-                    />
-                }
-                >
-                    <PlayerContent />
-                </AvatarTooltip>
-                <AvatarTooltip
-                avatar={
-                    <Avatar 
+                />
+                <Player 
                     imgUrl={imgUrl2} 
                     name="Scottie Scheffler" 
                     size="14"
-                    />
-                }
-                >
-                    <PlayerContent />
-                </AvatarTooltip>    
-
+                />  
             </div>
             <span>108.08</span>
         </div>
