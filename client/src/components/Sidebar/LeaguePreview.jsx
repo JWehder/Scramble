@@ -1,9 +1,9 @@
 import Avatar from "./Avatar"
 import imgUrl from "../../assets/i.png"
 import imgUrl2 from "../../assets/i-1.png"
-import GlowingWrapper from "./GlowingWrapper"
-import Tooltip from "./Tooltip"
 import PlayerContent from "./PlayerContent"
+import AvatarTooltip from "./PlayerTooltip"
+import Player from "./Player"
 
 export default function LeaguePreview() {
 
@@ -19,36 +19,46 @@ export default function LeaguePreview() {
         <div>
             Team 1 
             <div className='flex my-1 align-center justify-center'>
-                <Tooltip 
-                icon={
-                    <Avatar 
-                    imgUrl={imgUrl} 
+                <Player 
+                    imgUrl={imgUrl}        
                     name="Justin Thomas" 
                     size="14"
                     score={-2}
+                />
+                <AvatarTooltip
+                avatar={
+                    <Avatar 
+                    imgUrl={imgUrl2} 
+                    name="Scottie Scheffler" 
+                    size="14"
                     />
                 }
-                direction = "top"
                 >
                     <PlayerContent />
-                </Tooltip>
-
-                <Avatar 
-                imgUrl={imgUrl2} 
-                name="Scottie Scheffler" 
-                size="14"
-                />
-                <Avatar 
-                imgUrl={imgUrl2} 
-                name="Scottie Scheffler" 
-                size="14"
-                score={2}
-                />
-                <Avatar 
-                imgUrl={imgUrl2} 
-                name="Scottie Scheffler" 
-                size="14"
-                />
+                </AvatarTooltip>
+                <AvatarTooltip 
+                avatar={
+                    <Avatar 
+                    imgUrl={imgUrl2} 
+                    name="Scottie Scheffler" 
+                    size="14"
+                    score={2}
+                    />
+                }
+                >
+                    <PlayerContent />
+                </AvatarTooltip>
+                <AvatarTooltip 
+                avatar={
+                    <Avatar 
+                    imgUrl={imgUrl2} 
+                    name="Scottie Scheffler" 
+                    size="14"
+                    />
+                }
+                >
+                    <PlayerContent />
+                </AvatarTooltip>
             </div>
             <span>108.08</span>
         </div>
@@ -58,26 +68,51 @@ export default function LeaguePreview() {
         <div>
             Team 2
             <div className='flex my-1 align-center justify-center'>
-                <Avatar 
-                imgUrl={imgUrl} 
-                name="Justin Thomas" 
-                size="14"
-                />
-                <Avatar 
-                imgUrl={imgUrl2} 
-                name="Scottie Scheffler" 
-                size="14"
-                />
-                <Avatar 
-                imgUrl={imgUrl2} 
-                name="Scottie Scheffler" 
-                size="14"
-                />
-                <Avatar 
-                imgUrl={imgUrl2} 
-                name="Scottie Scheffler" 
-                size="14"
-                />
+                <AvatarTooltip
+                avatar={
+                    <Avatar 
+                    imgUrl={imgUrl} 
+                    name="Justin Thomas" 
+                    size="14"
+                    />
+                }
+                >
+                    <PlayerContent />
+                </AvatarTooltip>
+                <AvatarTooltip
+                avatar={
+                    <Avatar 
+                    imgUrl={imgUrl2} 
+                    name="Scottie Scheffler" 
+                    size="14"
+                    />
+                }
+                >
+                    <PlayerContent />
+                </AvatarTooltip>
+                <AvatarTooltip 
+                avatar={
+                    <Avatar 
+                    imgUrl={imgUrl2} 
+                    name="Scottie Scheffler" 
+                    size="14"
+                    />
+                }
+                >
+                    <PlayerContent />
+                </AvatarTooltip>
+                <AvatarTooltip
+                avatar={
+                    <Avatar 
+                    imgUrl={imgUrl2} 
+                    name="Scottie Scheffler" 
+                    size="14"
+                    />
+                }
+                >
+                    <PlayerContent />
+                </AvatarTooltip>    
+
             </div>
             <span>108.08</span>
         </div>

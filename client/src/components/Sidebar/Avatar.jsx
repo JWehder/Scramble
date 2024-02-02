@@ -1,18 +1,9 @@
 import PropTypes from 'prop-types'
+import AvatarTooltip from './PlayerTooltip';
 
-export default function Avatar({ imgUrl, name, score = 0, size }) {
+export default function Avatar({ imgUrl, name, size }) {
     // take in the current score and output either green, gray, or red for 
     // the badge
-
-    let badgeColor;
-
-    if (score > 0) {
-        badgeColor = 'bg-red-600';
-    } else if (score === 0) {
-        badgeColor = 'bg-gray-600';
-    } else {
-        badgeColor = 'bg-green-600';
-    }
 
     const newSize = Number(size) * 4;
 
@@ -23,7 +14,6 @@ export default function Avatar({ imgUrl, name, score = 0, size }) {
                     width: `${newSize}px`
                 }}
                 >
-
                 <img 
                     alt={name}
                     src={imgUrl} 
@@ -34,9 +24,6 @@ export default function Avatar({ imgUrl, name, score = 0, size }) {
                         borderSize: `${newSize}px`
                     }}
                 />
-                <div className={`absolute ${badgeColor} rounded top-0 left-0 opacity-85 p-1 h-5 w-5`}>
-                    <span className='text-xs'>{score}</span>
-                </div>
             </div>
     )
 }

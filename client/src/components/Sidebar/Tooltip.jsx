@@ -28,17 +28,13 @@ export default function Tooltip({ children, icon, direction, sidebar }) {
             break;
     }
 
-    let groupContainer = 'group-' + tooltipClass;
-    let groupChild = 'group-' + tooltipClass + '-hover:scale:100'
-
     return (
-        <div className={`${tooltipContainerClass} ${groupContainer}`}>
+        <div className={`${tooltipContainerClass} group`}>
             {icon}
 
-            <div className={`${tooltipClass} ${groupChild} ${direction}`}>
+            <div className={`${tooltipClass} group-hover:scale-100 ${direction}`}>
                 {children}
             </div>
-            
         </div>
     )
 }
