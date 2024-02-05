@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import Test from './components/Test';
 import SideBar from './components/Sidebar/SideBar';
-import Player from './components/Sidebar/Player';
-import imgUrl from "./assets/i.png";
 
 export default function App() {
   const [test, setTest] = useState([]);
