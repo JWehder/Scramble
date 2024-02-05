@@ -3,7 +3,7 @@ import { BiMessage } from "react-icons/bi";
 import { BiNews, BiSolidUser } from "react-icons/bi";
 import Tooltip from "../Utils/Tooltip";
 import SidebarContent from "./SidebarContent";
-import GlowingWrapper from "./GlowingWrapper";
+import GlowingWrapper from "../Utils/GlowingWrapper";
 
 export default function SideBar() {
 

@@ -14,6 +14,10 @@ export default function Player({ score = 0, imgUrl, name, size }) {
         badgeColor = 'bg-green-600/75';
     }
 
+    if (score === 0) {
+        score = 'E';
+    }
+
     return (
         <>
             <PlayerTooltip

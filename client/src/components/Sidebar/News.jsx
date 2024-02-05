@@ -1,4 +1,4 @@
-import GalleryPhoto from "./GalleryPhoto";
+import GalleryPhoto from "../Utils/GalleryPhoto";
 import imgUrl from "../../assets/i.png"
 
 
