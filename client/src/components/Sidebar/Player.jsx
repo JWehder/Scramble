@@ -9,14 +9,13 @@ export default function Player({ score = 0, imgUrl, name, size }) {
 
     if (score > 0) {
         badgeColor = 'bg-red-600/75';
+        score = '+' + score.toString();
     } else if (score === 0) {
         badgeColor = 'bg-gray-600/75';
+        score = 'E'
     } else {
         badgeColor = 'bg-green-600/75';
-    }
-
-    if (score === 0) {
-        score = 'E';
+        score = score.toString();
     }
 
     return (
@@ -48,5 +47,6 @@ export default function Player({ score = 0, imgUrl, name, size }) {
 Player.propTypes = {
     name: PropTypes.string.isRequired,
     imgUrl: PropTypes.string.isRequired,
-    size: PropTypes.string.isRequired
+    size: PropTypes.string.isRequired, 
+    score: PropTypes.number
 }

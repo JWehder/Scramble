@@ -1,7 +1,7 @@
 import DropoutItem from "./DropoutItem"
 import PropTypes from 'prop-types';
 
-export default function SidebarContent({ type = 'tooltip' }) {
+export default function SidebarContent({ type }) {
     return (
         <>
             <h3 className='p-1 text-center'>{type}</h3>
@@ -16,5 +16,5 @@ export default function SidebarContent({ type = 'tooltip' }) {
 }
 
 SidebarContent.propTypes = {
-    type: PropTypes.string.isRequired
+    type: PropTypes.string
 }

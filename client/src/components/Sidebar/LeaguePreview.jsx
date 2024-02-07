@@ -29,7 +29,7 @@ export default function LeaguePreview() {
                     imgUrl={""} 
                     name="Scottie Scheffler" 
                     size="14"
-                    score={'+' + '2'}
+                    score={2}
                 />
                 <Player 
                     imgUrl={""} 
