@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 export default function Badge({ children, bgColor }) {
     // there needs to be certain configured elements within the parent div to make this work. See -> Player Component
 
@@ -10,4 +12,9 @@ export default function Badge({ children, bgColor }) {
             </span>
         </>
     )
+}
+
+Badge.propTypes = {
+    bgColor: PropTypes.string.isRequired,
+    children: PropTypes.node.isRequired
 }

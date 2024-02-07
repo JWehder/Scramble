@@ -20,8 +20,7 @@ export default function Avatar({ imgUrl, name, size }) {
                     className={`bg-slate-200 object-cover`}
                     style={{
                         width: `${newSize}px`,
-                        height: `${newSize}px`,
-                        borderSize: `${newSize}px`
+                        height: `${newSize}px`
                     }}
                 />
             </div>
@@ -31,6 +30,5 @@ export default function Avatar({ imgUrl, name, size }) {
 Avatar.propTypes = {
     imgUrl: PropTypes.string.isRequired,
     name: PropTypes.string,
-    borderColor: PropTypes.string,
     size: PropTypes.string
 }

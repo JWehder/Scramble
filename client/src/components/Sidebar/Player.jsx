@@ -2,6 +2,7 @@ import Avatar from "../Utils/Avatar";
 import Badge from "../Utils/Badge";
 import PlayerContent from "./PlayerContent";
 import PlayerTooltip from "./PlayerTooltip";
+import PropTypes from 'prop-types';
 
 export default function Player({ score = 0, imgUrl, name, size }) {
     let badgeColor;
@@ -40,7 +41,12 @@ export default function Player({ score = 0, imgUrl, name, size }) {
             >
                 <PlayerContent />
             </PlayerTooltip>
-
         </>
     )
+}
+
+Player.propTypes = {
+    name: PropTypes.string.isRequired,
+    imgUrl: PropTypes.string.isRequired,
+    size: PropTypes.string.isRequired
 }

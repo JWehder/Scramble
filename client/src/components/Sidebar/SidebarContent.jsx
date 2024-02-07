@@ -16,6 +16,5 @@ export default function SidebarContent({ type = 'tooltip' }) {
 }
 
 SidebarContent.propTypes = {
-    title: PropTypes.string.isRequired,
-    direction: PropTypes.string.isRequired
+    type: PropTypes.string.isRequired
 }

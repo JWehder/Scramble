@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 
 export default function GlowingWrapper({ children, color }) {
 
@@ -22,4 +23,8 @@ export default function GlowingWrapper({ children, color }) {
             {children}
         </div>
     )
+}
+
+GlowingWrapper.propTypes = {
+    color: PropTypes.string.isRequired
 }

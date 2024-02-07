@@ -1,11 +1,11 @@
 import PropTypes from "prop-types"
 
-export default function GalleryPhoto({ name, imgUrl }) {
+export default function GalleryPhoto({ caption, imgUrl }) {
     return (
         <div 
         className='flex items-center justify-items-center rounded-md overflow-hidden mx-0.5 h-[75px] w-[80px]'>
               <img 
-                  alt={name}
+                  alt={caption}
                   src={imgUrl} 
                   className='bg-slate-200 w-full h-full object-cover'
               />
@@ -15,5 +15,5 @@ export default function GalleryPhoto({ name, imgUrl }) {
 
 GalleryPhoto.propTypes = {
     imgUrl: PropTypes.string.isRequired,
-    name: PropTypes.string
+    caption: PropTypes.string
 }

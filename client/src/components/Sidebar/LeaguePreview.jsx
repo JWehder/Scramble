@@ -1,5 +1,3 @@
-import imgUrl from "../../assets/i.png"
-import imgUrl2 from "../../assets/i-1.png"
 import Player from "./Player"
 
 export default function LeaguePreview() {
@@ -17,24 +15,24 @@ export default function LeaguePreview() {
             Team 1 
             <div className='flex my-1 align-center justify-center'>
                 <Player 
-                    imgUrl={imgUrl}        
+                    imgUrl={""}        
                     name="Justin Thomas" 
                     size="14"
                     score={-2}
                 />
                 <Player 
-                    imgUrl={imgUrl2} 
+                    imgUrl={""} 
                     name="Scottie Scheffler" 
                     size="14"
                 />
                 <Player
-                    imgUrl={imgUrl2} 
+                    imgUrl={""} 
                     name="Scottie Scheffler" 
                     size="14"
                     score={'+' + '2'}
                 />
                 <Player 
-                    imgUrl={imgUrl2} 
+                    imgUrl={""} 
                     name="Scottie Scheffler" 
                     size="14"
                 />
@@ -48,22 +46,22 @@ export default function LeaguePreview() {
             Team 2
             <div className='flex my-1 align-center justify-center'>
                 <Player 
-                    imgUrl={imgUrl} 
+                    imgUrl={""} 
                     name="Justin Thomas" 
                     size="14"
                 />
                 <Player
-                    imgUrl={imgUrl2} 
+                    imgUrl={""} 
                     name="Scottie Scheffler" 
                     size="14"
                 />
                 <Player
-                    imgUrl={imgUrl2} 
+                    imgUrl={""} 
                     name="Scottie Scheffler" 
                     size="14"
                 />
                 <Player 
-                    imgUrl={imgUrl2} 
+                    imgUrl={""} 
                     name="Scottie Scheffler" 
                     size="14"
                 />  
