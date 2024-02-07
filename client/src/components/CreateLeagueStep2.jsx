@@ -1,4 +1,4 @@
-import CheckList from "./CheckList"
+import RuleElement from "./RuleElement"
 
 export default function CreateLeagueStep2({ setCreateLeagueStep }) {
     const rules = () => {
@@ -13,7 +13,7 @@ export default function CreateLeagueStep2({ setCreateLeagueStep }) {
         <div>
             <p className="text-xl font-bold pb-3">Rules</p>
             <div className="border border-black overflow-y-auto h-60 w-96">
-                {rules().map(e => <CheckList key={e} element={e} />)}
+                {rules().map(e => <RuleElement key={e} element={e} />)}
             </div>
             <div className="grid justify-end pt-3">
                 <button className="border font-bold bg-gray-400 hover:bg-white w-40" onClick={() => setCreateLeagueStep(3)}>Next</button>

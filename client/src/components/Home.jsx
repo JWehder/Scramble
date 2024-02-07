@@ -14,9 +14,7 @@ export default function Home({ setIsLoggedIn }) {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold underline text-center mt-14">
-                Scramble
-            </h1>
+            <h1 className="text-3xl font-bold underline text-center mt-14">Scramble</h1>
             <p class="text-l font-bold underline text-center mt-14" onClick={() => setIsLoggedIn(false)}>Log Out</p>
             <CreateLeague />
             <div class="mx-56 p-10">
