@@ -20,7 +20,7 @@ export default function SideBar() {
                             icon = {<GiGolfFlag size="28" />}
                             sidebar
                             >
-                                <SidebarContent type={"Leagues"} />
+                                <SidebarContent type={"Teams & Leagues"} />
                             </Tooltip>
                             </GlowingWrapper>
                         </div>

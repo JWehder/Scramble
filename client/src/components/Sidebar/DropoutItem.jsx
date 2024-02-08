@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import Message from './Message';
-import LeaguePreview from './LeaguePreview';
+import LeaguesPreview from './LeaguesPreview';
 import DropdownLi from './DropdownLi';
 import News from './News';
 import User from './User'
@@ -11,8 +11,8 @@ export default function DropoutItem({ type }) {
         case "Messages":
             type = <Message />;
             break;
-        case "Leagues":
-            type = <LeaguePreview />;
+        case "Teams & Leagues":
+            type = <LeaguesPreview />;
             break;
         case "Play":
             type = <DropdownLi />;
@@ -25,7 +25,11 @@ export default function DropoutItem({ type }) {
             break;
     }
 
-    return type;
+    return (
+        <div>
+            {type}
+        </div>
+    )
 
 }
 

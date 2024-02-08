@@ -34,7 +34,6 @@ export default function Player({ score = 0, imgUrl, name, size }) {
                     >
                         {score}
                     </Badge>
-                        
                 </div>
             }
             >
