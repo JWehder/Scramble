@@ -1,16 +1,6 @@
-import { useState, useEffect } from 'react'
-import Test from './Test'
 import CreateLeague from './CreateLeague'
 
 export default function Home({ setIsLoggedIn }) {
-    const [test, setTest] = useState([])
-
-    useEffect(() => {
-        fetch('/api/dummy')
-        .then(r => r.json())
-        .then(data => setTest(data))
-        .catch(err => console.log(err))
-    }, [])
 
     return (
         <div>
@@ -32,9 +22,6 @@ export default function Home({ setIsLoggedIn }) {
                         <p className="self-center text-center">FAQ</p>
                     </div>
                 </div>
-            </div>
-            <div className="text-center">
-                {test.length !== 0 ? test.players.map(e => <Test key={e.player_name} name={e.player_name} />) : null}
             </div>
         </div>
     )
