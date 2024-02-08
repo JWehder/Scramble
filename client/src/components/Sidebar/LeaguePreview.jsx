@@ -39,35 +39,6 @@ export default function LeaguePreview() {
             </div>
             <span>108.08</span>
         </div>
-        <div className="mx-1">
-        vs 
-        </div>
-        <div>
-            Team 2
-            <div className='flex my-1 align-center justify-center'>
-                <Player 
-                    imgUrl={""} 
-                    name="Justin Thomas" 
-                    size="14"
-                />
-                <Player
-                    imgUrl={""} 
-                    name="Scottie Scheffler" 
-                    size="14"
-                />
-                <Player
-                    imgUrl={""} 
-                    name="Scottie Scheffler" 
-                    size="14"
-                />
-                <Player 
-                    imgUrl={""} 
-                    name="Scottie Scheffler" 
-                    size="14"
-                />  
-            </div>
-            <span>108.08</span>
-        </div>
         
     </div>
     )
