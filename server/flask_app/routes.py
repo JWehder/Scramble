@@ -1,10 +1,10 @@
-from flask import request, session, jsonify, send_file, make_response
+from flask import request, make_response
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 import traceback
 from functools import wraps
-from config import app, db, api
-from config import Flask, SQLAlchemy, db
+from config import app, api
+from config import Flask
 
 #HTTP Constants 
 HTTP_SUCCESS = 200
@@ -25,6 +25,18 @@ def hello_world():
 def dummy():
     import json
     with open('./results/test.json') as f:
+        data = json.load(f)
+    response = make_response(
+        data,
+        200
+    )
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+@app.route('/tournaments', methods=['GET'])
+def get_tournaments():
+    import json
+    with open('../data/tournaments.json') as f:
         data = json.load(f)
     response = make_response(
         data,
