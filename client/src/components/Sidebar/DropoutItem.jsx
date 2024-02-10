@@ -8,6 +8,9 @@ import Article from './Article';
 export default function DropoutItem({ type }) {
     let userData = null;
 
+    // data being implemented
+    // 
+
     switch (type) {
         case "Messages":
             type = <Message />;
