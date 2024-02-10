@@ -4,33 +4,25 @@ import User from './User'
 import League from './League';
 import Message from './Message';
 import Article from './Article';
+import { Component } from 'react';
 
-export default function DropoutItem({ type }) {
-    let userData = null;
-
-    // data being implemented
-    // 
+export default function DropoutItem({ type, userData }) {
 
     switch (type) {
         case "Messages":
-            type = <Message />;
-            userData = [1,2,3,4];
+            Component = Message;
             break;
         case "Teams & Leagues":
-            type = <League />;
-            userData = [1,2,3,4];
+            Component = League;
             break;
         case "Play":
-            type = <DropdownLi />;
-            userData = [1,2,3,4];
+            Component = DropdownLi;
             break;
         case "User":
-            type = <User />;
-            userData = [1,2,3,4];
+            Component = User;
             break;
         default:
-            type = <Article />;
-            userData = [1,2,3,4];
+            Component = Article;
             break;
     }
 
@@ -38,7 +30,7 @@ export default function DropoutItem({ type }) {
         <>
             <div className="flex items-center justify-center flex-col">
                 { userData ?
-                userData.slice(0, 3).map(() => type)
+                userData.slice(0, 3).map((datapoint) => <Component message={datapoint} />)
                 :
                 `there are no ${type} to display`
                 }
@@ -48,11 +40,11 @@ export default function DropoutItem({ type }) {
                 </div>
             </div>
         </>
-
     )
 
 }
 
 DropoutItem.propTypes = {
-    type: PropTypes.string.isRequired
+    type: PropTypes.string.isRequired,
+    userData: PropTypes.arrayOf(PropTypes.string)
 }
