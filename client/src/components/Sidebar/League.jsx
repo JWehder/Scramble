@@ -1,23 +1,21 @@
 import { useState } from 'react';
 import Player from './Player';
 
-
-export default function League({ league }) {
+export default function League({ data }) {
     const [showLeaguePreview, setShowLeaguePreview] = useState(false);
-
 
     return (
             <div 
-            className='flex p-2 hover:bg-gray-700 rounded-md'
+            className='flex p-2 hover:bg-gray-700 rounded-md w-[350px]'
             onMouseEnter={() => setShowLeaguePreview(true)}
             onMouseLeave={() => setShowLeaguePreview(false)}
             >
                 <div>
                     <div>
-                        Team 1
+                        {data.team1Name}
                     </div>
                     <div>
-                        League 1
+                        {data.name}
                     </div>
                 </div>
 

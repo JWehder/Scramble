@@ -4,9 +4,36 @@ import User from './User'
 import League from './League';
 import Message from './Message';
 import Article from './Article';
-import { Component } from 'react';
 
 export default function DropoutItem({ type, userData }) {
+
+    // userData = [
+    //     "Hey there!",
+    //     "Hey there!",
+    //     "Hey there!"
+    // ];
+
+
+    let leaguesData = 
+        [
+            {
+            "name": "Jake's League",
+            "team1Name": "Jake's team",
+            "team2Name": "Mitch's team"
+            },
+            {
+              "name": "Jake's League",
+              "team1Name": "Jake's team",
+              "team2Name": "Mitch's team"
+            },
+            {
+              "name": "Jake's League",
+              "team1Name": "Jake's team",
+              "team2Name": "Mitch's team"
+            }
+        ];
+
+    let Component;
 
     switch (type) {
         case "Messages":
@@ -26,13 +53,15 @@ export default function DropoutItem({ type, userData }) {
             break;
     }
 
+    console.log(userData);
+
     return (
         <>
             <div className="flex items-center justify-center flex-col">
                 { userData ?
-                userData.slice(0, 3).map((datapoint) => <Component message={datapoint} />)
+                userData.slice(0, 3).map((datapoint) => <Component data={datapoint} />)
                 :
-                `there are no ${type} to display`
+                `there are no ${type} to display: ${userData}`
                 }
                 <div 
                 className="divide-x divide-x-slate-700 p-2 hover:bg-slate-700 rounded-md w-24">
