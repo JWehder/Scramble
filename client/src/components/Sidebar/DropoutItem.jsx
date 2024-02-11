@@ -41,6 +41,7 @@ export default function DropoutItem({ type, userData }) {
             break;
         case "Teams & Leagues":
             Component = League;
+            if (!userData) userData = leaguesData;
             break;
         case "Play":
             Component = DropdownLi;
@@ -52,8 +53,6 @@ export default function DropoutItem({ type, userData }) {
             Component = Article;
             break;
     }
-
-    console.log(userData);
 
     return (
         <>
