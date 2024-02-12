@@ -4,51 +4,37 @@ import User from './User'
 import League from './League';
 import Message from './Message';
 import Article from './Article';
+import { useSelector } from "react-redux";
 
-export default function DropoutItem({ type, userData }) {
+export default function DropoutItem({ type }) {
 
-    // userData = [
-    //     "Hey there!",
-    //     "Hey there!",
-    //     "Hey there!"
-    // ];
-
-
-    let leaguesData = 
-        [
-            {
-            "name": "Jake's League",
-            "team1Name": "Jake's team",
-            "team2Name": "Mitch's team"
-            },
-            {
-              "name": "Jake's League",
-              "team1Name": "Jake's team",
-              "team2Name": "Mitch's team"
-            },
-            {
-              "name": "Jake's League",
-              "team1Name": "Jake's team",
-              "team2Name": "Mitch's team"
-            }
-        ];
+    let userData;
 
     let Component;
 
     switch (type) {
         case "Messages":
             Component = Message;
+            userData = useSelector((state) => state.messages);
+            if (!userData) userData = defaultData.messages;
             break;
         case "Teams & Leagues":
             Component = League;
-            if (!userData) userData = leaguesData;
+            userData = useSelector((state) => state.leagues);
+            if (!userData) userData = defaultData.leagues;
             break;
         case "Play":
             Component = DropdownLi;
+            userData = useSelector((state) => state.games);
+            if (!userData) userData = defaultData.games;
             break;
         case "User":
             Component = User;
             break;
+        case "Article":
+            Component = Article;
+            userData = useSelector((state) => state.articles);
+            if (!userData) userData = defaultData.articles;
         default:
             Component = Article;
             break;
