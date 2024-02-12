@@ -1,22 +1,57 @@
 import { render, screen } from '@testing-library/react';
 import DropoutItem from './DropoutItem';
+import configureStore from 'redux-mock-store';
+import { Provider } from 'react-redux';
+
+const initialTestingState = {
+  leagues: [
+      {
+      "name": "Jake's League",
+      "team1Name": "Jake's team"
+      },
+      {
+        "name": "Jake's League",
+        "team1Name": "Jake's team"
+      },
+      {
+        "name": "Jake's League",
+        "team1Name": "Jake's team"
+      }
+  ],
+  messages: [
+    "Hey there!",
+    "Hey there!",
+    "Hey there!"
+  ],
+  articles: [
+    {
+      "title": "Outrageous Hole Out by Tiger",
+      "caption": "Tiger plays the 16th hole of WM perfectly and nearly knocks in a hole. See video below:"
+    },
+    {
+      "title": "Outrageous Hole Out by Tiger",
+      "caption": "Tiger plays the 16th hole of WM perfectly and nearly knocks in a hole. See video below:"
+    },
+    {
+      "title": "Outrageous Hole Out by Tiger",
+      "caption": "Tiger plays the 16th hole of WM perfectly and nearly knocks in a hole. See video below:"
+    }
+  ],
+  games: ["Best Ball", "Match Play", "Stroke Play"],
+}
+
+const mockStore = configureStore();
+const store = mockStore(initialTestingState);
 
 describe('DropoutItem Component', () => {
   it('renders the dropoutItem component', () => {
-    // Mock userData for testing
-    const userData =
-    {
-      "firstName": "Jane",
-      "lastName": "Smith",
-      "messages": [
-        "Hey there!",
-        "Hey there!",
-        "Hey there!"
-      ]
-    };
 
     // Render the component with the mock userData
-    const { container } = render(<DropoutItem type="Messages" userData={userData.messages} />);
+    const { container } = render(
+    <Provider store={store} >
+      <DropoutItem type="Messages" userData={userData.messages} />
+    </Provider>
+    );
 
     // container is defined
     expect(container).toBeDefined();
