@@ -8,13 +8,16 @@ export default function Article({ data }) {
                     <GalleryPhoto imgUrl={""} caption="julia wehder" />
                 </div>
 
-                <h2>
-                    {data.title}
-                </h2>
-                
-                <p className="ml-1 text-left overflow-hidden text-ellipsis p-1">
-                    {data.caption}
-                </p>
+                <div className="truncate p-1">
+                    <h1 className="text-base font-bold">
+                        {data.title}
+                    </h1>
+                    
+                    <p className="ml-1 text-left truncate p-1">
+                        {data.caption}
+                    </p>
+                </div>
+
 
                 <EllipsisButton />
             </div>

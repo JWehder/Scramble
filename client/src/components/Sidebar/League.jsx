@@ -10,9 +10,9 @@ export default function League({ data }) {
             onMouseEnter={() => setShowLeaguePreview(true)}
             onMouseLeave={() => setShowLeaguePreview(false)}
             >
-                <div>
+                <div className='mb-2'>
                     <div>
-                        {data.team1Name}
+                        {data.team1Name} -
                     </div>
                     <div>
                         {data.name}

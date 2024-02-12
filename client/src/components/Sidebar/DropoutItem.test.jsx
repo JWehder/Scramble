@@ -59,19 +59,11 @@ describe('DropoutItem Component', () => {
 
   it('renders correct number of message components based on userData length', () => {
 
-    // Mock userData for testing
-    const userData =
-    {
-      "firstName": "Jane",
-      "lastName": "Smith",
-      "messages": [
-        "Hey there!",
-        "Hey there!",
-        "Hey there!"
-      ]
-    };
-
-    render(<DropoutItem type="Messages" userData={userData.messages} />);
+    render(
+    <Provider store={store}>
+        <DropoutItem type="Messages" userData={userData.messages} />
+    </Provider>
+    );
 
     // Get all rendered Message components
     const renderedMessages = screen.getAllByText(/Hey there!/);
@@ -83,28 +75,11 @@ describe('DropoutItem Component', () => {
 
   it('renders correct number of message components based on userData length', () => {
 
-    // Mock userData for testing
-    const userData =
-    {
-      "firstName": "Jane",
-      "lastName": "Smith",
-      "leagues": [
-        {
-        "name": "Jake's League",
-        "team1Name": "Jake's team"
-        },
-        {
-          "name": "Jake's League",
-          "team1Name": "Jake's team"
-        },
-        {
-          "name": "Jake's League",
-          "team1Name": "Jake's team"
-        }
-      ]
-    };
-
-    render(<DropoutItem type="Teams & Leagues" data={userData.leagues} />);
+    render(
+    <Provider>
+      <DropoutItem type="Teams & Leagues" data={userData.leagues} />
+    </Provider>
+    );
 
     // Get all rendered Message components
     const renderedMessages = screen.getAllByText(/Jake's team/);

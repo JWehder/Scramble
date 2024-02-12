@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import DropdownLi from './DropdownLi';
+import Game from './Game';
 import User from './User'
 import League from './League';
 import Message from './Message';
@@ -15,25 +15,25 @@ export default function DropoutItem({ type }) {
     switch (type) {
         case "Messages":
             Component = Message;
-            userData = useSelector((state) => state.messages);
+            userData = useSelector((state) => state.users.messages);
             if (!userData) userData = defaultData.messages;
             break;
         case "Teams & Leagues":
             Component = League;
-            userData = useSelector((state) => state.leagues);
+            userData = useSelector((state) => state.users.leagues);
             if (!userData) userData = defaultData.leagues;
             break;
         case "Play":
-            Component = DropdownLi;
-            userData = useSelector((state) => state.games);
+            Component = Game;
+            userData = useSelector((state) => state.users.games);
             if (!userData) userData = defaultData.games;
             break;
         case "User":
             Component = User;
             break;
-        case "Article":
+        case "Articles":
             Component = Article;
-            userData = useSelector((state) => state.articles);
+            userData = useSelector((state) => state.users.articles);
             if (!userData) userData = defaultData.articles;
         default:
             Component = Article;

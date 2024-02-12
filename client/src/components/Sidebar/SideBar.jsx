@@ -56,7 +56,7 @@ export default function SideBar() {
                             direction = "left"
                             sidebar
                             >
-                                <SidebarContent type={"News"} />
+                                <SidebarContent type={"Articles"} />
                             </Tooltip>
                             </GlowingWrapper>
                         </div>
