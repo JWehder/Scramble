@@ -12,10 +12,7 @@ export default function League({ data }) {
             >
                 <div className='mb-2'>
                     <div>
-                        {data.team1Name} -
-                    </div>
-                    <div>
-                        {data.name}
+                        {data.team1Name} - {data.name}
                     </div>
                 </div>
 
@@ -46,7 +43,7 @@ export default function League({ data }) {
                     </div>
                     :
                     ""}
-                <span>108.08</span>
+                <span className='mr-1'>108.08</span>
             </div>
     )
 }

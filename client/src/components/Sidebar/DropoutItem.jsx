@@ -16,25 +16,19 @@ export default function DropoutItem({ type }) {
         case "Messages":
             Component = Message;
             userData = useSelector((state) => state.users.messages);
-            if (!userData) userData = defaultData.messages;
             break;
         case "Teams & Leagues":
             Component = League;
             userData = useSelector((state) => state.users.leagues);
-            if (!userData) userData = defaultData.leagues;
             break;
         case "Play":
             Component = Game;
             userData = useSelector((state) => state.users.games);
-            if (!userData) userData = defaultData.games;
-            break;
-        case "User":
-            Component = User;
+            type = "game";
             break;
         case "Articles":
             Component = Article;
             userData = useSelector((state) => state.users.articles);
-            if (!userData) userData = defaultData.articles;
         default:
             Component = Article;
             break;
@@ -44,9 +38,9 @@ export default function DropoutItem({ type }) {
         <>
             <div className="flex items-center justify-center flex-col">
                 { userData ?
-                userData.slice(0, 3).map((datapoint) => <Component data={datapoint} />)
+                userData.slice(0, 3).map((datapoint, idx) => <Component data={datapoint} key={`${datapoint}-${idx}`} />)
                 :
-                `there are no ${type} to display: ${userData}`
+                `there are no ${type.toLowerCase()}s to display: ${userData}`
                 }
                 <div 
                 className="divide-x divide-x-slate-700 p-2 hover:bg-slate-700 rounded-md w-24">
