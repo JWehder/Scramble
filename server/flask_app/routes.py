@@ -20,6 +20,7 @@ HTTP_UNPROCESSABLE_ENTITY = 422
 @app.route('/', methods=['GET'])
 def hello_world():
     return {"routes": "working!"}
+    
 
 @app.route('/tournaments', methods=['GET'])
 def get_tournaments():
