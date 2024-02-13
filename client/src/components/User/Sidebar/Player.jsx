@@ -1,5 +1,5 @@
-import Avatar from "../Utils/Avatar";
-import Badge from "../Utils/Badge";
+import Avatar from "../../Utils/Avatar";
+import Badge from "../../Utils/Badge";
 import PlayerContent from "./PlayerContent";
 import PlayerTooltip from "./PlayerTooltip";
 import PropTypes from 'prop-types';

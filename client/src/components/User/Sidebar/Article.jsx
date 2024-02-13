@@ -1,4 +1,4 @@
-import GalleryPhoto from "../Utils/GalleryPhoto";
+import GalleryPhoto from "../../Utils/GalleryPhoto";
 import EllipsisButton from "./EllipsisButton";
 
 export default function Article({ data }) {

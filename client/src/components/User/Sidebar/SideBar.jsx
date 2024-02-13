@@ -1,9 +1,9 @@
 import { GiGolfTee, GiGolfFlag } from "react-icons/gi";
 import { BiMessage } from "react-icons/bi";
 import { BiNews, BiSolidUser } from "react-icons/bi";
-import Tooltip from "../Utils/Tooltip";
+import Tooltip from "../../Utils/Tooltip";
 import SidebarContent from "./SidebarContent";
-import GlowingWrapper from "../Utils/GlowingWrapper";
+import GlowingWrapper from "../../Utils/GlowingWrapper";
 import User from "./User";
 
 export default function SideBar() {

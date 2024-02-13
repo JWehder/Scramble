@@ -1,7 +1,7 @@
 import { render as rtlRender, screen } from '@testing-library/react';
 import DropoutItem from './DropoutItem';
 import { Provider } from 'react-redux';
-import store from '../../store';
+import store from '../../../store';
 
 const { leagues, messages, articles, games } = store.getState().users;
 
