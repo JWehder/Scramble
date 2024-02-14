@@ -1,4 +1,4 @@
-import Avatar from "../../Utils/Avatar";
+import Avatar from "../../../Utils/components/Avatar";
 import PropTypes from 'prop-types'
 import EllipsisButton from "./EllipsisButton";
 

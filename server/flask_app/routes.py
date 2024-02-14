@@ -34,6 +34,26 @@ def get_tournaments():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+@app.route('/me', methods=['GET'])
+def auth():
+    if request.method == 'GET':
+        pass
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    if request.method == 'POST':
+        pass
+
+@app.route('/logout', methods=['DELETE'])
+def signup():
+    if request.method == 'DELETE':
+        pass
+
+@app.route('/login', methods=['POST'])
+def signup():
+    if request.method == 'POST':
+        pass
+
 @app.route('/sets/<int:id>', methods=['GET', 'POST', 'DELETE'])
 def modify_sets(set_id):
     if request.method == 'GET':

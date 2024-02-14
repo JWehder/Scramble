@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import AvatarTooltip from '../Sidebar/PlayerTooltip';
 
 export default function Avatar({ imgUrl, name, size }) {
     // take in the current score and output either green, gray, or red for 

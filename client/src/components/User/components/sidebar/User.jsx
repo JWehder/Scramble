@@ -1,5 +1,13 @@
+import { useDispatch } from 'react-redux';
+import { setLoginModal } from '../../state/userSlice';
 
 export default function User() {
+    const dispatch = useDispatch();
+
+    function logout() {
+        dispatch(setLoginModal(true));
+    };
+
     return (
         <div className="p-2 rounded-md justify-center align-middle">
             
@@ -15,7 +23,7 @@ export default function User() {
             
             <div 
             className="hover:bg-gray-700 text-center p-2 rounded-lg"
-            onClick={}
+            onClick={() => logout()}
             >
                 Logout
             </div>
