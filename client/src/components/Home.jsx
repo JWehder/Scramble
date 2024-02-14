@@ -1,13 +1,14 @@
 import Modal from "./User/components/auth/modal"
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setLoginModal } from "./User/state/userSlice";
 
 export default function Home({ setIsLoggedIn }) {
+    const dispatch = useDispatch();
 
-    
     const open = useSelector((state) => state.users.loginModal);
 
     function onClose() {
-
+        dispatch(setLoginModal(false));
     }
 
     return (
@@ -15,7 +16,7 @@ export default function Home({ setIsLoggedIn }) {
             <h1 className="text-3xl font-bold underline text-center mt-14">
                 Scramble
             </h1>
-            <Modal open={open} onClose={}>
+            <Modal open={open} onClose={onClose} title={"Login & Signup"}>
                 hey
             </ Modal>
             <p class="text-l font-bold underline text-center mt-14" onClick={() => setIsLoggedIn(false)}>Log Out</p>
