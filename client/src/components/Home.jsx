@@ -4,20 +4,19 @@ import { setLoginModal } from "./User/state/userSlice";
 import Login from "./User/components/auth/Login";
 import SignUp from "./User/components/auth/SignUp";
 import { useState } from "react";
+import ForgotPassword from "./User/components/auth/ForgotPassword";
 
 export default function Home({ setIsLoggedIn }) {
     const dispatch = useDispatch();
 
     const [showLogin, setShowLogin] = useState(true);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [showCode, setShowCode] = useState(false);
 
     const open = useSelector((state) => state.users.loginModal);
 
     function onClose() {
         dispatch(setLoginModal(false));
-    }
-
-    function handleClick() {
-        setShowLogin(!showLogin);
     }
 
     return (
@@ -26,10 +25,26 @@ export default function Home({ setIsLoggedIn }) {
                 Scramble
             </h1>
             <Modal open={open} onClose={onClose} title={"Login or Sign up"}>
-                { showLogin ? 
-                    <Login showLogin={handleClick} />
+
+                { showForgotPassword ?
+                showCode ?
+                ""
+                :
+                <ForgotPassword 
+                showCode={() => setShowCode(!showCode)} 
+                showLogin={() => {
+                    setShowLogin(true);
+                    setShowForgotPassword(false);
+                }}
+                />
+                :
+                showLogin ? 
+                    <Login 
+                    showLogin={() => setShowLogin(!showLogin)} 
+                    showForgotPassword={() => setShowForgotPassword(!showForgotPassword)}
+                    />
                     :
-                    <SignUp showLogin={handleClick} />
+                    <SignUp showLogin={() => setShowLogin(!showLogin)} />
                 }
 
             </ Modal>

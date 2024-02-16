@@ -2,7 +2,7 @@ import { useState } from "react";
 import google_login from "../../../../assets/google_login.svg";
 import google_logo from "../../../../assets/web_light_rd_na.svg";
 
-export default function Login({ showLogin }) {
+export default function Login({ showLogin, showForgotPassword }) {
     const [usernameOrEmail, setUsernameOrEmail] = useState('');
     const [password, setPassword] = useState('');
   
@@ -50,7 +50,7 @@ export default function Login({ showLogin }) {
               >
                 Continue
               </button>
-              <a href="#" className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-800">
+              <a onClick={showForgotPassword} className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer">
                 Forgot Password?
               </a>
             </div>
