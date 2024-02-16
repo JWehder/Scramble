@@ -7,6 +7,7 @@ export default function ForgotPassword({ showLogin, showCode }) {
     e.preventDefault();
     // Handle email submission and code sending logic here
     console.log(email);
+    showCode();
   };
 
   return (

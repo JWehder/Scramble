@@ -5,6 +5,7 @@ import Login from "./User/components/auth/Login";
 import SignUp from "./User/components/auth/SignUp";
 import { useState } from "react";
 import ForgotPassword from "./User/components/auth/ForgotPassword";
+import EnterCode from "./User/components/auth/EnterCode";
 
 export default function Home({ setIsLoggedIn }) {
     const dispatch = useDispatch();
@@ -16,6 +17,10 @@ export default function Home({ setIsLoggedIn }) {
     const open = useSelector((state) => state.users.loginModal);
 
     function onClose() {
+        // set the forms to default
+        setShowLogin(true);
+        setShowForgotPassword(false);
+        setShowCode(false);
         dispatch(setLoginModal(false));
     }
 
@@ -28,10 +33,10 @@ export default function Home({ setIsLoggedIn }) {
 
                 { showForgotPassword ?
                 showCode ?
-                ""
+                <EnterCode />
                 :
                 <ForgotPassword 
-                showCode={() => setShowCode(!showCode)} 
+                showCode={() => setShowCode(true)} 
                 showLogin={() => {
                     setShowLogin(true);
                     setShowForgotPassword(false);
