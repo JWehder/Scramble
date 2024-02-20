@@ -1,11 +1,13 @@
 import { useDispatch } from 'react-redux';
 import { setLoginModal } from '../../state/userSlice';
+import { googleLogout } from '@react-oauth/google';
 
 export default function User() {
     const dispatch = useDispatch();
 
     function logout() {
         dispatch(setLoginModal(true));
+        googleLogout();
     };
 
     return (

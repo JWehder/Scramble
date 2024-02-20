@@ -12,6 +12,7 @@ flask-sqlalchemy = "*"
 flask-cors = "*"
 importlib-resources = "*"
 ipdb = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

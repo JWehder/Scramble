@@ -1,10 +1,12 @@
-from flask import request, make_response
+from flask import request, make_response, jsonify
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 import traceback
 from functools import wraps
 from config import app, api
 from config import Flask
+from dotenv import load_dotenv
+
 
 #HTTP Constants 
 HTTP_SUCCESS = 200
@@ -34,6 +36,21 @@ def get_tournaments():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+@app.route('/get_facebook_appId', methods=["GET"])
+def get_facebook_appId():
+    # Authentication: You might use a more secure method here
+    # For simplicity, let's assume the request comes from an allowed origin
+    if request.referrer and "http://localhost:3000/" in request.referrer:
+        import os
+
+        load_dotenv()
+
+        client_id = os.getenv("FACEBOOK_APP_ID")
+
+        return jsonify({"facebook_app_id": client_id}), HTTP_SUCCESS
+    else:
+        return jsonify({"error": "Unauthorized"}), HTTP_UNAUTHORIZED
+
 @app.route('/me', methods=['GET'])
 def auth():
     if request.method == 'GET':
@@ -45,14 +62,30 @@ def signup():
         pass
 
 @app.route('/logout', methods=['DELETE'])
-def signup():
+def logout():
     if request.method == 'DELETE':
         pass
 
 @app.route('/login', methods=['POST'])
-def signup():
+def login():
     if request.method == 'POST':
         pass
+
+@app.route("/get_client_id", methods=["GET"])
+def get_client_id():
+    # Authentication: You might use a more secure method here
+    # For simplicity, let's assume the request comes from an allowed origin
+    if request.referrer and "http://localhost:3000/" in request.referrer:
+        import os
+
+        load_dotenv()
+
+        client_id = os.getenv("CLIENT_ID")
+
+        return jsonify({"client_id": client_id}), HTTP_SUCCESS
+    else:
+        return jsonify({"error": "Unauthorized"}), HTTP_UNAUTHORIZED
+
 
 @app.route('/sets/<int:id>', methods=['GET', 'POST', 'DELETE'])
 def modify_sets(set_id):

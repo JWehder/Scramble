@@ -1,6 +1,8 @@
-import { useState } from "react";
-import google_login from "../../../../assets/google_login.svg";
+import { useState, useEffect } from "react";
 import google_logo from "../../../../assets/web_light_rd_na.svg";
+import { useGoogleLogin } from '@react-oauth/google';
+import Fb_logo from "../../../../assets/Facebook_Logo_Primary.png";
+import FacebookLoginButton from "./FacebookLoginButton";
 
 export default function Login({ showLogin, showForgotPassword }) {
     const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -11,6 +13,10 @@ export default function Login({ showLogin, showForgotPassword }) {
       // Handle login logic here
       console.log('Login with', usernameOrEmail, password);
     };
+
+    const loginWithGoogle = useGoogleLogin({
+        onSuccess: tokenResponse => console.log(tokenResponse),
+    });
   
     return (
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
@@ -55,13 +61,21 @@ export default function Login({ showLogin, showForgotPassword }) {
               </a>
             </div>
           </form>
-          <div className="mt-6 text-center flex justify-center items-center">
-            <button
-              className="flex justify-center items-center bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
-            >
-              <img src={google_logo} />
-              <span className="mx-2">Login with your Google Account</span>
-            </button>
+          <div>
+            <div className="mt-6 text-center flex justify-center items-center w-full">
+              <button
+                className="flex justify-center items-center bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
+                onClick={() => loginWithGoogle()}
+              >
+                <img src={google_logo} alt="google logo" />
+                <span className="mx-2">Login with Google</span>
+              </button>
+          </div>
+          <div>
+            <div className="mt-4 text-center flex justify-center items-center">
+                <FacebookLoginButton buttonText="Login with Facebook" />
+            </div>
+          </div>
           </div>
           <div className="mt-6 text-center">
             <p 

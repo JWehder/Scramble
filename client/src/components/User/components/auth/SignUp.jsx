@@ -1,5 +1,6 @@
 import { useState } from "react";
 import google_logo from "../../../../assets/web_light_rd_na.svg"
+import FacebookLoginButton from "./FacebookLoginButton";
 
 export default function SignUp({ showLogin }) {
   const [username, setUsername] = useState("");
@@ -130,8 +131,13 @@ export default function SignUp({ showLogin }) {
               className="flex justify-center items-center bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
             >
               <img src={google_logo} />
-              <span className="mx-2">Sign up with your Google Account</span>
+              <span className="mx-2">Sign up with Google</span>
             </button>
+        </div>
+        <div>
+            <div className="mt-4 text-center flex justify-center items-center">
+                <FacebookLoginButton buttonText="Sign up with Facebook" />
+            </div>
         </div>
       </form>
     </div>
