@@ -1,9 +1,10 @@
 import { GiGolfTee, GiGolfFlag } from "react-icons/gi";
 import { BiMessage } from "react-icons/bi";
 import { BiNews, BiSolidUser } from "react-icons/bi";
-import Tooltip from "../Utils/Tooltip";
+import Tooltip from "../../../Utils/components/Tooltip";
 import SidebarContent from "./SidebarContent";
-import GlowingWrapper from "../Utils/GlowingWrapper";
+import GlowingWrapper from "../../../Utils/components/GlowingWrapper";
+import User from "./User";
 
 export default function SideBar() {
 
@@ -70,7 +71,7 @@ export default function SideBar() {
                             direction = "left"
                             sidebar
                             >
-                                <SidebarContent type={"User"} />
+                                <User />
                             </Tooltip>
                             </GlowingWrapper>
                         </div>
