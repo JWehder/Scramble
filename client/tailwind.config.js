@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        lobster: ['Lobster Two', 'sans-serif'],
+      },
       colors: {
         primary: '#202225',
         secondary: '#5865f2'
