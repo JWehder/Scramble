@@ -6,7 +6,7 @@ import SignUp from "./User/components/auth/SignUp";
 import { useState } from "react";
 import ForgotPassword from "./User/components/auth/ForgotPassword";
 import EnterCode from "./User/components/auth/EnterCode";
-import Scramble_Homepage from "../assets/Scramble_Homepage_Image.png";
+import Scramble_Homepage from "../assets/green-image.png";
 
 export default function Home({ setIsLoggedIn }) {
     const dispatch = useDispatch();
@@ -28,23 +28,26 @@ export default function Home({ setIsLoggedIn }) {
     return (
         <div className="text-center">
             <div>
-                
+
             </div>
-            <div className="fixed top-0 w-full z-50 mb-1">
+            
+            <div className="fixed top-0 w-full z-50 mb-1 bg-white shadow-lg">
                 <div
-                className="p-0.5 bg-gradient-to-r from-green-100 via-green-300 to-green-900"
+                className="p-0.5 bg-gradient-to-r from-green-700 via-green-300 to-teal-300"
                 />
-                <h1
-                className="bg-gradient-to-r from-green-300 via-green-600 to-green-900 text-transparent bg-clip-text text-4xl font-lobster text-center mt-3">
-                    Scramble
-                </h1>
+                <div className="flex items-center justify-center">
+                    <h1
+                    className="bg-gradient-to-r from-green-400 via-green-600 to-green-900 text-transparent bg-clip-text text-4xl font-lobster text-center mt-3">
+                        Scramble
+                    </h1>
+                </div>
             </div>
 
-            <div>
+            <div className="flex items-center justify-center mt-20 w-full ml-7">
                 <img 
                 src={Scramble_Homepage} 
                 alt="Homepage Image" 
-                className="w-full h-1/8"
+                className="w-5/6 h-[500px] rounded-lg"
                 />
             </div>
 
