@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from '../../../Utils/components/Button';
 
 export default function ForgotPassword({ showLogin, showCode }) {
   const [email, setEmail] = useState('');
@@ -28,12 +29,9 @@ export default function ForgotPassword({ showLogin, showCode }) {
           />
         </div>
         <div className="flex items-center justify-between">
-            <button
-                className="bg-gradient-to-r from-teal-500 to-green-700 hover:bg-gradient-to-l text-white font-bold py-2 px-4 rounded-full focus:outline-none shadow-md"
-                type="submit"
-            >
-                Send Code
-            </button>
+            <Button type="submit">
+              Send Code
+            </Button>
             <p 
             onClick={showLogin}
             className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer"

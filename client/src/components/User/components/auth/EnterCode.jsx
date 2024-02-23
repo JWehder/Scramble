@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from '../../../Utils/components/Button';
 
 export default function EnterCode({ handleClick, resendCode }) {
   const [code, setCode] = useState('');
@@ -27,12 +28,9 @@ export default function EnterCode({ handleClick, resendCode }) {
           />
         </div>
         <div className="flex items-center justify-between">
-          <button
-            className="bg-gradient-to-r from-teal-500 to-green-700 hover:bg-gradient-to-l text-white font-bold py-2 px-4 rounded-full focus:outline-none shadow-md"
-            type="submit"
-          >
+          <Button type="Submit">
             Verify Code
-          </button>
+          </Button>
           <p onClick={resendCode} className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer">
             Didn't receive code? <a>Resend</a>
           </p>

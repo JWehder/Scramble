@@ -10,8 +10,8 @@ export default function SideBar() {
 
     return (
         <>
-            <div className="flex">
-                <div className="fixed top-0 left-0 h-screen w-16 flex flex-col bg-white text-white shadow-lg">
+            <div className="flex bg-gray-50 h-screen">
+                <div className="fixed top-0 left-0 h-screen w-16 flex flex-col bg-gray-50 text-white shadow-lg z-30">
                     <div className="flex-grow flex flex-col items-center">
                         <div className="my-16" />
                         <div className="mt-2 mb-2">

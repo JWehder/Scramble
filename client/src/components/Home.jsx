@@ -7,6 +7,7 @@ import { useState } from "react";
 import ForgotPassword from "./User/components/auth/ForgotPassword";
 import EnterCode from "./User/components/auth/EnterCode";
 import Scramble_Homepage from "../assets/green-image.png";
+import Button from "./Utils/components/Button";
 
 export default function Home({ setIsLoggedIn }) {
     const dispatch = useDispatch();
@@ -25,31 +26,75 @@ export default function Home({ setIsLoggedIn }) {
         dispatch(setLoginModal(false));
     };
 
+    function handleSignUpClick() {
+        dispatch(setLoginModal(true));
+        setShowLogin(false);
+    }
+
+    function handleLoginClick() {
+        dispatch(setLoginModal(true));
+        setShowLogin(true);
+    }
+
+    function handleGetTheAppClick() {
+
+    }
+
     return (
-        <div className="text-center">
-            <div>
-
-            </div>
+        <div className="bg-green-800">
             
-            <div className="fixed top-0 w-full z-50 mb-1 bg-white shadow-lg">
-                <div
-                className="p-0.5 bg-gradient-to-r from-green-700 via-green-300 to-teal-300"
-                />
-                <div className="flex items-center justify-center">
-                    <h1
-                    className="bg-gradient-to-r from-green-400 via-green-600 to-green-900 text-transparent bg-clip-text text-4xl font-lobster text-center mt-3">
-                        Scramble
-                    </h1>
-                </div>
-            </div>
+            <div className="fixed top-0 w-full z-50 mb-1 bg-gray-50 shadow-lg">
+                <div className="p-0.5 bg-gradient-to-r from-green-700 via-green-300 to-teal-300" />
+                    <div className="flex justify-center p-2">
+                    <div className="flex justify-between items-center w-full px-4">
+                        {/* First div */}
+                        <div className="flex-grow w-1/3" />
 
-            <div className="flex items-center justify-center mt-20 w-full ml-7">
-                <img 
-                src={Scramble_Homepage} 
-                alt="Homepage Image" 
-                className="w-5/6 h-[500px] rounded-lg"
-                />
-            </div>
+                        {/* Second div */}
+                        <div className="flex justify-center items-center w-1/3">
+                            <h1 className="text-4xl font-lobster text-center bg-gradient-to-r from-green-400 via-green-600 to-green-900 text-transparent bg-clip-text">
+                                Scramble
+                            </h1>
+                        </div>
+
+                        {/* Third div */}
+                        <div className="flex space-x-4 w-1/3">
+                            <Button
+                            handleClick={handleSignUpClick}
+                            >
+                                Sign Up
+                            </Button>
+                            <Button
+                            handleClick={handleLoginClick}
+                            >
+                                Login
+                            </Button>
+                            <Button
+                            handleClick={handleGetTheAppClick}
+                            >
+                                Get the App
+                            </Button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <div className="relative flex items-center justify-center mt-20 ml-7">
+                    <div className="flex items-center justify-center">
+                        <img 
+                            src={Scramble_Homepage} 
+                            alt="Homepage Image" 
+                            className="w-full h-[600px] object-cover rounded-lg"
+                        />
+                    </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <h1 className="text-4xl font-bold text-white">Fantasy Golf</h1>
+                        <p className="text-white text-lg mt-2">
+                            Watch Golf Like Never Before!
+                        </p>
+                        <Button className="mt-4">Get Started</Button>
+                    </div>
+                </div>
 
 
             <Modal open={open} onClose={onClose} title={"Login or Sign up"}>

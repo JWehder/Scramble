@@ -1,6 +1,7 @@
 import { useState } from "react";
 import google_logo from "../../../../assets/web_light_rd_na.svg"
 import FacebookLoginButton from "./FacebookLoginButton";
+import Button from "../../../Utils/components/Button";
 
 export default function SignUp({ showLogin }) {
   const [username, setUsername] = useState("");
@@ -110,12 +111,9 @@ export default function SignUp({ showLogin }) {
           </button>
         </div>
         <div className="flex items-center justify-between">
-          <button
-            className="bg-gradient-to-r from-teal-500 to-green-700 hover:bg-gradient-to-l text-white font-bold py-2 px-4 rounded focus:outline-none shadow-md"
-            type="submit"
-          >
+          <Button type="submit">
             Continue
-          </button>
+          </Button>
           <p 
           onClick={showLogin}
           className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer"
