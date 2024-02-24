@@ -29,11 +29,13 @@ export default function App() {
   }, []); 
 
   if(isLoggedIn) return (
-    <div>
+    <div className='bg-dark flex items-center justify-center'>
+      <div className='w-3/4'>
       <GoogleOAuthProvider clientId={clientId}>
         <Home setIsLoggedIn={setIsLoggedIn} />
-        <SideBar />
+        {/* <SideBar /> */}
       </GoogleOAuthProvider>;
+      </div>
     </div>
   ) 
   else return (

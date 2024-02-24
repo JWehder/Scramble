@@ -8,10 +8,12 @@ export default {
     extend: {
       fontFamily: {
         lobster: ['Lobster Two', 'sans-serif'],
+        PTSans: ["PT Sans", 'sans-serif']
       },
       colors: {
-        primary: '#202225',
-        secondary: '#5865f2'
+        dark: '#115e59',
+        middle: '#4ade80',
+        light: '#d1fae5'
       }
     }
   },
