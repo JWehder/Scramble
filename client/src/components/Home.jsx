@@ -7,8 +7,10 @@ import { useState } from "react";
 import ForgotPassword from "./User/components/auth/ForgotPassword";
 import EnterCode from "./User/components/auth/EnterCode";
 import Button from "./Utils/components/Button";
-import greenrounded from "../assets/green_rounded.png";
 import { FaArrowRightLong } from "react-icons/fa6";
+import HowToPlay from "./HowToPlay";
+import greenRounded from "../assets/green_rounded.png";
+
 
 export default function Home({ setIsLoggedIn }) {
     const dispatch = useDispatch();
@@ -27,42 +29,27 @@ export default function Home({ setIsLoggedIn }) {
         dispatch(setLoginModal(false));
     };
 
-    function handleSignUpClick() {
-        dispatch(setLoginModal(true));
-        setShowLogin(false);
-    }
-
-    function handleLoginClick() {
-        dispatch(setLoginModal(true));
-        setShowLogin(true);
-    }
-
-    function handleGetTheAppClick() {
-
-    }
-
     return (
-        <div className="bg-dark mt-2">
-
-                <div className="flex">
-                    <div className="flex-1 flex justify-end items-center">
-                        <div className="flex flex-col items-center justify-center">
-                            <h1 className="text-6xl font-bold text-light text-PTSans mb-6">Fantasy Golf</h1>
-                            <p className="text-light text-lg mb-6 ">Watch Golf Like Never Before!</p>
-                            <Button>
-                                Get Started <FaArrowRightLong className="animate-pulse ml-1"/> 
-                            </Button>
-                        </div>
+        <div className="mt-20">
+            <div className="flex-1 flex justify-center items-center min-vh-100 min-content">
+                <div className="flex flex-col items-center justify-center min-vh-100 min-content">
+                    <h1 className="text-7xl font-bold text-light font-PTSans mb-6">Fantasy Golf</h1>
+                    <p className="text-light text-xl mb-6 font-PTSans">Watch Golf Like Never Before!</p>
+                    <Button>
+                    Get Started 
+                    <div className="flex justify-center items-center">
+                        <FaArrowRightLong className="animate-pulse ml-1" /> 
                     </div>
-                    <div className="flex-1 flex justify-center">
-                        <img src={greenrounded} alt="Homepage Image" />
-                    </div>
+                    </Button>
                 </div>
-
-                <div>
-
+                <div className="flex-1 flex justify-center">
+                    <img
+                    src={greenRounded}
+                    alt="Homepage Image"
+                    className="object-cover"
+                    />
                 </div>
-
+            </div>
 
             <Modal open={open} onClose={onClose} title={"Login or Sign up"}>
                 { showForgotPassword ?
@@ -86,23 +73,9 @@ export default function Home({ setIsLoggedIn }) {
                     <SignUp showLogin={() => setShowLogin(!showLogin)} />
                 }
             </ Modal>
-            <p className="text-l font-bold underline text-center mt-14" onClick={() => setIsLoggedIn(false)}>Log Out</p>
-            <div className="mx-56 p-10">
-                <div className="grid mx-28 tb bg-gray-400 h-52 font-bold">
-                    <p className="self-center text-center">Banner</p>
-                </div>
-                <div className="grid grid-cols-3 gap-10 p-10 h-72">
-                    <div className="grid rounded bg-gray-400 font-bold">
-                        <p className="self-center text-center">How It Works</p>
-                    </div>
-                    <div className="grid rounded bg-gray-400 font-bold">
-                        <p className="self-center text-center">Rules of the Game</p>
-                    </div>
-                    <div className="grid rounded bg-gray-400 font-bold">
-                        <p className="self-center text-center">FAQ</p>
-                    </div>
-                </div>
-            </div>
+
+            <HowToPlay />
+                            
         </div>
     )
 }

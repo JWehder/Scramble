@@ -4,6 +4,7 @@ import LoggedOut from './components/LoggedOut'
 import SideBar from './components/User/components/sidebar/SideBar'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import axios from 'axios';
+import Header from './components/Header';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -30,7 +31,8 @@ export default function App() {
 
   if(isLoggedIn) return (
     <div className='bg-dark flex items-center justify-center'>
-      <div className='w-3/4'>
+      <Header />
+      <div className='w-11/12'>
       <GoogleOAuthProvider clientId={clientId}>
         <Home setIsLoggedIn={setIsLoggedIn} />
         {/* <SideBar /> */}
