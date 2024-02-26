@@ -11,8 +11,7 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import HowToPlay from "./HowToPlay";
 import greenRounded from "../assets/green_rounded.png";
 
-
-export default function Home({ setIsLoggedIn }) {
+export default function Home() {
     const dispatch = useDispatch();
 
     const [showLogin, setShowLogin] = useState(true);
@@ -32,8 +31,8 @@ export default function Home({ setIsLoggedIn }) {
     return (
         <div className="mt-20">
             <div className="flex-1 flex justify-center items-center min-vh-100 min-content">
-                <div className="flex flex-col items-center justify-center min-vh-100 min-content">
-                    <h1 className="text-7xl font-bold text-light font-PTSans mb-6">Fantasy Golf</h1>
+                <div className="flex flex-col min-vh-100 min-content">
+                    <h1 className="text-7xl font-bold text-light font-PTSans mb-6 z-50">Fantasy Golf</h1>
                     <p className="text-light text-xl mb-6 font-PTSans">Watch Golf Like Never Before!</p>
                     <Button>
                     Get Started 
@@ -50,6 +49,8 @@ export default function Home({ setIsLoggedIn }) {
                     />
                 </div>
             </div>
+
+            <HowToPlay />
 
             <Modal open={open} onClose={onClose} title={"Login or Sign up"}>
                 { showForgotPassword ?
@@ -73,9 +74,8 @@ export default function Home({ setIsLoggedIn }) {
                     <SignUp showLogin={() => setShowLogin(!showLogin)} />
                 }
             </ Modal>
-
-            <HowToPlay />
                             
         </div>
     )
 }
+

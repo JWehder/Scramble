@@ -29,7 +29,7 @@ export default function App() {
         });
   }, []); 
 
-  if(isLoggedIn) return (
+    return (
     <div className='bg-dark flex items-center justify-center'>
       <Header />
       <div className='w-11/12'>
@@ -40,9 +40,4 @@ export default function App() {
       </div>
     </div>
   ) 
-  else return (
-    <div>
-      <LoggedOut setIsLoggedIn={setIsLoggedIn} />
-    </div>
-  )
 }

@@ -27,28 +27,30 @@ export default function HowToPlay() {
         }
     ]
 
-
-
     return (
         <div className="min-vh-100 min-content">
         {/* Title on left, sections on right */}
-        <div className="flex flex-wrap md:flex-row h-full">
-            <div className="w-full md:w-1/4 flex items-center justify-center py-8 px-4 md:px-8">
-            <h1 className="text-5xl font-PTSans text-light text-left">How to Play</h1>
+            <div className="flex flex-wrap md:flex-row h-full">
+                <div className="w-full md:w-1/4 flex items-center justify-center py-8 px-4 md:px-8">
+                    <h1 className="text-6xl font-PTSans text-light text-left">
+                        How to Play
+                    </h1>
+                </div>
+                <div className="w-full md:w-3/4 flex flex-col items-start justify-center px-4 py-4 md:px-8 md:py-12">
+                    <div className="space-y-6">
+                    {sections.map((section, idx) => {
+                        return (
+                            <Section
+                            key={`Section${idx}`}
+                            desc={section.description}
+                            img={section.img}
+                            title={section.title}
+                            />
+                        )
+                    })}
+                    </div>
+                </div>
             </div>
-            <div className="w-full md:w-3/4 flex flex-col items-start justify-center px-4 py-4 md:px-8 md:py-12">
-            <div className="space-y-6">
-                {sections.map((section, idx) => {
-                <Section 
-                key={`Section${idx}`} 
-                desc={section.description}
-                img={section.img}
-                title={section.title}
-                />
-                })}
-            </div>
-            </div>
-        </div>
         </div>
     )
 }

@@ -11,9 +11,9 @@ export default {
         PTSans: ["PT Sans", 'sans-serif']
       },
       colors: {
-        dark: '#115e59',
-        middle: '#4ade80',
-        light: '#d1fae5'
+        dark: '#115e59', // teal 800
+        middle: '#a3e635', // lime 400
+        light: '#ecfccb' // lime 100
       }
     }
   },
