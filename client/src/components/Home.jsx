@@ -10,6 +10,7 @@ import Button from "./Utils/components/Button";
 import { FaArrowRightLong } from "react-icons/fa6";
 import HowToPlay from "./HowToPlay";
 import greenRounded from "../assets/green_rounded.png";
+import { motion } from "framer-motion";
 
 export default function Home() {
     const dispatch = useDispatch();
@@ -31,16 +32,26 @@ export default function Home() {
     return (
         <div className="mt-20">
             <div className="flex-1 flex justify-center items-center min-vh-100 min-content">
-                <div className="flex flex-col min-vh-100 min-content">
-                    <h1 className="text-7xl font-bold text-light font-PTSans mb-6 z-50">Fantasy Golf</h1>
-                    <p className="text-light text-xl mb-6 font-PTSans">Watch Golf Like Never Before!</p>
-                    <Button>
-                    Get Started 
-                    <div className="flex justify-center items-center">
-                        <FaArrowRightLong className="animate-pulse ml-1" /> 
+                <motion.div
+                variants={{
+                    hidden: { opacity: 0, y: 75 },
+                    visible: { opacity: 1, y: 0 }
+                }}
+                initial="hidden"
+                animate="visible"
+                transition={{ duration: 1.5, delay: 0.25 }}
+                className="flex flex-col min-vh-100 min-content">
+                    <h1 className="text-7xl font-bold text-light font-PTSans mb-6 z-25">Fantasy Golf</h1>
+                    <p className="text-light text-xl mb-6 font-PTSans z-25">Watch Golf Like Never Before!</p>
+                    <div className="w-1/2">
+                        <Button className="z-25">
+                        Get Started 
+                        <div className="flex justify-center items-center">
+                            <FaArrowRightLong className="animate-pulse ml-1" /> 
+                        </div>
+                        </Button>
                     </div>
-                    </Button>
-                </div>
+                </motion.div>
                 <div className="flex-1 flex justify-center">
                     <img
                     src={greenRounded}
@@ -74,6 +85,8 @@ export default function Home() {
                     <SignUp showLogin={() => setShowLogin(!showLogin)} />
                 }
             </ Modal>
+
+            
                             
         </div>
     )

@@ -1,10 +1,15 @@
 import PropTypes from 'prop-types';
+import { motion } from "framer-motion";
+
 
 export default function Section({ desc, img, title }) {
 
     return (
-        <div 
+        <motion.div 
         className="flex items-center justify-content"
+        initial={{ opacity: 0 }}
+        transition={{ duration: 1.5, delay: 0.25 }}
+        whileInView={{ opacity: 1 }}
         >
             <div className="w-3/4">
                 <h2 className="text-3xl text-left font-lobster mb-2 text-light">{title}
@@ -20,7 +25,7 @@ export default function Section({ desc, img, title }) {
                 className="object-cover"
                 />
             </div>
-        </div>
+        </motion.div>
     )
 }
 
