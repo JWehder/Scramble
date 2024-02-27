@@ -2,6 +2,7 @@ import friends from "../assets/friends_playing_rounded.png";
 import trophy from "../assets/trophy_rounded.png";
 import golfer from "../assets/golfer.png";
 import Section from "./Section";
+import golfLinks from "../assets/golf-links.png";
 
 export default function HowToPlay() {
     const sections = [
@@ -28,7 +29,8 @@ export default function HowToPlay() {
     ]
 
     return (
-        <div className="min-vh-100 min-content">
+        <div className="min-vh-100 min-content bg-local"
+        >
         {/* Title on left, sections on right */}
             <div className="flex flex-wrap md:flex-row h-full">
                 <div className="w-full md:w-1/4 flex items-center justify-center py-8 px-4 md:px-8">
