@@ -2,7 +2,6 @@ import friends from "../assets/friends_playing_rounded.png";
 import trophy from "../assets/trophy_rounded.png";
 import golfer from "../assets/golfer.png";
 import Section from "./Section";
-import golfLinks from "../assets/golf-links.png";
 
 export default function HowToPlay() {
     const sections = [

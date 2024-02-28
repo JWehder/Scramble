@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import { motion } from "framer-motion";
 
-
 export default function Section({ desc, img, title }) {
 
     return (

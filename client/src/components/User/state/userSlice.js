@@ -101,13 +101,13 @@ const userSlice = createSlice({
     initialState,
     reducers: {
         setEmailSent (state, action) {
-            state.emailSent = action.payload
+            state.emailSent = action.payload;
         },
         setSavedChanges (state, action) {
-            state.savedChanges = action.payload
+            state.savedChanges = action.payload;
         },
         setLoginModal (state, action) {
-            state.loginModal = action.payload
+            state.loginModal = action.payload;
         }
     },
     extraReducers: builder => {

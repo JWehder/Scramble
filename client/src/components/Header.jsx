@@ -1,4 +1,5 @@
 import { useDispatch } from 'react-redux';
+import { setLoginModal } from './User/state/userSlice';
 import Button from './Utils/components/Button';
 
 export default function Header({ setShowLogin }) {

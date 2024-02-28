@@ -1,5 +1,5 @@
 import Avatar from "../../../Utils/components/Avatar";
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
 import EllipsisButton from "./EllipsisButton";
 
 export default function Message({ data }) {
