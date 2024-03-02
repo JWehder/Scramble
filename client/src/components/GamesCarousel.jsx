@@ -44,7 +44,7 @@ export default function GamesCarousel() {
 
     return (
         <div
-        className='m-5 p-3'
+        className='p-4 bg-dark'
         >
             <h1 className='p-3 text-4xl text-light font-PTSans'>Popular Games</h1>
             <div 

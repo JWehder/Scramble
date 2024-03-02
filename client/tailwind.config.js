@@ -10,10 +10,14 @@ export default {
         lobster: ['Lobster Two', 'sans-serif'],
         PTSans: ["PT Sans", 'sans-serif']
       },
+      backgroundImage: {
+        'custom-gradient': 'linear-gradient(to right, #15803d, #86efac, #00ffbb)',
+      },
       colors: {
         dark: '#115e59', // teal 800
-        middle: '#a3e635', // lime 400
-        light: '#ecfccb' // lime 100
+        middle: '#059669', // emerald 600
+        light: '#ecfccb', // lime 100
+        mint: '#00ffbb',
       }
     }
   },

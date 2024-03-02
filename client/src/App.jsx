@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
-import Home from './components/Home'
-import LoggedOut from './components/LoggedOut'
-import SideBar from './components/User/components/sidebar/SideBar'
+import { useEffect, useState } from 'react';
+import Home from './components/Home';
+import SideBar from './components/User/components/sidebar/SideBar';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import axios from 'axios';
 import Header from './components/Header';
+import { useSelector } from 'react-redux';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [clientId, setClientId] = useState();
+
+  const signedIn = useSelector((state) => state.users.user);
 
   useEffect(() => {
     fetch('/api/tournaments')
@@ -21,7 +23,6 @@ export default function App() {
     axios.get('/api/get_client_id')
         .then(response => {
             setClientId(response.data.client_id);
-            console.log(clientId)
         })
         .catch(error => {
             // Handle errors if necessary
@@ -30,14 +31,18 @@ export default function App() {
   }, []); 
 
     return (
-    <div className='bg-dark flex items-center justify-center'>
+    <div className='w-full h-full relative'>
       <Header />
-      <div className='w-11/12'>
       <GoogleOAuthProvider clientId={clientId}>
-        <Home setIsLoggedIn={setIsLoggedIn} />
-        {/* <SideBar /> */}
-      </GoogleOAuthProvider>;
-      </div>
+        <Home />
+        {
+          signedIn ?
+          <SideBar />
+          // ""
+          :
+          ""
+        }
+      </GoogleOAuthProvider>
     </div>
   ) 
 }

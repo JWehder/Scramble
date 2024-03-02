@@ -20,8 +20,8 @@ export default function Header({ setShowLogin }) {
     };
 
     return (
-        <div className="fixed top-0 w-full z-50 mb-1 bg-teal-800 shadow-lg">
-        <div className="p-0.5 bg-gradient-to-r from-green-700 via-green-300 to-teal-300" />
+        <div className="fixed top-0 w-full z-35 mb-1 bg-dark shadow-lg">
+        <div className="p-0.5 bg-custom-gradient" />
             <div className="flex justify-center p-2">
             <div className="flex justify-between items-center w-full px-4">
                 {/* First div */}
