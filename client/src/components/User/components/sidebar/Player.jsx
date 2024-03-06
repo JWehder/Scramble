@@ -18,6 +18,8 @@ export default function Player({ score = 0, imgUrl, name, size }) {
         score = score.toString();
     }
 
+    const badgeSize = int(int(size) / 2)
+
     return (
         <>
             <PlayerTooltip

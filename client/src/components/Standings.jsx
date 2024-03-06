@@ -1,3 +1,5 @@
+import Starters from "./Utils/components/Starters";
+
 export default function Standings() {
     const data = [
         {
@@ -28,6 +30,7 @@ export default function Standings() {
               <tr className="text-xs font-medium text-light uppercase bg-dark border-b border-gray-200 text-center">
                 <th className="p-4">Rank</th>
                 <th className="p-4">Team Name</th>
+                <th className="p-4">Starters</th>
                 <th className="p-4">Score</th>
                 <th className="p-4">Top 10</th>
                 <th className="p-4">Missed Cuts</th>
@@ -37,12 +40,20 @@ export default function Standings() {
             <tbody>
               {sortedData.map((item, index) => (
                 <tr key={index} className="border-b border-gray-200 hover:bg-middle">
-                    <td className=" text-center p-4 whitespace-nowrap">{index + 1}</td>
-                    <td className="p-4 whitespace-nowrap">{item.teamName}</td>
-                    <td className="p-4 text-center">{item.score}</td>
-                    <td className="p-4 text-center">{item.top10}</td>
-                    <td className="p-4 text-center">{item.missedCuts}</td>
-                    <td className="p-4 text-center">{item.wins}</td>
+                    <td className=" text-center p-2 whitespace-nowrap">{index + 1}</td>
+                    <td className="p-2">
+                        <div className="flex-row flex justify-center items-center">
+                            {item.teamName}
+                        </div>  
+                        {/* <div className="flex-row flex justify-center items-center">
+                            <Starters />
+                        </div>   */}
+                    </td>
+                    <td className="p-2 text-center"><Starters /></td>
+                    <td className="p-2 text-center">{item.score}</td>
+                    <td className="p-2 text-center">{item.top10}</td>
+                    <td className="p-2 text-center">{item.missedCuts}</td>
+                    <td className="p-2 text-center">{item.wins}</td>
                 </tr>
               ))}
             </tbody>

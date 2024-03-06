@@ -7,8 +7,8 @@ export default function Dashboard() {
       <div className="w-full h-screen pt-20 pb-16 px-6">
         <div>
           <div className='w-full flex justify-center items-center flex-col'>
-            <div className='flex-row h-16 w-11/12 mb-5'>
-              {/* ... */}
+            <div className='flex-row h-16 w-11/12 mb-5 pl-14 flex items-center'>
+              <h1 className='text-4xl'>League Name</h1>
             </div>
             <div className='w-10/12 bg-light rounded-lg overflow-auto max-h-[500px]'> 
               <div className='border-b-black p-5 flex items-center justify-center'>
