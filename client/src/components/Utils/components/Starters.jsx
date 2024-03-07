@@ -10,7 +10,7 @@ export default function Starters() {
                     return <Player
                         imgUrl={""}        
                         name={player}
-                        size="10"
+                        size="sm"
                         score={-2}
                     />
                 })
