@@ -60,11 +60,22 @@ export default function Player({ score = 0, imgUrl, name, size, active }) {
                     <PlayerContent />
                 </PlayerTooltip>
                 :
-                <Avatar 
-                imgUrl={imgUrl}
-                name={name}
-                size={avatarSize}
-                />
+                <PlayerTooltip
+                player={
+                    <Avatar 
+                    imgUrl={imgUrl}
+                    name={name}
+                    size={avatarSize}
+                    />
+                }
+                >
+                    <div
+                    className='hover:visible opacity-75 bg-black text-white p-1 rounded-md absolute top-full mt-2 whitespace-nowrap text-small'
+                    >
+                        {name}
+                    </div>
+                </PlayerTooltip>
+
             
             }
 

@@ -30,7 +30,6 @@ export default function Standings() {
               <tr className="text-xs font-medium text-light uppercase bg-dark border-b border-gray-200 text-center">
                 <th className="p-4">Rank</th>
                 <th className="p-4">Team Name</th>
-                <th className="p-4">Starters</th>
                 <th className="p-4">Score</th>
                 <th className="p-4">Top 10</th>
                 <th className="p-4">Missed Cuts</th>
@@ -45,11 +44,10 @@ export default function Standings() {
                         <div className="flex-row flex justify-center items-center">
                             {item.teamName}
                         </div>  
-                        {/* <div className="flex-row flex justify-center items-center">
+                        <div className="flex-row flex justify-center items-center">
                             <Starters />
-                        </div>   */}
+                        </div>  
                     </td>
-                    <td className="p-2 text-center"><Starters /></td>
                     <td className="p-2 text-center">{item.score}</td>
                     <td className="p-2 text-center">{item.top10}</td>
                     <td className="p-2 text-center">{item.missedCuts}</td>
