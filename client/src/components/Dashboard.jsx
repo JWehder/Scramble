@@ -76,11 +76,6 @@ export default function Dashboard() {
                     <Leaderboard />
                 </div>
             }
-            { activeComponent === "Leaderboard" && 
-                <div className='flex items-center justify-center'>
-                    <Leaderboard />
-                </div>
-            }
             </div>
           </div>
           <div>

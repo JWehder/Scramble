@@ -1,5 +1,6 @@
 import PlayerData from "./PlayerData";
 import Team from "./Team";
+import Tourney from "./Tourney";
 
 export default function Leaderboard() {
     const players = [
@@ -59,11 +60,12 @@ export default function Leaderboard() {
     })
 
     return (
-        <div className="p-4 w-full overflow-auto h-[250px] md:h-[400px]">
-            <div className="w-full flex md:text-lg text-md">
+        <div className="p-4 w-full h-[250px] md:h-[400px] overflow-auto">
+            <Tourney />
+            <div className="w-full flex md:text-lg text-md p-3">
                 <div className="text-center flex w-3/6">
                     <div className="w-1/6">
-                        Rank
+                        Place
                     </div>
                     <div className="w-5/6">
                         Golfer
@@ -71,16 +73,16 @@ export default function Leaderboard() {
                 </div>
                 <div className="flex w-3/6 flex-row items-center">
                     <div className="flex flex-col w-1/3 items-center justify-center">
-                        Avg Score
+                        R1
                     </div>
                     <div className="flex flex-col w-1/3 items-center justify-center">
-                        Top 10s
+                        Thru
                     </div>
                     <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                        Avg Placing
+                        Total
                     </div>
                     <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                        Fedex Odds
+                        Projected Place
                     </div>
                 </div>
             </div>
