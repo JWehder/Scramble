@@ -1,7 +1,7 @@
-import RosterSpot from "./RosterSpot"
-import Avatar from "./Utils/components/Avatar"
+import PlayerData from "./PlayerData";
+import Team from "./Team";
 
-export default function Roster({ golferName, AvgScore, }) {
+export default function Roster() {
 
     const players = [
         {
@@ -22,7 +22,7 @@ export default function Roster({ golferName, AvgScore, }) {
     ]
 
     const displayRoster = players.map((player) => {
-        return <RosterSpot
+        return <PlayerData
                 name={player.name}
                 rank={player.rank}
                 age={player.age}
@@ -31,6 +31,7 @@ export default function Roster({ golferName, AvgScore, }) {
 
     return (
         <div className="p-4 w-full overflow-auto h-[250px] md:h-[400px]">
+            <Team />
             <div className="w-full flex md:text-lg text-md">
                 <div className="text-center flex w-3/6">
                     <div className="w-1/6">
@@ -55,7 +56,7 @@ export default function Roster({ golferName, AvgScore, }) {
                     </div>
                 </div>
             </div>
-
+            {displayRoster}
         </div>
     )
 }

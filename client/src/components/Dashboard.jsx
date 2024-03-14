@@ -46,6 +46,20 @@ export default function Dashboard() {
                     Team
                 </Button>
                 }
+                { activeComponent === "Leaderboard" ? 
+                <Button 
+                variant="primary" 
+                size="md"
+                >
+                    Leaderboard
+                </Button>
+                :
+                <Button
+                onClick={() => setActiveComponent("Leaderboard")}
+                >
+                    Leaderboard
+                </Button>
+                }
             </div>
             { activeComponent === "Standings" && 
                 <div className='flex items-center justify-center'>
@@ -57,6 +71,11 @@ export default function Dashboard() {
                     <Roster />
                 </div>
             } 
+            { activeComponent === "Leaderboard" && 
+                <div className='flex items-center justify-center'>
+                    <Leaderboard />
+                </div>
+            }
             { activeComponent === "Leaderboard" && 
                 <div className='flex items-center justify-center'>
                     <Leaderboard />

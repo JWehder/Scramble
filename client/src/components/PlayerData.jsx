@@ -1,6 +1,8 @@
-export default function RosterSpot({ rank, name, age }) {
+import Avatar  from "./Utils/components/Avatar";
+
+export default function PlayerData({ rank, name, age }) {
     return (
-        <div className="w-full flex bg-middle rounded-xl h-20 justify-center items-center opacity-90 hover:z-20 cursor-pointer hover:shadow-md flex-row border-box hover:brightness-110 md:text-md text-sm">
+        <div className="w-full flex bg-middle rounded-xl h-20 justify-center items-center opacity-90 hover:z-20 cursor-pointer hover:shadow-md flex-row border-box hover:brightness-110 md:text-md text-sm mb-2">
             <div className="text-center flex w-3/6 items-center">
                 <div className="w-1/6">
                     {rank}
