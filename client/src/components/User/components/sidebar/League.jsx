@@ -6,7 +6,7 @@ export default function League({ data }) {
 
     return (
             <div 
-            className='flex p-2 hover:bg-gray-700 rounded-md w-[350px]'
+            className='flex p-2 hover:bg-middle rounded-md w-[350px]'
             onMouseEnter={() => setShowLeaguePreview(true)}
             onMouseLeave={() => setShowLeaguePreview(false)}
             >

@@ -21,19 +21,28 @@ export default function Roster() {
         }
     ]
 
-    const displayRoster = players.map((player) => {
-        return <PlayerData
-                name={player.name}
-                rank={player.rank}
-                age={player.age}
-                />
+    const displayRoster = players.map((player, idx) => {
+        if (idx % 2 === 0) {
+            return <PlayerData
+            name={player.name}
+            rank={player.rank}
+            age={player.age}
+            even
+            />
+        } else {
+            return <PlayerData
+            name={player.name}
+            rank={player.rank}
+            age={player.age}
+            />
+        }
     })
 
     return (
-        <div className="p-4 w-full overflow-auto h-[250px] md:h-[400px]">
+        <div className="w-full overflow-auto h-[250px] md:h-[400px] text-light font-PTSans">
             <Team />
             <div className="w-full flex md:text-lg text-md">
-                <div className="text-center flex w-3/6">
+                <div className="text-center flex w-3/6 p-3">
                     <div className="w-1/6">
                         Rank
                     </div>

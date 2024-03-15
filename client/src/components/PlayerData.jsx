@@ -1,8 +1,11 @@
 import Avatar  from "./Utils/components/Avatar";
 
-export default function PlayerData({ rank, name, age }) {
+export default function PlayerData({ rank, name, age, even }) {
+
+    const brightness = even ? 'brightness-125' : '';
+
     return (
-        <div className="w-full flex bg-middle rounded-xl h-20 justify-center items-center opacity-90 hover:z-20 cursor-pointer hover:shadow-md flex-row border-box hover:brightness-110 md:text-md text-sm mb-2">
+        <div className={`w-full flex bg-middle h-20 justify-center items-center opacity-90 hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} md:text-md text-sm hover:b-1 my-1`}>
             <div className="text-center flex w-3/6 items-center">
                 <div className="w-1/6">
                     {rank}

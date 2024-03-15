@@ -16,8 +16,11 @@ export default function Dashboard() {
             <div className='flex-row h-16 w-11/12 mb-5 pl-14 flex items-center'>
               <h1 className='text-4xl'>League Name</h1>
             </div>
-            <div className='w-10/12 bg-light rounded-lg overflow-auto max-h-[500px]'> 
-            <div className='border-b-black p-5 flex items-center justify-center'>
+            <div>
+                
+            </div>
+            <div className='w-10/12 bg-middle rounded-lg overflow-auto min-h-[500px] h-[600px]'> 
+            <div className='p-5 flex items-center justify-center'>
                 { activeComponent === "Standings" ? 
                 <Button 
                 variant="primary" 

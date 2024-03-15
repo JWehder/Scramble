@@ -1,9 +1,15 @@
+import Switch from './Utils/components/Switch.tsx';
+import { useState } from 'react';
+
 export default function Tourney() {
+
+    const [checked, setChecked] = useState(false);
+
     return (
         <div>
-            <div className='flex-row h-16 w-11/12 mb-16 pl-14 flex'>
+            <div className='flex-row h-16 w-11/12 mb-16 pl-14 flex text-light font-PTSans'>
                 <div className="flex-1 items-center pb-2">   
-                    <h1 className='text-4xl'>Players Championship</h1>
+                    <h1 className='text-3xl'>Players Championship Leaderboard</h1>
                     <div className="mt-2">
                         <p>Date: March 14th - 17th</p>
                         <p>Course: Players Stadium Course</p>
@@ -19,15 +25,7 @@ export default function Tourney() {
                 </div>
             </div>
             <div class="p-4 text-center">
-                <label for="inMyLeagueCheckbox">
-                    <input 
-                    type="checkbox" 
-                    id="inMyLeagueCheckbox" 
-                    value="In My League" 
-                    class="text-middle"
-                    />
-                    In My League
-                </label>
+                <Switch checked={checked} setChecked={setChecked} />
             </div>
         </div>
 

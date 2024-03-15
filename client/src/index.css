@@ -9,14 +9,13 @@
 
     .sidebar-tooltip-container {
         @apply relative flex items-center justify-center
-        h-12 w-12 mx-auto shadow-lg bg-middle
-        hover:bg-middle hover:text-light hover:cursor-pointer
+        h-12 w-12 mx-auto shadow-lg bg-sand text-dark hover:cursor-pointer
         rounded-3xl ease-linear;
     }
 
     .sidebar-tooltip {
         @apply absolute w-auto p-2 m-2 min-w-max rounded-md
-        shadow-md text-light bg-zinc-500 text-xs font-bold transition-all duration-100 scale-0 origin-left z-50;
+        shadow-md text-light bg-dark text-xs font-bold transition-all duration-100 scale-0 origin-left z-50;
     }
 
     .tooltip-container {

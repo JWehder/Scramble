@@ -1,4 +1,4 @@
-import Starters from "./Utils/components/Starters";
+import TeamData from "./TeamData";
 
 export default function Standings() {
     const data = [
@@ -23,39 +23,49 @@ export default function Standings() {
 
     const sortedData = data.sort((a, b) =>  b.score - a.score);
 
+    const teams = sortedData.map((team, idx) => {
+        if (idx % 2 === 0) {
+          return <TeamData
+          team={team}
+          rank = {idx + 1}
+          even
+          />
+        } else {
+          return <TeamData
+          rank = {idx + 1}
+          team={team}
+          />
+        }
+    })
+
       return (
-        <div className="w-10/12 overflow-auto rounded-lg shadow-md">
-          <table className="w-full overflow-hidden">
-            <thead>
-              <tr className="text-xs font-medium text-light uppercase bg-dark border-b border-gray-200 text-center">
-                <th className="p-4">Rank</th>
-                <th className="p-4">Team Name</th>
-                <th className="p-4">Score</th>
-                <th className="p-4">Top 10</th>
-                <th className="p-4">Missed Cuts</th>
-                <th className="p-4">Wins</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedData.map((item, index) => (
-                <tr key={index} className="border-b border-gray-200 hover:bg-middle">
-                    <td className=" text-center p-2 whitespace-nowrap">{index + 1}</td>
-                    <td className="p-2">
-                        <div className="flex-row flex justify-center items-center">
-                            {item.teamName}
-                        </div>  
-                        <div className="flex-row flex justify-center items-center">
-                            <Starters />
-                        </div>  
-                    </td>
-                    <td className="p-2 text-center">{item.score}</td>
-                    <td className="p-2 text-center">{item.top10}</td>
-                    <td className="p-2 text-center">{item.missedCuts}</td>
-                    <td className="p-2 text-center">{item.wins}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="w-full h-full overflow-auto text-light font-PTSans">
+        <div className="w-full flex md:text-lg text-md p-3">
+            <div className="text-center flex w-3/6">
+                <div className="w-1/6">
+                    Rank
+                </div>
+                <div className="w-5/6">
+                    Team
+                </div>
+            </div>
+            <div className="flex w-3/6 flex-row items-center">
+                <div className="flex flex-col w-1/3 items-center justify-center">
+                    Score
+                </div>
+                <div className="flex flex-col w-1/3 items-center justify-center">
+                    Top 10s
+                </div>
+                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
+                    Missed Cuts
+                </div>
+                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
+                    Wins
+                </div>
+            </div>
         </div>
+        {teams}
+      </div>
+
       );
 }

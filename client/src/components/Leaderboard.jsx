@@ -51,16 +51,25 @@ export default function Leaderboard() {
         }
     ]
 
-    const displayRoster = players.map((player) => {
-        return <PlayerData
+    const displayRoster = players.map((player, idx) => {
+            if (idx % 2 === 0) {
+                return <PlayerData
+                name={player.name}
+                rank={player.rank}
+                age={player.age}
+                even
+                />
+            } else {
+                return <PlayerData
                 name={player.name}
                 rank={player.rank}
                 age={player.age}
                 />
+            }
     })
 
     return (
-        <div className="p-4 w-full h-[250px] md:h-[400px] overflow-auto">
+        <div className="w-full h-full overflow-auto text-light font-PTSans">
             <Tourney />
             <div className="w-full flex md:text-lg text-md p-3">
                 <div className="text-center flex w-3/6">
