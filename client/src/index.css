@@ -14,8 +14,8 @@
     }
 
     .sidebar-tooltip {
-        @apply absolute w-auto p-2 m-2 min-w-max rounded-md
-        shadow-md text-light bg-dark text-xs font-bold transition-all duration-100 scale-0 origin-left z-50;
+        @apply absolute w-auto m-2 min-w-max rounded-md
+        shadow-md text-light bg-middle text-xs font-bold transition-all duration-100 scale-0 origin-left z-50 opacity-90;
     }
 
     .tooltip-container {
@@ -27,7 +27,7 @@
 
     .tooltip {
         @apply min-w-max rounded-md
-        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 justify-center flex items-center z-50;
+        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 justify-center flex items-center z-[100];
     }
 
 }

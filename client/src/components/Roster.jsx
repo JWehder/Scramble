@@ -39,7 +39,7 @@ export default function Roster() {
     })
 
     return (
-        <div className="w-full overflow-auto h-[250px] md:h-[400px] text-light font-PTSans">
+        <div className="w-full overflow-auto h-full md:h-[400px] text-light font-PTSans">
             <Team />
             <div className="w-full flex md:text-lg text-md">
                 <div className="text-center flex w-3/6 p-3">

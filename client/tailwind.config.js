@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      zIndex: {
+        '100': '100',
+      },
       fontFamily: {
         lobster: ['Lobster Two', 'sans-serif'],
         PTSans: ["PT Sans", 'sans-serif']

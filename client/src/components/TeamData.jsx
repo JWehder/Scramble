@@ -6,7 +6,7 @@ export default function TeamData({ team, even, rank }) {
     const brightness = even ? 'brightness-125' : '';
 
     return (
-        <div className={`w-full flex bg-middle h-20 justify-center items-center opacity-90 hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} md:text-md text-sm hover:b-1 my-1`}>
+        <div className={`w-full flex bg-middle h-20 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} md:text-md text-sm hover:b-1 my-1`}>
         <div className="text-center flex w-3/6 items-center">
             <div className="w-1/6">
                 {rank}
@@ -14,16 +14,19 @@ export default function TeamData({ team, even, rank }) {
             <div className="w-5/6 text-left flex items-center pl-6">
                 <div className="flex-1 flex">
                     <div className="pl-3 flex-col flex items-center justify-center flex-1">
-                        <div>
-                            <Avatar /> {team.teamName}
+                        <div className="flex items-center">
+                            <Avatar 
+                                imgUrl=""
+                                team="team"
+                                size={'10'}
+                            /> 
+                            {team.teamName}
                         </div>
                     </div>
 
                     <div className="flex-1 flex justify-center items-center">
                         <Starters />
                     </div>
-
-
                 </div>
             </div>
         </div>
@@ -35,7 +38,7 @@ export default function TeamData({ team, even, rank }) {
                 {team.top10}
             </div>
             <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                {team.cuts}
+                {team.missedCuts}
             </div>
             <div className="flex flex-col w-1/3 items-center justify-center pr-2">
                 {team.wins}

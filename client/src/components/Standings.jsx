@@ -1,4 +1,5 @@
 import TeamData from "./TeamData";
+import LeagueInfo from "./LeagueInfo";
 
 export default function Standings() {
     const data = [
@@ -40,7 +41,8 @@ export default function Standings() {
 
       return (
         <div className="w-full h-full overflow-auto text-light font-PTSans">
-        <div className="w-full flex md:text-lg text-md p-3">
+          <LeagueInfo />
+        <div className="w-full flex md:text-lg text-md py-3">
             <div className="text-center flex w-3/6">
                 <div className="w-1/6">
                     Rank

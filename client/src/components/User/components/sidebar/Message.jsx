@@ -4,7 +4,7 @@ import EllipsisButton from "./EllipsisButton";
 
 export default function Message({ data }) {
     return (
-        <div className="flex hover:bg-gray-700 p-2 rounded-md w-[250px] h-[80px]">
+        <div className="flex p-2 rounded-md w-[250px] h-[80px]">
             <div>
                 <Avatar size={"14"} imgUrl={""} name="user 1"/>
             </div>
