@@ -6,12 +6,11 @@ import { useState } from 'react';
 import Leaderboard from './Leaderboard';
 import Players from './Players';
 import SquigglyUnderline from "../components/Utils/components/SquigglyLine"
+import Schedule from './Schedule';
 
 export default function Dashboard() {
 
-    const [activeComponent, setActiveComponent] = useState("Standings");
-
-    const [active, setActive] = useState(false);
+    const [activeComponent, setActiveComponent] = useState("Schedule");
 
     return (
       <div className="w-full h-full pt-20 pb-16">
@@ -29,62 +28,6 @@ export default function Dashboard() {
                         setActiveComponent={setActiveComponent}
                         active={activeComponent}
                         />
-                        {/* { activeComponent === "Standings" ? 
-                        <Button 
-                        size="spmd"
-                        >
-                            League
-                        </Button>
-                        :
-                        <Button
-                        onClick={() => setActiveComponent("Standings")}
-                        variant="special" 
-                        >
-                            League
-                        </Button>
-                        }
-                        { activeComponent === "Team" ? 
-                        <Button 
-                        size="spmd"
-                        >
-                            Team
-                        </Button>
-                        :
-                        <Button
-                        variant="special" 
-                        onClick={() => setActiveComponent("Team")}
-                        >
-                            Team
-                        </Button>
-                        }
-                        { activeComponent === "Leaderboard" ? 
-                        <Button 
-                        size="spmd"
-                        >
-                            Leaderboard
-                        </Button>
-                        :
-                        <Button
-                        onClick={() => setActiveComponent("Leaderboard")}
-                        variant="special" 
-                        >
-                            Leaderboard
-                        </Button>
-                        }
-                        { activeComponent === "Players" ? 
-                        <Button 
-                        size="spmd"
-                        >
-                            Players
-                        </Button>
-                        :
-                        <Button
-                        onClick={() => setActiveComponent("Players")}
-                        variant="special" 
-                        >
-                            Players
-                        </Button>
-                        } */}
                     </div>
                     { activeComponent === "Standings" && 
                         <div className='flex items-center justify-center'>
@@ -104,6 +47,11 @@ export default function Dashboard() {
                     { activeComponent === "Players" && 
                         <div className='flex items-center justify-center'>
                             <Players />
+                        </div>
+                    }
+                    { activeComponent === "Schedule" && 
+                        <div className='flex items-center justify-center'>
+                            <Schedule />
                         </div>
                     }
                     </div>
