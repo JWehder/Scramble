@@ -11,7 +11,7 @@ interface SquigglyUnderlineProps {
     active: string;
     setActiveComponent: (name: string) => void;
     items: NavigationItem[];
-  }
+}
   
 
 export default function SquigglyUnderline({
