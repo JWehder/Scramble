@@ -9,6 +9,7 @@ import EnterCode from "./User/components/auth/EnterCode";
 import HowToPlay from "./HowToPlay";
 import GamesCarousel from "./GamesCarousel";
 import Title from "./Title";
+import { redirect } from 'react-router-dom';
 
 export default function SignedOutHome() {
     const dispatch = useDispatch();
@@ -18,6 +19,7 @@ export default function SignedOutHome() {
     const [showCode, setShowCode] = useState(false);
 
     const open = useSelector((state) => state.users.loginModal);
+    const signedIn = useSelector((state) => state.users.user);
 
     function onClose() {
         // set the forms to default
@@ -26,6 +28,10 @@ export default function SignedOutHome() {
         setShowCode(false);
         dispatch(setLoginModal(false));
     };
+
+    if (signedIn) {
+        redirect("/leagues");
+    }
 
     return (
         <div>

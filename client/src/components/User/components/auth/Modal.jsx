@@ -5,8 +5,8 @@ export default function Modal({ open, children, onClose, title }) {
     return (
         <>
           {open && (
-            <div className="fixed z-50 inset-0 bg-gray-400 bg-opacity-50 backdrop-blur-xs overflow-auto py-4">
-              <div className="relative mx-auto max-w-2xl bg-white shadow-lg rounded-xl p-4">
+            <div className="fixed z-50 inset-0 bg-white bg-opacity-50 backdrop-blur-xs overflow-auto py-4">
+              <div className="relative mx-auto max-w-2xl bg-light shadow-lg rounded-xl p-4">
                 <div>
                     <h3 className="text-lg font-medium leading-6 text-dark text-PTSans mb-1 text-center p-1">
                         {title}

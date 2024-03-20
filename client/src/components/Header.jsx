@@ -7,12 +7,12 @@ export default function Header({ setShowLogin }) {
 
     function handleSignUpClick() {
         dispatch(setLoginModal(true));
-        setShowLogin(false);
+        dispatch(setShowLogin(false));
     };
 
     function handleLoginClick() {
         dispatch(setLoginModal(true));
-        setShowLogin(true);
+        dispatch(setShowLogin(true));
     };
 
     function handleGetTheAppClick() {
@@ -37,17 +37,20 @@ export default function Header({ setShowLogin }) {
                 {/* Third div */}
                 <div className="flex space-x-4 w-1/3">
                     <Button
-                    handleClick={handleSignUpClick}
+                    variant="primary"
+                    onClick={handleSignUpClick}
                     >
                         Sign Up
                     </Button>
                     <Button
-                    handleClick={handleLoginClick}
+                    variant="primary"
+                    onClick={handleLoginClick}
                     >
                         Login
                     </Button>
                     <Button
-                    handleClick={handleGetTheAppClick}
+                    variant="primary"
+                    onClick={handleGetTheAppClick}
                     >
                         Get the App
                     </Button>

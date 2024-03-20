@@ -3,10 +3,11 @@ import SideBar from './components/User/components/sidebar/SideBar';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import axios from 'axios';
 import Header from './components/Header';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/LeagueDashboard';
 import SignedOutHome from './components/SignedOutHome';
 import { useSelector } from 'react-redux';
-import { redirect } from "react-router-dom";
+import { redirect, Routes, Route } from "react-router-dom";
+import League from './components/League';
 
 export default function App() {
   const [clientId, setClientId] = useState();
@@ -40,25 +41,43 @@ export default function App() {
     return null;
   };
 
+  const leagueLoader = async () => {
+    return null;
+  };
+
+  const userLoader = async () => {
+    if (signedIn) {
+      return redirect("/leagues");
+    }
+    return null;
+  }
+
+  console.log(signedIn);
+
     return (
-    <div className='w-full h-full relative'>
+    <div className='w-full h-screen relative'>
       <Header />
       <GoogleOAuthProvider clientId={clientId}>
         <div className='w-full bg-dark h-full'>
-            {
-                signedIn ?
-                  <Dashboard />
-                :
-                  <SignedOutHome />
-            }
+          <Routes>
+            <Route 
+              path='/' 
+              element={<SignedOutHome />}
+              loader={userLoader()}
+            />
+            <Route 
+            exact
+            path='/leagues' 
+            element={<><League /> <SideBar /></>}
+            loader={leagueLoader()}
+            />
+            <Route 
+                path="/leagues/:id"
+                element={<Dashboard />} 
+                loader={leagueLoader()}
+              />
+          </Routes>
         </div>
-        {
-          signedIn ?
-          <SideBar />
-          // ""
-          :
-          ""
-        }
       </GoogleOAuthProvider>
     </div>
   ) 
