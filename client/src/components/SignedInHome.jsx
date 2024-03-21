@@ -1,15 +1,14 @@
-import SideBar from "./User/components/sidebar/SideBar";
-import LeagueDashboard from "./LeagueDashboard";
-import { Routes, Route } from "react-router-dom";
+import SideBar from "./User/components/sidebar/Sidebar";
+import { Outlet } from "react-router-dom";
 
 export default function SignedInHome() {
+
     return ( 
         <div className="w-full h-full pt-20 pb-16">
-            
-            <Routes>
-                <Route exact path="/leagues/:id" element={LeagueDashboard} />
-                <Route path="/leagues" element={}
-            </Routes>
+            <SideBar />
+            <div className='w-full flex justify-center items-center flex-col'>
+                <Outlet />
+            </div>
         </div>
     )
 }
