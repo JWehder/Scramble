@@ -1,11 +1,11 @@
-import Modal from "./User/components/auth/modal"
-import { useSelector, useDispatch } from 'react-redux';
-import { setLoginModal } from "./User/state/userSlice";
-import Login from "./User/components/auth/Login";
-import SignUp from "./User/components/auth/SignUp";
 import { useState } from "react";
-import ForgotPassword from "./User/components/auth/ForgotPassword";
-import EnterCode from "./User/components/auth/EnterCode";
+import ForgotPassword from "../auth/ForgotPassword";
+import EnterCode from "../auth/EnterCode";
+import Modal from "../auth/modal"
+import { useSelector, useDispatch } from 'react-redux';
+import { setLoginModal } from "../../state/userSlice";
+import Login from "../auth/Login";
+import SignUp from "../auth/SignUp";
 import HowToPlay from "./HowToPlay";
 import GamesCarousel from "./GamesCarousel";
 import Title from "./Title";

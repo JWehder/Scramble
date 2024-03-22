@@ -1,4 +1,4 @@
-import Avatar  from "./Utils/components/Avatar";
+import Avatar  from "../../../Utils/components/Avatar";
 
 export default function PlayerData({ rank, name, age, even }) {
 

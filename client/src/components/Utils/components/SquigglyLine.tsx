@@ -25,14 +25,12 @@ export default function SquigglyUnderline({
       {items.map((item) => {
         const isSelected = active === item.name
         return (
-          <Button
+          <button
             key={item.name}
-            variant={'special'}
             onClick={() => setActiveComponent(item.name)}
             type='button'
-            size=''
+            className="text-lg bg-dark text-light relative leading-6 font-lobster flex justify-center items-center rounded-full focus:outline-none p-2 mx-2"
             disabled={false}
-
           >
             {item.name}
                 { isSelected ?   (
@@ -58,7 +56,7 @@ export default function SquigglyUnderline({
                 </svg>
               </motion.div>
             ) : null}
-           </Button>
+           </button>
         );
       })}
     </div>

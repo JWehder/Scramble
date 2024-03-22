@@ -1,5 +1,5 @@
-import Starters from "./Utils/components/Starters";
-import Avatar from "./Utils/components/Avatar";
+import Starters from "../../../Utils/components/Starters";
+import Avatar from "../../../Utils/components/Avatar";
 
 export default function TeamData({ team, even, rank }) {
 

@@ -1,13 +1,13 @@
-import SideBar from "./User/components/sidebar/Sidebar";
+import SideBar from "../sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
 import { useState } from "react";
-import ForgotPassword from "./User/components/auth/ForgotPassword";
-import EnterCode from "./User/components/auth/EnterCode";
-import Modal from "./User/components/auth/modal"
+import ForgotPassword from "../auth/ForgotPassword";
+import EnterCode from "../auth/EnterCode";
+import Modal from "../auth/modal"
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoginModal } from "./User/state/userSlice";
-import Login from "./User/components/auth/Login";
-import SignUp from "./User/components/auth/SignUp";
+import { setLoginModal } from "../../state/userSlice";
+import Login from "../auth/Login";
+import SignUp from "../auth/SignUp";
 
 export default function SignedInHome() {
 

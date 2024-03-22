@@ -1,4 +1,4 @@
-import Switch from '../../../Utils/components/Switch.js';
+import Switch from '../../../Utils/components/Switch';
 import { useState } from 'react';
 
 export default function Tourney() {

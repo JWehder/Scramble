@@ -1,4 +1,4 @@
-import Button from "./Utils/components/Button";
+import Button from "../../../Utils/components/Button";
 
 export default function Team() {
     return (

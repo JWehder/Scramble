@@ -4,8 +4,8 @@ import StrokePlayQuickView from "./StrokePlayQuickView"
 export default function LeaguesList() {
     const leagues = [
         {
-            leagueName: "League",
-            leagueType: "Strokes Play",
+            name: "League",
+            type: "Stroke Play",
             myCurrentPlace: "6th",
             teamAhead: {
                 teamName: "team4",
@@ -39,8 +39,8 @@ export default function LeaguesList() {
             team2Score: -5
         },
         {
-            leagueName: "League",
-            leagueType: "Best Ball",
+            name: "League",
+            type: "Best Ball",
             myCurrentPlace: 6,
             teamAhead: {
                 teamName: "team4",
@@ -67,7 +67,7 @@ export default function LeaguesList() {
     return (
         <div className="flex gap-2 h-full w-full flex-col">
             <MatchPlayQuickView league={leagues[1]} />
-            <StrokePlayQuickView league={leagues[2]} />
+            <StrokePlayQuickView league={leagues[0]} />
         </div>
     )
 }

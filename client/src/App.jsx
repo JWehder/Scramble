@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import axios from 'axios';
-import Header from './components/Header';
+import Header from './components/Utils/components/Header';
 import { useSelector } from 'react-redux';
 import { Outlet } from "react-router-dom";
 

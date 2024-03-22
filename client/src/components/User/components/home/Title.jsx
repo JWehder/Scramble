@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import greenRounded from "../assets/green_rounded.png";
+import greenRounded from "../../../../assets/green_rounded.png";
 import { useDispatch } from 'react-redux';
-import { setLoginModal } from "./User/state/userSlice";
-import Button from "./Utils/components/Button";
+import { setLoginModal } from "../../state/userSlice";
+import Button from "../../../Utils/components/Button";
 
 export default function Title() {
     const dispatch = useDispatch();

@@ -1,6 +1,6 @@
-import friends from "../assets/friends_playing_rounded.png";
-import trophy from "../assets/trophy_rounded.png";
-import golfer from "../assets/golfer.png";
+import friends from "../../../../assets/friends_playing_rounded.png";
+import trophy from "../../../../assets/trophy_rounded.png";
+import golfer from "../../../../assets/golfer.png";
 import Section from "./Section";
 
 export default function HowToPlay() {

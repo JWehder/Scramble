@@ -3,26 +3,26 @@ import { Link } from "react-router-dom";
 
 export default function StrokePlayQuickView({ league }) {
 
-    const sortedArray = [{...league.teamAhead, place: league}, league.myTeam, league.teamBehind];
+    const myTeam = league.myTeam;
 
-    const teams = sortedArray.map((team, idx) => {
-        if (idx % 2 === 0) {
-            return <TeamData
-            team={team}
-            rank = {team.rank}
-            even
-            />
-          } else {
-            return <TeamData
-            rank = {team.rank}
-            team={team}
-            />
-          }
-    })
+    // const teams = sortedArray.map((team, idx) => {
+    //     if (idx % 2 === 0) {
+    //         return <TeamData
+    //         team={team}
+    //         rank = {team.rank}
+    //         even
+    //         />
+    //       } else {
+    //         return <TeamData
+    //         rank = {team.rank}
+    //         team={team}
+    //         />
+    //       }
+    // })
 
     return (
         <div className="w-full font-PTSans text-light flex-col flex justify-center items-center my-2">
-            <div className="flex-row ">
+            <div className="flex-row">
                 <h1 className="text-2xl">{league.name}</h1>
                 <h1 className="text-md">{league.type}</h1>
             </div>
@@ -53,7 +53,10 @@ export default function StrokePlayQuickView({ league }) {
                                 </div>
                             </div>
                         </div>
-                        {teams}
+                        <TeamData
+                            team={myTeam}
+                            rank = {myTeam.rank}
+                        />
                     </div>
                 </Link>
             </div>

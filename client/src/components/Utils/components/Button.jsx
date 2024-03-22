@@ -10,7 +10,6 @@ export default function Button({ children, type, onClick, size, variant, disable
         // Variant styles (optional)
         variant === 'primary' && 'bg-middle text-light',
         variant === 'secondary' && 'bg-middle border-2 border-middle hover:border-light text-light',
-        variant === 'special' && 'text-lg bg-middle text-light relative leading-6 font-lobster',
         // Disabled styles
         disabled && 'opacity-50 cursor-not-allowed',
       ];

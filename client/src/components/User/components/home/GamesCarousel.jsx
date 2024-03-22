@@ -1,8 +1,8 @@
 import { useRef } from 'react';
-import golfLinks from '../assets/golf-links.png';
+import golfLinks from '../../../../assets/golf-links.png';
 import GameCard from './GameCard';
-import BackButton from './Utils/components/BackButton';
-import NextButton from './Utils/components/NextButton';
+import BackButton from '../../../Utils/components/BackButton';
+import NextButton from '../../../Utils/components/NextButton';
 
 export default function GamesCarousel() {
 
