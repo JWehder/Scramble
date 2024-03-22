@@ -1,4 +1,4 @@
-export default function LeagueLi() {
+export default function BestBallQuickView() {
     return (
         <div>
             

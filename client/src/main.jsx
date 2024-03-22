@@ -5,10 +5,10 @@ import './index.css'
 import store from './store.jsx';
 import { Provider } from "react-redux";
 import { BrowserRouter, RouterProvider, createBrowserRouter } from "react-router-dom";
-import SignedOutHome from './components/SignedOutHome.jsx';
-import SignedInHome from './components/SignedInHome.jsx';
-import Dashboard from './components/Dashboard.jsx';
-import LeagueDashboard from './components/LeagueDashboard.jsx';
+import SignedOutHome from './components/User/components/home/SignedOutHome.jsx'
+import SignedInHome from './components/User/components/home/SignedInHome.jsx';
+import Dashboard from './components/User/components/home/Dashboard.jsx';
+import LeagueDashboard from './components/User/components/home/LeagueDashboard.jsx';
 import ErrorPage from './components/Utils/components/ErrorPage.jsx';
 
 // import { ApolloServer } from '@apollo/server';

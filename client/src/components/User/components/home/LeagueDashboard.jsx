@@ -22,7 +22,7 @@ export default function LeagueDashboard() {
 
     return (
         <>
-            <div className='flex-row h-16 w-11/12 mb-5 pl-14 flex items-center'>
+            <div className='flex-row h-16 w-11/12 mb-5 pl-14 flex items-center text-light font-PTSans'>
                 <h1 className='text-4xl'>
                     League Name
                 </h1>

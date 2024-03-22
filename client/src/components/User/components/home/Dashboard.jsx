@@ -4,6 +4,7 @@ import SquigglyUnderline from "./Utils/components/SquigglyLine"
 import Schedule from './Schedule';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import LeaguesList from './LeaguesList';
 
 export default function Dashboard() {
     const { leagueId } = useParams();
@@ -37,7 +38,7 @@ export default function Dashboard() {
                     }
                     { activeComponent === "Leagues" && 
                         <div className='flex items-center justify-center'>
-                            <Schedule />
+                            <LeaguesList />
                         </div>
                     }
                 </div>
