@@ -1,6 +1,7 @@
 import { useState } from "react";
 import google_logo from "../../../../assets/web_light_rd_na.svg"
 import FacebookLoginButton from "./FacebookLoginButton";
+import Button from "../../../Utils/components/Button";
 
 export default function SignUp({ showLogin }) {
   const [username, setUsername] = useState("");
@@ -22,11 +23,11 @@ export default function SignUp({ showLogin }) {
   };
 
   return (
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="bg-light shadow-md rounded px-8 pt-6 pb-8 mb-4 text-middle">
       <h1 className="text-2xl font-medium text-center mb-4">Sign Up</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="username">
+          <label className="block text-sm font-bold mb-2" htmlFor="username">
             Username
           </label>
           <input
@@ -39,7 +40,7 @@ export default function SignUp({ showLogin }) {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="email">
+          <label className="block text-sm font-bold mb-2" htmlFor="email">
             Email
           </label>
           <input
@@ -52,7 +53,7 @@ export default function SignUp({ showLogin }) {
           />
         </div>
         <div className="mb-4 relative">
-          <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="password">
+          <label className="block text-sm font-bold mb-2" htmlFor="password">
             Password
           </label>
           <input
@@ -64,7 +65,7 @@ export default function SignUp({ showLogin }) {
             onChange={(e) => setPassword(e.target.value)}
           />
           <button
-            className="absolute right-0 top-0 mt-2 mr-4 text-green-400 hover:text-green-600"
+            className="absolute right-0 top-0 mt-2 mr-4 hover:text-green-600"
             onClick={() => handlePasswordToggle("password")}
           >
             <svg
@@ -81,7 +82,7 @@ export default function SignUp({ showLogin }) {
         </button>
         </div>
         <div className="mb-4 relative">
-        <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="confirmPassword">
+        <label className="block text-sm font-bold mb-2" htmlFor="confirmPassword">
             Confirm Password
           </label>
           <input
@@ -93,7 +94,7 @@ export default function SignUp({ showLogin }) {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <button
-            className="absolute right-0 top-0 mt-2 mr-4 text-green-400 hover:text-green-600"
+            className="absolute right-0 top-0 mt-2 mr-4 hover:text-green-600"
             onClick={() => handlePasswordToggle("confirmPassword")}
           >
             <svg
@@ -110,15 +111,16 @@ export default function SignUp({ showLogin }) {
           </button>
         </div>
         <div className="flex items-center justify-between">
-          <button
-            className="bg-gradient-to-r from-teal-500 to-green-700 hover:bg-gradient-to-l text-white font-bold py-2 px-4 rounded focus:outline-none shadow-md"
-            type="submit"
+          <Button 
+          type="submit"
+          variant="primary"
+          size="md"
           >
             Continue
-          </button>
+          </Button>
           <p 
           onClick={showLogin}
-          className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer"
+          className="inline-block align-baseline font-bold text-sm hover:text-green-600 cursor-pointer"
           >
             Already have an account?{' '}
             <a>
@@ -128,7 +130,7 @@ export default function SignUp({ showLogin }) {
         </div>
         <div className="mt-6 text-center flex justify-center items-center">
             <button
-              className="flex justify-center items-center bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
+              className="flex justify-center items-center bg-light hover:brightness-110 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
             >
               <img src={google_logo} />
               <span className="mx-2">Sign up with Google</span>

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import google_logo from "../../../../assets/web_light_rd_na.svg";
 import { useGoogleLogin } from '@react-oauth/google';
-import Fb_logo from "../../../../assets/Facebook_Logo_Primary.png";
 import FacebookLoginButton from "./FacebookLoginButton";
+import Button from "../../../Utils/components/Button";
 
 export default function Login({ showLogin, showForgotPassword }) {
     const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -19,11 +19,11 @@ export default function Login({ showLogin, showForgotPassword }) {
     });
   
     return (
-        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div className="bg-light shadow-md rounded px-8 pt-6 pb-8 mb-4 font-PTSans text-middle">
           <h1 className="text-2xl font-medium text-center mb-4">Login</h1>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="usernameOrEmail">
+              <label className="block text-sm font-bold mb-2" htmlFor="usernameOrEmail">
                 Username or Email
               </label>
                 <input
@@ -37,7 +37,7 @@ export default function Login({ showLogin, showForgotPassword }) {
 
             </div>
             <div className="mb-6">
-              <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="password">
+              <label className="block text-sm font-bold mb-2" htmlFor="password">
                 Password
               </label>
               <input
@@ -50,13 +50,14 @@ export default function Login({ showLogin, showForgotPassword }) {
               />
             </div>
             <div className="flex items-center justify-between">
-              <button
-                className="bg-gradient-to-r from-teal-500 to-green-700 hover:bg-gradient-to-l text-white font-bold py-2 px-4 rounded focus:outline-none shadow-md"
-                type="submit"
+              <Button 
+              variant="primary" 
+              type="submit"
+              size="md"
               >
                 Continue
-              </button>
-              <a onClick={showForgotPassword} className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer">
+              </Button>
+              <a onClick={showForgotPassword} className="inline-block align-baseline font-bold text-sm hover:text-green-600 cursor-pointer">
                 Forgot Password?
               </a>
             </div>
@@ -64,7 +65,7 @@ export default function Login({ showLogin, showForgotPassword }) {
           <div>
             <div className="mt-6 text-center flex justify-center items-center w-full">
               <button
-                className="flex justify-center items-center bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
+                className="flex justify-center items-center bg-light hover:brightness-110 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
                 onClick={() => loginWithGoogle()}
               >
                 <img src={google_logo} alt="google logo" />
@@ -80,7 +81,7 @@ export default function Login({ showLogin, showForgotPassword }) {
           <div className="mt-6 text-center">
             <p 
             onClick={showLogin}
-            className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer"
+            className="inline-block align-baseline font-bold text-sm text-middle hover:text-green-600 cursor-pointer"
             >
               Don't have an account?{' '}
               <a>

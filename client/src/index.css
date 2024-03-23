@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,14 +9,13 @@
 
     .sidebar-tooltip-container {
         @apply relative flex items-center justify-center
-        h-12 w-12 mx-auto shadow-lg bg-gray-800 
-        hover:bg-green-600 hover:text-white hover:cursor-pointer
-        rounded-3xl hover:rounded-xl transition-all duration-300 ease-linear;
+        h-12 w-12 mx-auto shadow-lg bg-sand text-dark hover:cursor-pointer
+        rounded-3xl ease-linear;
     }
 
     .sidebar-tooltip {
-        @apply absolute w-auto p-2 m-2 min-w-max rounded-md
-        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 origin-left;
+        @apply absolute w-auto m-2 min-w-max rounded-md
+        shadow-md text-light bg-middle text-xs font-bold transition-all duration-100 scale-0 origin-left z-50 opacity-90;
     }
 
     .tooltip-container {
@@ -25,7 +27,15 @@
 
     .tooltip {
         @apply min-w-max rounded-md
-        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 justify-center flex items-center;
+        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 justify-center flex items-center z-[100];
     }
 
+}
+
+.lobster-two-regular-italic {
+    font-family: "Lobster Two", sans-serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: xx-large;
+    color: green;
 }

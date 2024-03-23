@@ -1,14 +1,13 @@
 from flask import request, make_response, jsonify
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
-import traceback
 from functools import wraps
-from config import app, api
+from config import app
 from config import Flask
 from dotenv import load_dotenv
 
 
-#HTTP Constants 
+# HTTP Constants 
 HTTP_SUCCESS = 200
 HTTP_CREATED = 201
 HTTP_NO_CONTENT = 204

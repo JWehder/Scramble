@@ -36,14 +36,15 @@ export default function DropoutItem({ type }) {
 
     return (
         <>
-            <div className="flex items-center justify-center flex-col">
-                { userData ?
-                userData.slice(0, 3).map((datapoint, idx) => <Component data={datapoint} key={`${datapoint}-${idx}`} />)
-                :
-                `there are no ${type.toLowerCase()}s to display: ${userData}`
-                }
+            <div className="flex items-center justify-center flex-col w-full">
+                    { userData ?
+                    userData.slice(0, 3).map((datapoint, idx) => <Component data={datapoint} key={`${datapoint}-${idx}`} />)
+                    :
+                    `there are no ${type.toLowerCase()}s to display: ${userData}`
+                    }
+
                 <div 
-                className="divide-x divide-x-slate-700 p-2 hover:bg-slate-700 rounded-md w-24">
+                className="divide-x divide-x-slate-700 p-2 bg-middle hover: brightness-125 rounded-md w-full">
                     See more...
                 </div>
             </div>

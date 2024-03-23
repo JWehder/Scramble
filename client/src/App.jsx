@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
-import Home from './components/Home'
-import LoggedOut from './components/LoggedOut'
-import SideBar from './components/User/components/sidebar/SideBar'
+import { useEffect, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import axios from 'axios';
+import Header from './components/Utils/components/Header';
+import { useSelector } from 'react-redux';
+import { Outlet } from "react-router-dom";
 
-export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export default function App({children}) {
   const [clientId, setClientId] = useState();
+
+  const signedIn = useSelector((state) => state.users.user);
 
   useEffect(() => {
     fetch('/api/tournaments')
@@ -20,7 +21,6 @@ export default function App() {
     axios.get('/api/get_client_id')
         .then(response => {
             setClientId(response.data.client_id);
-            console.log(clientId)
         })
         .catch(error => {
             // Handle errors if necessary
@@ -28,17 +28,14 @@ export default function App() {
         });
   }, []); 
 
-  if(isLoggedIn) return (
-    <div>
-      <GoogleOAuthProvider clientId={clientId}>
-        <Home setIsLoggedIn={setIsLoggedIn} />
-        <SideBar />
-      </GoogleOAuthProvider>;
-    </div>
-  ) 
-  else return (
-    <div>
-      <LoggedOut setIsLoggedIn={setIsLoggedIn} />
-    </div>
-  )
+  return (
+  <div className='w-full h-screen relative'>
+    <Header />
+    <GoogleOAuthProvider clientId={clientId}>
+      <div className='w-full bg-dark h-full'>
+        <Outlet />
+      </div>
+    </GoogleOAuthProvider>
+  </div>
+) 
 }
