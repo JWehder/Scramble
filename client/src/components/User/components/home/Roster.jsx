@@ -1,5 +1,5 @@
 import PlayerData from "./PlayerData";
-import Team from "./Team";
+import Team from "./TeamInfo";
 
 export default function Roster() {
 

@@ -68,8 +68,10 @@ export default function Players() {
     })
 
     return (
-        <div className="w-full h-full overflow-auto text-light font-PTSans">
-            <h1 className="text-4xl">Available Players</h1>
+        <div className="w-full h-full overflow-auto text-light font-PTSans break-all">
+            <div>
+                <h1 className="text-4xl">Available Players</h1>
+            </div>
             <div className="w-full flex md:text-lg text-md p-3">
                 <div className="text-center flex w-3/6">
                     <div className="w-1/6">

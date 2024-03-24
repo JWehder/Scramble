@@ -18,7 +18,7 @@ export default function Dashboard() {
 
     return (
         <>
-            <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans'>
+            <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans py-2'>
                 <div className='w-1/3 flex items-center justify-center'>
                     <h1 className='text-4xl'>
                         Your Leagues

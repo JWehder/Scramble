@@ -41,31 +41,31 @@ export default function Standings() {
 
       return (
         <div className="w-full h-full overflow-auto text-light font-PTSans">
-          <LeagueInfo />
-        <div className="w-full flex md:text-lg text-md">
-            <div className="text-center flex w-3/6">
-                <div className="w-1/6">
-                    Rank
+            <LeagueInfo />
+            <div className="w-full flex md:text-lg text-md">
+                <div className="text-center flex w-3/6">
+                    <div className="w-1/6">
+                        Rank
+                    </div>
+                    <div className="w-5/6">
+                        Team
+                    </div>
                 </div>
-                <div className="w-5/6">
-                    Team
+                <div className="flex w-3/6 flex-row items-center">
+                    <div className="flex flex-col w-1/3 items-center justify-center">
+                        Score
+                    </div>
+                    <div className="flex flex-col w-1/3 items-center justify-center">
+                        Top 10s
+                    </div>
+                    <div className="flex flex-col w-1/3 items-center justify-center pr-2">
+                        Missed Cuts
+                    </div>
+                    <div className="flex flex-col w-1/3 items-center justify-center pr-2">
+                        Wins
+                    </div>
                 </div>
             </div>
-            <div className="flex w-3/6 flex-row items-center">
-                <div className="flex flex-col w-1/3 items-center justify-center">
-                    Score
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center">
-                    Top 10s
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                    Missed Cuts
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                    Wins
-                </div>
-            </div>
-        </div>
         {teams}
       </div>
 

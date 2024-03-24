@@ -1,6 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { setLoginModal } from '../../User/state/userSlice';
 import Button from './Button';
+import { useSelector } from 'react-redux';
 
 export default function Header({ setShowLogin }) {
     const dispatch = useDispatch();
@@ -19,6 +20,8 @@ export default function Header({ setShowLogin }) {
 
     };
 
+    const isSignedIn = useSelector((state) => state.users.user)
+
     return (
         <div className="fixed top-0 w-full z-35 mb-1 bg-dark shadow-lg">
         <div className="p-0.5 bg-custom-gradient" />
@@ -36,6 +39,10 @@ export default function Header({ setShowLogin }) {
 
                 {/* Third div */}
                 <div className="flex space-x-4 w-1/3">
+                {isSignedIn ? 
+                    ""
+                    :
+                    <>
                     <Button
                     variant="primary"
                     onClick={handleSignUpClick}
@@ -48,6 +55,8 @@ export default function Header({ setShowLogin }) {
                     >
                         Login
                     </Button>
+                    </>
+                }
                     <Button
                     variant="primary"
                     onClick={handleGetTheAppClick}
