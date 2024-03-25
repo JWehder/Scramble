@@ -2,7 +2,7 @@ export default function Event({ event, even }) {
     const brightness = even ? 'brightness-125' : '';
 
     return (
-        <div className={`bg-middle w-full ${brightness} p-4 text-light flex h-16`}>
+        <div className={`bg-middle w-full ${brightness} p-4 text-light flex h-16 text-xs lg:text-sm md:text-xs sm:text-xs`}>
             <div className="flex items-center">
                 {event.date} - 
                 <img 

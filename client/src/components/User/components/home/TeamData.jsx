@@ -6,7 +6,7 @@ export default function TeamData({ team, even, rank }) {
     const brightness = even ? 'brightness-125' : '';
 
     return (
-        <div className={`w-full flex bg-middle h-20 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} md:text-md text-sm hover:b-1 my-1`}>
+        <div className={`w-full flex bg-middle h-20 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm truncate hover:b-1 my-1 `}>
         <div className="text-center flex w-3/6 items-center">
             <div className="w-1/6">
                 {rank}

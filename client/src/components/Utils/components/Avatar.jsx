@@ -8,7 +8,7 @@ export default function Avatar({ imgUrl, name, size }) {
 
     return (
             <div 
-                className={`flex relative items-center justify-center rounded-full overflow-hidden hover:cursor-pointer mx-1`}
+                className={`flex relative items-center justify-center rounded-full overflow-hidden hover:cursor-pointer mx-1 lg:w-14 md:w-12 sm:w-10 w-10`}
                 style={{
                     width: `${newSize}px`
                 }}

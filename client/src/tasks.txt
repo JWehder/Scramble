@@ -2,6 +2,7 @@
 === PHASE 1 === (est max time to completion: 24 days)
 - add UI for drafting, viewing player data, and creating leagues (2-4 days)
 - make web app viewable, to a certain degree, from the mobile browser (2 days)
+    - last thing is the homepage for signed out users
 - get the database up and running, script models (1-2 days)
 - get data passing from the api to the frontend (flask mongo -> graphql -> redux) (4-5 days)
 - create weber league (a couple hours)

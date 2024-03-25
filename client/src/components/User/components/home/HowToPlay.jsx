@@ -28,7 +28,7 @@ export default function HowToPlay() {
     ]
 
     return (
-        <div className="min-vh-100 min-content bg-dark"
+        <div className="min-vh-100 bg-dark"
         >
         {/* Title on left, sections on right */}
             <div className="flex flex-wrap md:flex-row h-full">

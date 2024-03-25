@@ -13,7 +13,7 @@ export default function Title() {
 
     return (
         <div
-            className="w-full flex items-center min-h-screen"
+            className="w-full flex items-center min-h-screen flex-grow"
             style={{
                 backgroundImage: `url(${greenRounded})`,
                 backgroundSize: 'contain',

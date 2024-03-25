@@ -29,7 +29,7 @@ export default function App({children}) {
   }, []); 
 
   return (
-  <div className='w-full h-screen relative min-h-[800px] min-w-[950px]'>
+  <div className='w-full h-screen relative'>
     <Header />
     <GoogleOAuthProvider clientId={clientId}>
       <div className='w-full bg-dark h-full'>

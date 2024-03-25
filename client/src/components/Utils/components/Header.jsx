@@ -32,7 +32,7 @@ export default function Header({ setShowLogin }) {
 
                 {/* Second div */}
                 <div className="flex justify-center items-center w-1/3">
-                    <h1 className="text-5xl font-lobster text-center bg-gradient-to-r from-green-700 via-green-300 to-teal-300 text-transparent bg-clip-text">
+                    <h1 className="text-3xl lg:text-5xl md:text-5xl sm:text-3xl font-lobster text-center bg-gradient-to-r from-green-700 via-green-300 to-teal-300 text-transparent bg-clip-text">
                         Scramble
                     </h1>
                 </div>
