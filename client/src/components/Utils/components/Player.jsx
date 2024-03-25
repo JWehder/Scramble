@@ -1,7 +1,7 @@
-import Avatar from "../../../Utils/components/Avatar";
-import Badge from "../../../Utils/components/Badge";
-import PlayerContent from "./PlayerContent";
-import PlayerTooltip from "./PlayerTooltip";
+import Avatar from "./Avatar";
+import Badge from "./Badge";
+import PlayerContent from "../../User/components/sidebar/PlayerContent";
+import PlayerTooltip from "../../User/components/sidebar/PlayerTooltip";
 import PropTypes from 'prop-types';
 
 export default function Player({ score = 0, imgUrl, name, size, active }) {

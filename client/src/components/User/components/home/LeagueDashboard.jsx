@@ -29,7 +29,7 @@ export default function LeagueDashboard() {
 
                 <div className='flex flex-col w-1/3'>
                     <div className='flex justify-center items-center flex-row'>
-                        <h1 className='text-4xl'>
+                        <h1 className='lg:text-4xl md:text-2xl sm:text-xl'>
                             League Name
                         </h1>
                     </div>
@@ -62,7 +62,7 @@ export default function LeagueDashboard() {
                 </div>
 
             </div>
-            <div className='w-10/12 bg-middle rounded-lg overflow-auto min-h-[500px] h-[600px] py-3'> 
+            <div className='w-10/12 bg-middle rounded-lg overflow-auto min-h-[400px] h-[600px] py-3'> 
 
                 { activeComponent === "Standings" && 
                     <div className='flex items-center justify-center'>

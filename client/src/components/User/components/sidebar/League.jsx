@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Player from './Player';
+import Player from '../../../Utils/components/Player';
 
 export default function League({ data }) {
     const [showLeaguePreview, setShowLeaguePreview] = useState(false);
