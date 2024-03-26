@@ -34,7 +34,7 @@ export default function SignedOutHome() {
     }
 
     return (
-        <div className="flex-grow shrink">
+        <div className="flex-grow">
             <Title />
             <HowToPlay />
             <GamesCarousel />

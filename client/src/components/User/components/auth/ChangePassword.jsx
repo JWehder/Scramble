@@ -20,11 +20,11 @@ export default function ChangePassword({ handlePasswordChange }) {
   };
 
   return (
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <h1 className="text-2xl font-medium text-center mb-4">Change Password</h1>
+    <div className="bg-light font-PTSans text-middle shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <h1 className="text-2xl text-center mb-4">Change Password</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="newPassword">
+          <label className="block text-sm font-bold mb-2" htmlFor="newPassword">
             New Password
           </label>
           <input

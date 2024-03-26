@@ -1,6 +1,6 @@
 import PlayerData from "./PlayerData";
 import Tourney from "./Tourney";
-import Headers from "./Headers";
+import TableHeaders from "./TableHeaders";
 
 export default function Leaderboard() {
     const players = [
@@ -73,7 +73,7 @@ export default function Leaderboard() {
     return (
         <div className="w-full h-full overflow-auto text-light font-PTSans">
             <Tourney />
-            <Headers headers={headers} />
+            <TableHeaders headers={headers} />
             {displayRoster}
         </div>
     )

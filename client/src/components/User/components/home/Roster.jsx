@@ -1,5 +1,5 @@
 import PlayerData from "./PlayerData";
-import Headers from "./Headers";
+import Headers from "./TableHeaders";
 import DashboardTitle from "./DashboardTitle";
 import Button from "../../../Utils/components/Button";
 

@@ -11,11 +11,11 @@ export default function EnterCode({ handleClick, resendCode }) {
   };
 
   return (
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <h1 className="text-2xl font-medium text-center mb-4">Verify Code</h1>
+    <div className="bg-light shadow-md text-middle rounded px-8 pt-6 pb-8 mb-4 font-PTSans">
+      <h1 className="text-2xl text-center mb-4">Verify Code</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="code">
+          <label className="block text-sm font-bold mb-2" htmlFor="code">
             Verification Code
           </label>
           <input

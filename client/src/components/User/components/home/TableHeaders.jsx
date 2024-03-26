@@ -1,4 +1,4 @@
-export default function Headers({ headers }) {
+export default function TableHeaders({ headers }) {
 
     return (
         <div className="w-full flex lg:text-md md:text-md sm:text-md text-md truncate">

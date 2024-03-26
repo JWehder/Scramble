@@ -21,7 +21,8 @@ export default {
         middle: '#059669', // emerald 600
         light: '#ecfccb', // lime 100
         mint: '#00ffbb',
-        sand: '#F6D7B0'
+        sand: '#F6D7B0',
+        highlightBlue: '#ACCEF7'
       }
     }
   },

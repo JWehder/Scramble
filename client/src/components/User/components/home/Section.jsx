@@ -11,9 +11,10 @@ export default function Section({ desc, img, title }) {
         whileInView={{ opacity: 1 }}
         >
             <div className="w-3/4">
-                <h2 className="text-3xl text-left font-lobster mb-2 text-light">{title}
+                <h2 className="text-left font-lobster mb-2 text-xl lg:text-3xl md:text-3xl sm:text-xl">
+                    {title}
                 </h2>
-                <p className="text-left text-light">
+                <p className="text-left text-sm lg:text-lg md:text-lg sm:text-sm">
                     <span>Placeholder content for {desc} section.</span>
                 </p>
             </div>

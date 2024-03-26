@@ -13,7 +13,7 @@ export default function Title() {
 
     return (
         <div
-            className="w-full flex items-center min-h-screen flex-grow"
+            className="w-full flex items-center h-[550px] lg:h-screen md:h-screen sm:h-[550px]"
             style={{
                 backgroundImage: `url(${greenRounded})`,
                 backgroundSize: 'contain',
@@ -29,10 +29,14 @@ export default function Title() {
                 initial="hidden"
                 animate="visible"
                 transition={{ duration: 1.5, delay: 0.25 }}
-                className="flex flex-col pl-12" // Adjust left padding for content alignment
+                className="flex flex-col pl-5 lg:pl-10 md:pl-10 sm:pl-5" // Adjust left padding for content alignment
             >
-                <h1 className="text-4xl md:text-7xl font-bold text-light font-PTSans mb-6 z-25 ml-4">Fantasy Golf</h1>
-                <p className="text-light text-md mb-6 md:text-lg font-PTSans z-25 ml-4">Watch Golf Like Never Before!</p>
+                <h1 className="text-3xl lg:text-6xl md:text-6xl sm:text-3xl font-bold text-light font-PTSans mb-3 lg:mb-6 md:mb-6 sm:mb-3 z-25">
+                    Fantasy Golf
+                </h1>
+                <p className="text-light text-bold text-sm lg:text-md md:text-md sm:text-sm mb-3 lg:mb-6 md:mb-6 sm:mb-3 md:text-lg font-PTSans z-25">
+                    Watch Golf Like Never Before!
+                </p>
                 <div className="w-1/2">
                     <Button
                     variant="secondary"

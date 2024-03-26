@@ -1,6 +1,5 @@
 import TeamData from "./TeamData";
-import LeagueInfo from "./LeagueInfo";
-import Headers from "./Headers";
+import TableHeaders from "./TableHeaders";
 import DashboardTitle from "./DashboardTitle";
 
 export default function Standings() {
@@ -51,7 +50,7 @@ export default function Standings() {
                 <p>Next Draft: April 20th-24th</p>
             </div>
         </DashboardTitle>
-        <Headers headers={headers} />
+        <TableHeaders headers={headers} />
         {teams}
     </div>
 
