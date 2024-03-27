@@ -13,7 +13,7 @@ export default function Title() {
 
     return (
         <div
-            className="w-full flex items-center h-[550px] lg:h-screen md:h-screen sm:h-[550px]"
+            className="w-full flex items-center h-screen lg:h-screen md:h-screen sm:h-screen"
             style={{
                 backgroundImage: `url(${greenRounded})`,
                 backgroundSize: 'contain',
@@ -24,12 +24,15 @@ export default function Title() {
             <motion.div
                 variants={{
                     hidden: { opacity: 0, y: 75 },
-                    visible: { opacity: 1, y: 0 }
+                    visible: { 
+                        opacity: 1, 
+                        y: 0 
+                    }
                 }}
                 initial="hidden"
                 animate="visible"
-                transition={{ duration: 1.5, delay: 0.25 }}
-                className="flex flex-col pl-5 lg:pl-10 md:pl-10 sm:pl-5" // Adjust left padding for content alignment
+                transition={{ duration: 2, delay: 0.75 }}
+                className="flex flex-col pl-5 lg:pl-10 md:pl-10 sm:pl-5"
             >
                 <h1 className="text-3xl lg:text-6xl md:text-6xl sm:text-3xl font-bold text-light font-PTSans mb-3 lg:mb-6 md:mb-6 sm:mb-3 z-25">
                     Fantasy Golf

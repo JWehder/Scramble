@@ -34,5 +34,4 @@ export default function Modal({ open, children, onClose, title }) {
           )}
         </>
     );
-
 }
