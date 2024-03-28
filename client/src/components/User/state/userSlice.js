@@ -60,6 +60,7 @@ const initialState = {
     logoutError: null,
     loginModal: false,
     status: "idle",
+    playerModal: true,
     leagues: [
         {
         "name": "Jake's League",
@@ -108,6 +109,9 @@ const userSlice = createSlice({
         },
         setLoginModal (state, action) {
             state.loginModal = action.payload;
+        },
+        setPlayerModal (state) {
+          state.playerModal = !(state.playerModal)
         }
     },
     extraReducers: builder => {
@@ -192,6 +196,6 @@ const userSlice = createSlice({
     }
 });
 
-export const { setSavedChanges, setLoginModal } = userSlice.actions;
+export const { setSavedChanges, setLoginModal, setPlayerModal } = userSlice.actions;
 
 export default userSlice.reducer;

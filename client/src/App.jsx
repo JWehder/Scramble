@@ -32,7 +32,7 @@ export default function App({children}) {
   <div className='w-full h-screen relative'>
     <Header />
     <GoogleOAuthProvider clientId={clientId}>
-      <div className='w-full bg-dark h-full'>
+      <div className='w-full bg-dark h-screen'>
         <Outlet />
       </div>
     </GoogleOAuthProvider>

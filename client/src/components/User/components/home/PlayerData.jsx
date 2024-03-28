@@ -31,7 +31,7 @@ export default function PlayerData({ rank, name, age, even }) {
                     </div>
                 </div>
             </div>
-            <div className="flex w-3/6 flex-row items-center">
+            <div className="w-3/6 flex flex-row items-center">
                 <div className="flex flex-col w-1/3 items-center justify-center">
                     -3.2
                 </div>

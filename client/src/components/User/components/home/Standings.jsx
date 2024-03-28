@@ -53,6 +53,5 @@ export default function Standings() {
         <TableHeaders headers={headers} />
         {teams}
     </div>
-
     );
 }

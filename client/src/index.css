@@ -27,7 +27,7 @@
 
     .tooltip {
         @apply min-w-max rounded-md
-        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 justify-center flex items-center z-[100];
+        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 justify-center flex items-center z-50;
     }
 
 }

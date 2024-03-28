@@ -42,8 +42,7 @@ export default function Dashboard() {
                 </div>
 
             </div>
-                <div className='w-10/12 bg-middle rounded-lg overflow-auto min-h-[500px] h-[600px] py-3 flex-grow'> 
-
+                <div className='w-10/12 bg-middle rounded-lg overflow-auto min-w-[500px] min-h-[400px] h-[500px] py-3 flex-grow shrink'> 
 
                     { activeComponent === "Schedule" && 
                         <div className='flex items-center justify-center'>

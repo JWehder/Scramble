@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ForgotPassword from "../auth/ForgotPassword";
 import EnterCode from "../auth/EnterCode";
-import Modal from "../auth/modal"
+import Modal from "../../../Utils/components/Modal"
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoginModal } from "../../state/userSlice";
 import Login from "../auth/Login";

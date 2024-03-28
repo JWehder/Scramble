@@ -25,7 +25,7 @@ export default function LeagueDashboard() {
 
     return (
         <>
-            <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans pt-3 min-h-min'>
+            <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans pt-3 min-w-[750px]'>
 
                 <div className='flex flex-col w-1/3'>
                     <div className='flex justify-center items-center flex-row'>
@@ -35,8 +35,8 @@ export default function LeagueDashboard() {
                     </div>
 
                     <div className='flex justify-center items-center flex-row'>
-                        <BackButton size={"4"} color={"stroke-light"} />
-                        <NextButton size={"4"} color={"stroke-light"} />
+                        <BackButton size="4" color={"stroke-light"} />
+                        <NextButton size="4" color={"stroke-light"} />
                     </div>
                 </div>
 
@@ -58,7 +58,7 @@ export default function LeagueDashboard() {
                 </div>
 
             </div>
-            <div className='w-10/12 bg-middle rounded-lg overflow-auto min-w-[500px] min-h-[400px] h-[600px] py-3 flex-grow shrink'> 
+            <div className='w-10/12 bg-middle rounded-lg overflow-auto min-w-[500px] min-h-[400px] h-[350px] py-3 flex-grow shrink'> 
 
                 { activeComponent === "Standings" && 
                     <div className='flex items-center justify-center'>

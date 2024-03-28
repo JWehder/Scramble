@@ -48,7 +48,7 @@ export default function Roster() {
                 <div className="flex-1 flex items-center justify-center">
                     <div className="mr-2">
                         <Button 
-                            variant="primary" 
+                            variant="secondary" 
                             size="md"
                         >
                             Trade
@@ -57,7 +57,7 @@ export default function Roster() {
 
 
                     <Button 
-                        variant="primary" 
+                        variant="secondary" 
                         size="md"
                     >
                         Waivers
@@ -66,6 +66,7 @@ export default function Roster() {
             </DashboardTitle>
             <Headers headers={headers} />
             {displayRoster}
+
         </div>
     )
 }

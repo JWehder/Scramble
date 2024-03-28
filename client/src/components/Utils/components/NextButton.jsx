@@ -7,9 +7,8 @@ export default function NextButton({ handleNextClick, size, color }) {
         xmlns="http://www.w3.org/2000/svg" 
         fill="none" 
         viewBox="0 0 24 24" 
-        strokeWidth={1.5} 
         stroke="currentColor" 
-        className={`${size} mx-2 cursor-pointer ${color}`}
+        className={`w-4 h-4 mx-2 cursor-pointer ${color}`}
         onClick={handleNextClick}>
             <path 
             strokeLinecap="round" 
