@@ -1,10 +1,15 @@
-import Avatar from "../../../Utils/components/Avatar";
-import Badge from "../../../Utils/components/Badge";
-import PlayerContent from "./PlayerContent";
-import PlayerTooltip from "./PlayerTooltip";
+import Avatar from "./Avatar";
+import Badge from "./Badge";
+import PlayerContent from "../../User/components/sidebar/PlayerContent";
+import PlayerTooltip from "../../User/components/sidebar/PlayerTooltip";
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { setPlayerModal } from '../../User/state/userSlice';
 
 export default function Player({ score = 0, imgUrl, name, size, active }) {
+
+    const dispatch = useDispatch();
+
     let badgeColor;
     let badgeSize;
     let avatarSize = null;
@@ -35,13 +40,18 @@ export default function Player({ score = 0, imgUrl, name, size, active }) {
             break;    
     }
 
+    function handleClick() {
+        dispatch(setPlayerModal());
+    }
 
     return (
-        <>
+        <div onClick={handleClick}>
             { active ?
                 <PlayerTooltip
                 player={
-                    <div className="relative flex items-center justify-center rounded-full pt-4">
+                    <div 
+                    className="relative flex items-center justify-center rounded-full pt-4"
+                    >
                         <Avatar 
                         imgUrl={imgUrl}
                         name={name}
@@ -78,8 +88,7 @@ export default function Player({ score = 0, imgUrl, name, size, active }) {
 
             
             }
-
-        </>
+        </div>
     )
 }
 

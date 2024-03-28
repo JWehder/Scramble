@@ -1,5 +1,7 @@
 import PlayerData from "./PlayerData";
-import Team from "./Team";
+import Headers from "./TableHeaders";
+import DashboardTitle from "./DashboardTitle";
+import Button from "../../../Utils/components/Button";
 
 export default function Roster() {
 
@@ -38,34 +40,33 @@ export default function Roster() {
         }
     })
 
+    const headers = ["Rank", "Golfer", "Avg Score", "Top 10s", "Avg Placing", "Fedex Odds"]
+
     return (
         <div className="w-full overflow-auto h-full md:h-[400px] text-light font-PTSans">
-            <Team />
-            <div className="w-full flex md:text-lg text-md">
-                <div className="text-center flex w-3/6 p-3">
-                    <div className="w-1/6">
-                        Rank
+            <DashboardTitle title="Team Name">
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="mr-2">
+                        <Button 
+                            variant="secondary" 
+                            size="md"
+                        >
+                            Trade
+                        </Button>
                     </div>
-                    <div className="w-5/6">
-                        Golfer
-                    </div>
+
+
+                    <Button 
+                        variant="secondary" 
+                        size="md"
+                    >
+                        Waivers
+                    </Button>
                 </div>
-                <div className="flex w-3/6 flex-row items-center">
-                    <div className="flex flex-col w-1/3 items-center justify-center">
-                        Avg Score
-                    </div>
-                    <div className="flex flex-col w-1/3 items-center justify-center">
-                        Top 10s
-                    </div>
-                    <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                        Avg Placing
-                    </div>
-                    <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                        Fedex Odds
-                    </div>
-                </div>
-            </div>
+            </DashboardTitle>
+            <Headers headers={headers} />
             {displayRoster}
+
         </div>
     )
 }

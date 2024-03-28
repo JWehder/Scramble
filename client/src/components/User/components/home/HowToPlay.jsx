@@ -28,16 +28,16 @@ export default function HowToPlay() {
     ]
 
     return (
-        <div className="min-vh-100 min-content bg-dark"
+        <div className="min-vh-100 bg-dark"
         >
         {/* Title on left, sections on right */}
             <div className="flex flex-wrap md:flex-row h-full">
                 <div className="w-full md:w-1/4 flex items-center justify-center py-8 px-4 md:px-8">
-                    <h1 className="text-6xl font-PTSans text-light text-left">
+                    <h1 className="text-4xl lg:text-6xl md:text-6xl sm:text-4xl font-PTSans text-light text-left">
                         How to Play
                     </h1>
                 </div>
-                <div className="w-full md:w-3/4 flex flex-col items-start justify-center px-4 py-4 md:px-8 md:py-12">
+                <div className="w-full md:w-3/4 flex flex-col items-start justify-center px-4 py-4 md:px-8 md:py-8 text-light">
                     <div className="space-y-6">
                     {sections.map((section, idx) => {
                         return (

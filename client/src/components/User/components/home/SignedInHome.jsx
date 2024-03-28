@@ -1,60 +1,26 @@
 import SideBar from "../sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
-import { useState } from "react";
-import ForgotPassword from "../auth/ForgotPassword";
-import EnterCode from "../auth/EnterCode";
-import Modal from "../auth/modal"
+import Modal from "../../../Utils/components/Modal";
+import { setPlayerModal } from "../../state/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoginModal } from "../../state/userSlice";
-import Login from "../auth/Login";
-import SignUp from "../auth/SignUp";
 
 export default function SignedInHome() {
 
     const dispatch = useDispatch();
 
-    const [showLogin, setShowLogin] = useState(true);
-    const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const [showCode, setShowCode] = useState(false);
-
-    const open = useSelector((state) => state.users.loginModal);
+    const open = useSelector((state) => state.users.playerModal)
 
     function onClose() {
-        // set the forms to default
-        setShowLogin(true);
-        setShowForgotPassword(false);
-        setShowCode(false);
-        dispatch(setLoginModal(false));
-    };
+        dispatch(setPlayerModal())
+    }
 
     return ( 
-        <div className="w-full h-full pt-20 pb-12">
+        <div className="pt-20 pb-12 bg-dark h-screen w-screen overflow-hidden">
             <SideBar />
-            <div className='w-full flex justify-center items-center flex-col h-full'>
+            <div className='w-full flex justify-center items-center flex-col min-w-[800px] min-h-[600px] flex-grow'>
                 <Outlet />
             </div>
-            <Modal open={open} onClose={onClose} title={"Login or Sign up"}>
-                { showForgotPassword ?
-                showCode ?
-                <EnterCode />
-                :
-                <ForgotPassword 
-                showCode={() => setShowCode(true)} 
-                showLogin={() => {
-                    setShowLogin(true);
-                    setShowForgotPassword(false);
-                }}
-                />
-                :
-                showLogin ? 
-                    <Login 
-                    showLogin={() => setShowLogin(!showLogin)} 
-                    showForgotPassword={() => setShowForgotPassword(!showForgotPassword)}
-                    />
-                    :
-                    <SignUp showLogin={() => setShowLogin(!showLogin)} />
-                }
-            </ Modal>
+            <Modal open={open} onClose={onClose} title="" />
         </div>
     )
 }

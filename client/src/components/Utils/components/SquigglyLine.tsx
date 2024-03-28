@@ -29,7 +29,7 @@ export default function SquigglyUnderline({
             key={item.name}
             onClick={() => setActiveComponent(item.name)}
             type='button'
-            className="text-lg bg-dark text-light relative leading-6 font-lobster flex justify-center items-center rounded-full focus:outline-none p-2 mx-2"
+            className={`text-sm lg:text-lg md:text-md sm:text-sm bg-transparent text-light relative leading-6 font-lobster flex justify-center items-center rounded-full focus:outline-none p-2 mx-2 hover:brightness-125 ${isSelected ? 'brightness-125': 'brightness-85'}`}
             disabled={false}
           >
             {item.name}

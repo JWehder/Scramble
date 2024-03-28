@@ -1,5 +1,6 @@
 import TeamData from "./TeamData";
-import LeagueInfo from "./LeagueInfo";
+import TableHeaders from "./TableHeaders";
+import DashboardTitle from "./DashboardTitle";
 
 export default function Standings() {
     const data = [
@@ -39,35 +40,18 @@ export default function Standings() {
         }
     })
 
-      return (
-        <div className="w-full h-full overflow-auto text-light font-PTSans">
-          <LeagueInfo />
-        <div className="w-full flex md:text-lg text-md">
-            <div className="text-center flex w-3/6">
-                <div className="w-1/6">
-                    Rank
-                </div>
-                <div className="w-5/6">
-                    Team
-                </div>
-            </div>
-            <div className="flex w-3/6 flex-row items-center">
-                <div className="flex flex-col w-1/3 items-center justify-center">
-                    Score
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center">
-                    Top 10s
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                    Missed Cuts
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                    Wins
-                </div>
-            </div>
-        </div>
-        {teams}
-      </div>
+    const headers = ["Rank", "Team", "Score", "Top 10s", "Missed Cuts", "Wins"]
 
-      );
+    return (
+    <div className="w-full h-full overflow-auto text-light font-PTSans">
+        <DashboardTitle title="Overall Standings">
+            <div className="flex-1 text-right mr-3">
+                <p>Next Tournament: Masters, April 20th-24th</p>
+                <p>Next Draft: April 20th-24th</p>
+            </div>
+        </DashboardTitle>
+        <TableHeaders headers={headers} />
+        {teams}
+    </div>
+    );
 }

@@ -1,4 +1,4 @@
-import Player from "../../User/components/sidebar/Player";
+import Player from "./Player";
 
 export default function Starters() {
     const players = ["Scottie Scheffler", "Justin Thomas", "Xander Schauffle"];

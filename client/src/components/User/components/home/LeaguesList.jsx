@@ -65,7 +65,7 @@ export default function LeaguesList() {
 
 
     return (
-        <div className="flex gap-2 h-full w-full flex-col">
+        <div className="flex gap-2 h-full w-full flex-col ">
             <MatchPlayQuickView league={leagues[1]} />
             <StrokePlayQuickView league={leagues[0]} />
         </div>

@@ -12,15 +12,15 @@ export default function ForgotPassword({ showLogin, showCode }) {
   };
 
   return (
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-    <h1 className="text-2xl font-medium text-center mb-4">Reset Password</h1>
+    <div className="bg-light text-middle font-PTSans shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <h1 className="text-2xl text-center mb-4">Reset Password</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-green-400 text-sm font-bold mb-2" htmlFor="email">
+          <label className="block text-sm font-bold mb-2" htmlFor="email">
             Email
           </label>
           <input
-            className="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full"
+            className="shadow appearance-none border w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full"
             id="email"
             type="email"
             placeholder="Enter your email address"
@@ -34,7 +34,7 @@ export default function ForgotPassword({ showLogin, showCode }) {
             </Button>
             <p 
             onClick={showLogin}
-            className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer"
+            className="inline-block align-baseline font-bold text-sm text-middle hover:text-green-600 cursor-pointer"
             >
               Remember Password?{' '}
               <a>
