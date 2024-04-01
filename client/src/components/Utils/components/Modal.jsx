@@ -1,14 +1,22 @@
-export default function Modal({ open, children, onClose, title }) {
+export default function Modal({ open, children, onClose, title, color, size }) {
+
+    const modalClasses = [
+      'overflow-auto relative shadow-lg rounded-xl mx-auto p-4 overflow-auto',
+      size === 'sm' && 'max-w-2xl md:max-w-3xl lg:max-w-3xl',
+      size === 'md' && 'max-w-3xl md:max-w-4xl lg:max-w-5xl',
+      color === 'green' && 'bg-middle',
+      color === 'light' && 'bg-light'
+    ]
 
     if (!open) return null;
 
     return (
         <>
           {open && (
-            <div className="fixed z-50 inset-0 bg-white bg-opacity-50 backdrop-blur-xs overflow-auto py-4">
-              <div className="relative mx-auto max-w-2xl bg-light shadow-lg rounded-xl p-4">
+            <div className="fixed z-50 inset-0 bg-light bg-opacity-50 backdrop-blur-xs py-4 min-w-[785px] min-h-[1000px] overflow-auto overflow-x-auto">
+              <div className={modalClasses.join(' ')}>
                 <div>
-                    <h3 className="text-lg font-medium leading-6 text-dark text-PTSans mb-1 text-center p-1">
+                    <h3 className="text-lg font-PTSans leading-6 text-middle mb-1 text-center p-1">
                         {title}
                     </h3>
 
@@ -26,7 +34,6 @@ export default function Modal({ open, children, onClose, title }) {
                         />
                         </svg>
                     </button>
-                    <hr className="mb-2" />
                 </div>
                 {children}
               </div>
