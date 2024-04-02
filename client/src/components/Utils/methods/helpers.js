@@ -64,6 +64,11 @@ const get = url => {
     .then((data) => (data))
 }
 
+export default function range(start, end, step = 1) {
+    const length = Math.floor((end - start) / step) + 1;
+    return Array.from({ length }, (_, index) => start + index * step);
+}
+
 // const displayErrors = (errors, errorKey = null) => {
 
 //     return errors.map((error) => {

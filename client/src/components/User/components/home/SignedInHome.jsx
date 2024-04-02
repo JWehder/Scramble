@@ -25,7 +25,7 @@ export default function SignedInHome() {
             open={open} 
             onClose={onClose} 
             title=""
-            color="green"
+            color="dark-green"
             size='md'
             >
                 <PlayerPage />

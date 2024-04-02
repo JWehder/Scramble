@@ -5,7 +5,8 @@ export default function Modal({ open, children, onClose, title, color, size }) {
       size === 'sm' && 'max-w-2xl md:max-w-3xl lg:max-w-3xl',
       size === 'md' && 'max-w-3xl md:max-w-4xl lg:max-w-5xl',
       color === 'green' && 'bg-middle',
-      color === 'light' && 'bg-light'
+      color === 'light' && 'bg-light',
+      color === 'dark-green' && 'bg-dark'
     ]
 
     if (!open) return null;

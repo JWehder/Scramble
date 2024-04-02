@@ -6,7 +6,7 @@ export default function TeamData({ team, even, rank }) {
     const brightness = even ? 'brightness-125' : '';
 
     return (
-        <div className={`w-full flex bg-middle h-20 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm truncate hover:b-1 my-1 overflow-visible `}>
+        <div className={`w-full flex bg-middle h-20 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm truncate hover:b-1 my-1 overflow-visible p-2`}>
         <div className="text-center flex w-3/6 items-center">
             <div className="w-1/6">
                 {rank}
@@ -30,19 +30,16 @@ export default function TeamData({ team, even, rank }) {
                 </div>
             </div>
         </div>
-        <div className="flex w-3/6 flex-row items-center">
-            <div className="flex flex-col w-1/3 items-center justify-center">
-                {team.score}
-            </div>
-            <div className="flex flex-col w-1/3 items-center justify-center">
-                {team.top10}
-            </div>
-            <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                {team.missedCuts}
-            </div>
-            <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                {team.wins}
-            </div>
+        <div className="flex w-1/2 flex-row items-center space-x-5">
+            {
+                Object.keys(team).slice(1).map((teamKey) => {
+                    return (
+                        <div className="flex flex-col w-6 flex-grow items-center justify-center p-1">
+                            {team[teamKey]}
+                        </div>
+                    )
+                })
+            }
         </div>
     </div>
     )

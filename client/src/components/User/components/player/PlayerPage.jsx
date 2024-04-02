@@ -1,72 +1,44 @@
-import Player1 from "../../../../assets/i-1.png";
-import THead from "../../../Utils/components/THead";
-import TData from "../../../Utils/components/TData";
+import TableHeaders from "../home/TableHeaders";
+import TournamentTd from "./TournamentTd";
+import { useSelector } from 'react-redux';
+import PlayerPageHeader from "./PlayerPageHeader";
 
 export default function PlayerPage() {
 
+    console.log(useSelector((state) => state.users.holeByHoleComparisonChart))
 
     // data will be filed in, this is just an example
 
-    const playerHeaders = ["Age", "Country", "PGA Debut", "Swings", "Weight", "College", "Events Played", "Cuts", "Cuts Made", "Earnings", "World Rank"]
+    const tournamentHeaders = ["date", "tournament name", "r1", "r2", "r3", "r4", "total", "score", "place", "leader"]
 
-    const playerInfo = {
-        Age: 26,
-        Country: "USA",
-        pgaDebut: 2018,
-        swings: "R",
-        weight: 200,
-        college: "University of Texas",
-        eventPlayed: 6,
-        cuts: 3,
-        cutsMade: 2,
-        earnings: "$72441",
-        worldRank: 256
-    };
-
-    const playerInfoKeys = Object.keys(playerInfo);
+    const tournament = {
+        date: "12/01/2024",
+        name: "Arnold Palmer Invitational",
+        player: {
+            madeCut: true,
+            r1: 65,
+            r2: 70,
+            r3: 67,
+            r4: 71,
+            total: 273,
+            score: -15,
+            place: "4th",
+            leader: -18
+        }
+    }
 
     return (
         <div className="w-full h-[600px] p-2 overflow-auto">
-            <div className="bg-middle w-full h-1/3 rounded-t-xl flex">
-                <div className="w-1/4">
-                    <div className="flex items-center justify-center flex-grow">
-                        <img src={Player1} alt="Player1" />
-                    </div>
-                </div>
-                <div className="w-3/4">
-                    <div className="flex items-center justify-center font-PTSans p-2 text-light">
-                        <h1 className="text-2xl">Scottie Scheffler</h1>
-                    </div>
-                    <div className="text-light font-PTSans space-x-2 flex-col p-2">
-                        <div className="flex-row flex">
-                            {
-                                Object.keys(playerInfo).slice(0, 5).map((key, idx) => {
-                                    return (
-                                    <THead datapoint={playerHeaders[idx]}>
-                                        <TData datapoint={playerInfo[key] }/>
-                                    </THead>
-                                    )
-                                })
-                            }
-                        </div>
-                        <div className="flex-row flex">
-                            {
-                                Object.keys(playerInfo).slice(5).map((key, idx) => {
-                                    return (
-                                    <THead datapoint={playerHeaders[idx + 5]}>
-                                        <TData datapoint={playerInfo[key] }/>
-                                    </THead>
-                                    )
-                                })
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="bg-dark h-2/3 rounded-xl">
-                <div>
-                    
-                </div>
+            <PlayerPageHeader />
+            <div className="bg-middle h-2/3 rounded-b-xl text-light overflow-auto">
+                <TableHeaders 
+                headers={tournamentHeaders}
+                />
+                <TournamentTd 
+                tournament={tournament} 
+                player={tournament.player}
+                even={true}
+                />
             </div>
         </div>
     )
