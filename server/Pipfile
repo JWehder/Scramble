@@ -13,6 +13,7 @@ flask-cors = "*"
 importlib-resources = "*"
 ipdb = "*"
 python-dotenv = "*"
+pymongo = "*"
 
 [dev-packages]
 

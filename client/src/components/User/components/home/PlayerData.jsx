@@ -7,7 +7,7 @@ export default function PlayerData({ rank, name, age, even }) {
     const exampleData = ["-3.2", "Top 10s", "Avg Placing", "Fedex Odds"];
 
     return (
-        <div className={`w-full flex bg-middle h-20 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate p-2`}>
+        <div className={`w-full flex bg-middle h-14 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate p-2`}>
             <div className="text-center flex w-1/2 items-center">
                 <div className="w-1/6">
                     {rank}
@@ -18,7 +18,7 @@ export default function PlayerData({ rank, name, age, even }) {
                             <Avatar 
                             imgUrl={""}
                             name={name}
-                            size={"12"}
+                            size={"10"}
                             />
                         </div>
 

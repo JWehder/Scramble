@@ -5,6 +5,5 @@ export default function Eagle({ children }) {
                 {children}
             </div>
         </div>
-
     )
 }
