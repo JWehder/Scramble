@@ -13,6 +13,4 @@ client = MongoClient(uri)
 db = client["scramble"]
 collection = db["golfers"]
 
-print(collection)
-
 client.close()
