@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from pydantic import BaseModel, Field, EmailStr, validator, root_validator
 from datetime import datetime
 from bson import ObjectId
-from config import 
+from config import db
+import re
 
 class PyObjectId(ObjectId):
     @classmethod
@@ -19,9 +20,13 @@ class PyObjectId(ObjectId):
     def __modify_schema__(cls, field_schema):
         field_schema.update(type='string')
 
+def get_all_tournament_ids():
+    tournaments_collection = db.tournaments
+    tournament_ids = tournaments_collection.distinct('_id')
+    return [ObjectId(tid) for tid in tournament_ids]
 
 class Hole(BaseModel):
-    Id: Optional[PyObjectId] = Field(alias='_id')
+    _id: Optional[PyObjectId] = Field(alias='_id')
     Strokes: int
     Par: bool
     NetScore: int
@@ -32,8 +37,8 @@ class Hole(BaseModel):
     Albatross: bool
     DoubleBogey: bool
     WorseThanDoubleBogey: bool
-    GolferTournamentDetailsId: str
-    RoundId: str
+    GolferTournamentDetailsId: PyObjectId
+    RoundId: PyObjectId
 
     @validator('Strokes')
     def strokes_must_be_positive(cls, v):
@@ -49,8 +54,8 @@ class Hole(BaseModel):
 
 
 class Round(BaseModel):
-    Id: Optional[PyObjectId] = Field(alias='_id')
-    GolferTournamentDetailsId: str
+    _id: Optional[PyObjectId] = Field(alias='_id')
+    GolferTournamentDetailsId: PyObjectId
     Round: str
     Birdies: int
     Eagles: int
@@ -60,7 +65,12 @@ class Round(BaseModel):
     DoubleBogeys: int
     WorseThanDoubleBogeys: int
     Score: int
-    Holes: List[Hole]
+    Holes: List[PyObjectId]
+
+    @validator('GolferTournamentDetailsId')
+    def golfer_details_exist(cls, v):
+        if not db.golfertournamentdetails.find_one({"_id": v}):
+            raise ValueError("No value found for that golfertournamentdetails id")
 
     @validator('Score')
     def score_must_be_positive(cls, v):
@@ -69,37 +79,55 @@ class Round(BaseModel):
         return v
 
 class GolferTournamentDetails(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
-    GolferId: str
+    _id: Optional[PyObjectId] = Field(alias='_id')
+    GolferId: PyObjectId
     Position: str
     Name: str
     Score: str
-    R1: str
-    R2: str
-    R3: str
-    R4: str
-    TotalStrokes: str
-    Earnings: str
-    FedexPts: str
-    TournamentId: str
+    R1: Optional[str] = None
+    R2: Optional[str] = None
+    R3: Optional[str] = None
+    R4: Optional[str] = None
+    TotalStrokes: Optional[str] = None
+    Earnings: Optional[str] = None
+    FedexPts: Optional[str] = None
+    TournamentId: PyObjectId
     Rounds: List[PyObjectId]
 
+    @root_validator(pre=True)
+    def set_defaults(cls, values):
+        field_defaults = {
+            int: 0,
+            float: 0.0,
+            str: "",
+            list: [],
+            dict: {},
+        }
+        
+        for field, value in values.items():
+            if value is None:
+                field_type = cls.__annotations__.get(field)
+                if field_type in field_defaults:
+                    values[field] = field_defaults[field_type]
+        
+        return values
+
 class Tournament(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
-    end_date: datetime
-    start_date: datetime
-    name: str
-    venue: List[str]
-    city: str
-    state: str
-    links: List[str]
-    purse: int
-    previous_winner: str
-    par: str
-    yardage: str
-    is_completed: bool
-    in_progress: bool
-    golfers: List[PyObjectId]
+    _id: Optional[PyObjectId] = Field(alias='_id')
+    EndDate: datetime
+    StartDate: datetime
+    Name: str
+    Venue: List[str]
+    City: str
+    State: str
+    Links: List[str]
+    Purse: int
+    PreviousWinner: str
+    Par: str
+    Yardage: str
+    IsCompleted: bool
+    InProgress: bool
+    Golfers: List[PyObjectId]
 
     @validator('par')
     def par_must_be_valid(cls, v):
@@ -109,67 +137,84 @@ class Tournament(BaseModel):
         return v
 
 class Golfer(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
-    rank: str
-    first_name: str
-    last_name: str
-    age: int
-    earnings: int
-    fedex_pts: int
-    events: int
-    rounds: int
-    country: str
-    flag: str
-    cuts: int
-    top10s: int
-    wins: int
-    avg_score: float
-    golfer_page_link: str
-    birthdate: datetime
-    birthplace: str
-    college: str
-    swing: str
-    turned_pro: str
-    tournament_details: List[GolferTournamentDetails]
-    owgr: str
+    _id: Optional[PyObjectId] = Field(alias='_id')
+    Rank: str
+    FirstName: str
+    LastName: str
+    Age: Optional[int] = None
+    Earnings: Optional[int] = None
+    FedexPts: Optional[int] = None
+    Events: Optional[int] = None
+    Rounds: Optional[int] = None
+    Flag: Optional[str] = None
+    Cuts: Optional[int] = None
+    Top10s: Optional[int] = None
+    Wins: Optional[int] = None
+    AvgScore: Optional[float] = None
+    GolferPageLink: Optional[str] = None
+    Birthdate: Optional[datetime] = None
+    Birthplace: Optional[str] = None
+    College: Optional[str] = None
+    Swing: Optional[str] = None
+    TurnedPro: Optional[str] = None
+    TournamentDetails: Optional[List[GolferTournamentDetails]] = None
+    OWGR: Optional[str] = None
 
-    @validator('rank', 'owgr')
+    @root_validator(pre=True)
+    def set_defaults(cls, values):
+        field_defaults = {
+            int: 0,
+            float: 0.0,
+            str: "",
+            list: [],
+            dict: {},
+        }
+        
+        for field, value in values.items():
+            if value is None:
+                field_type = cls.__annotations__.get(field)
+                if field_type in field_defaults:
+                    values[field] = field_defaults[field_type]
+        
+        return values
+
+    @validator('Rank', 'OWGR')
     def rank_and_owgr_must_be_valid(cls, v):
         if not v.isdigit() or int(v) <= 0:
             raise ValueError('Rank and OWGR must be positive integers')
         return v
 
-    @validator('age')
+    @validator('Age')
     def age_must_be_positive(cls, v):
         if v <= 0:
             raise ValueError('Age must be a positive integer')
         return v
 
-    @validator('earnings', 'fedex_pts', 'events', 'rounds', 'cuts', 'top10s', 'wins')
+    @validator('Earnings', 'FedexPts', 'Events', 'Rounds', 'Cuts', 'Top10s', 'Wins')
     def must_be_non_negative(cls, v):
         if v < 0:
             raise ValueError('Value must be non-negative')
         return v
 
-    @validator('avg_score')
+    @validator('AvgScore')
     def avg_score_must_be_valid(cls, v):
-        if v <= 0 or v > 100:
+        if v <= 0 or v > 120:
             raise ValueError('Average score must be a positive number and realistic')
         return v
 
-    @validator('golfer_page_link')
+    @validator('GolferPageLink')
     def must_be_valid_url(cls, v):
         if not v.startswith("http"):
             raise ValueError('Golfer page link must be a valid URL')
         return v
 
-    @validator('birthdate')
+    @validator('Birthdate')
     def birthdate_must_be_valid(cls, v):
         if not isinstance(v, datetime):
             raise ValueError('Birthdate must be a valid datetime')
         return v
 
-    @validator('turned_pro')
+    @validator('TurnedPro')
     def turned_pro_must_be_valid_year(cls, v):
         if not v.isdigit() or int(v) < 1900 or int(v) > datetime.now().year:
             raise ValueError('TurnedPro must be a valid year')
@@ -184,7 +229,7 @@ class Golfer(BaseModel):
 
 
 class User(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    _id: Optional[PyObjectId] = Field(alias='_id')
     Username: str
     Email: EmailStr
     Password: str
@@ -194,54 +239,41 @@ class User(BaseModel):
         allow_population_by_field_name = True
         json_encoders = {ObjectId: str}
 
-    @validator('username')
+    @validator('Username')
     def validate_username(cls, v):
         # Add logic to check for unique username in the database
-        if any(user['username'] == v for user in mock_db['users']):
-            raise ValueError('Username already exists')
+        if any(user['User'] == v for user in db.users):
+            raise ValueError('Username already exists.')
         return v
 
-    @validator('email')
+    @validator('Username')
+    def validate_username(cls, v):
+        # Add logic to check for unique username in the database
+        if len(v) < 8:
+            raise ValueError('Username must have at least 8 characters.')
+        return v
+
+    @validator('Email')
     def validate_email(cls, v):
         # Add logic to check for unique email in the database
-        if any(user['email'] == v for user in mock_db['users']):
+        if any(user['Email'] == v for user in db.users):
             raise ValueError('Email already exists')
         return v
 
-    @validator('password')
+    @validator('Password')
     def validate_password(cls, v):
         # Ensure the password has at least one uppercase letter, one lowercase letter, one digit, and one special character
-        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', v):
-            raise ValueError('Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character')
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', v) or not len(v) >= 8:
+            raise ValueError('Password must contain at least one uppercase letter, one lowercase letter, one digit, one special character, and must be at least 8 characters.')
         return v
 
-class Team(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
-    Name: str
-    OwnerId: str
-    Golfers: List[str] = []
-    Wins: int = Field(default=0, ge=0, description="Amount of wins a team experiences")
-    Losses: int = Field(default=0, ge=0, description="Amount of losses a team experiences")
-    Points: int = Field(default=0, ge=0, description="If you are a playing a league wide system, you receive points rather than wins and losses")
-
-    class Config:
-        allow_population_by_field_name = True
-
-class League(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
-    Name: str
-    CommissionerId: str
-    Teams: List[str] = []
-
-    class Config:
-        allow_population_by_field_name = True
-
 class Week(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    _id: Optional[PyObjectId] = Field(alias='_id')
     WeekNumber: int
-    SeasonId: str
-    Standings: List[PyObjectId]
+    SeasonId: PyObjectId
+    Standings: List[PyObjectId]                                           
     FreeAgentSignings: List[PyObjectId]
+    Matchups: List[Tuple[PyObjectId, PyObjectId]]
 
     @validator('WeekNumber')
     def week_number_must_be_valid(cls, v):
@@ -250,73 +282,119 @@ class Week(BaseModel):
         return v
 
 class Season(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    _id: Optional[PyObjectId] = Field(alias='_id')
     SeasonNumber: int
     StartDate: datetime
     EndDate: datetime
+    Weeks: List[PyObjectId]
 
-    @validator('start_date', 'end_date')
+    @validator('StartDate', 'EndDate')
     def dates_must_be_valid(cls, v, field):
         if not isinstance(v, datetime):
             raise ValueError(f'{field.name} must be a datetime')
         return v
 
-    @validator('end_date')
+    @validator('EndDate')
     def end_date_must_be_after_start_date(cls, v, values):
         start_date = values.get('start_date')
         if start_date and v <= start_date:
             raise ValueError('End date must be after start date')
         return v
 
+class League(BaseModel):
+    _id: Optional[PyObjectId] = Field(alias='_id')
+    Name: str
+    CommissionerId: str
+    Teams: List[str] = []
+    LeagueSettings: LeagueSettings
+
+    class Config:
+        allow_population_by_field_name = True
+
 class LeagueSettings(BaseModel):
+    _id: Optional[PyObjectId] = Field(alias='_id')
     MaxGolfersPerTeam: int = Field(default=3, ge=1, description="Maximum number of golfers per team")
     NumOfStarters: int = Field(default=2, ge=1, description="Number of defined players per team")
-    MaxRosteredPlayers: int = Field(default=1, ge=0, description="Number of draft players per week")
+    MaxDraftedPlayers: int = Field(default=1, ge=0, description="Number of draft players per week")
     ScoringSystem: List[int] = Field(default_factory=lambda: [10, 8, 6, 5, 4, 3, 2, 1], description="Points awarded for placements")
-    Tournaments: List[PyObjectId]
+    Tournaments: List[PyObjectId] = Field(default_factory = lambda: get_all_tournament_ids())
     NumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
     DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")
-    DraftMinutesPerPick: int
+    SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
     HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
+    LeagueId: PyObjectId
 
-    @validator('num_defined_players')
+    @validator('SecondsPerDraftPick')
+    def time_to_draft_must_be_positive(cls, v):
+        if v <= 0:
+            raise ValueError('Time to draft must be a positive period of time.')
+        return v
+
+    @validator('NumOfStarters')
     def defined_players_must_be_less_than_max(cls, v, values):
-        if 'max_golfers_per_team' in values and v >= values['max_golfers_per_team']:
+        if 'NumOfStarters' in values and v >= values['NumOfStarters']:
             raise ValueError('Number of defined players must be less than the maximum number of golfers per team')
         return v
 
-    @validator('num_draft_players')
+    @validator('MaxDraftedPlayers')
     def draft_players_must_fit_in_team(cls, v, values):
-        if 'max_golfers_per_team' in values and 'num_defined_players' in values:
-            total_players = values['num_defined_players'] + v
-            if total_players > values['max_golfers_per_team']:
-                raise ValueError('Number of draft players must fit within the maximum number of golfers per team')
+        if v > values['MaxGolfersPerTeam']:
+            return ValueError("Your max draftable players must be less than the maximum golfers allowed on a team.")
         return v
 
-    @validator('scoring_system')
+    @validator('ScoringSystem')
     def scoring_system_must_be_non_negative(cls, v):
         if any(points < 0 for points in v):
             raise ValueError('Scoring system must have non-negative points')
         return v
 
-    @validator('drafting_period')
+    @validator('DraftingPeriod')
     def drafting_period_must_be_valid(cls, v):
         if v not in ["weekly", "biweekly", "monthly"]:
             raise ValueError('Drafting period must be one of: "weekly", "biweekly", "monthly"')
         return v
 
-    @root_validator(pre=True)
-    def set_num_of_golfer_uses_default(cls, values):
-        if 'num_of_golfer_uses' not in values or values['num_of_golfer_uses'] is None:
-            values['num_of_golfer_uses'] = len(values.get('tournaments', []))
-        return values
+class Team(BaseModel):
+    _id: Optional[PyObjectId] = Field(alias='_id')
+    TeamName: str
+    ProfilePicture: str = Field(description="Profile picture for team")
+    Golfers: List[PyObjectId]
+    OwnerId: PyObjectId
+    LeagueId: PyObjectId
 
 class DraftPick(BaseModel):
-    Id: Optional[PyObjectId] = Field(alias='_id')
+    _id: Optional[PyObjectId] = Field(alias='_id')
     TeamId: str
     GolferId: str
     RoundNumber: int
     PickNumber: int
+    LeagueId: int
+
+    def get_league_settings(self) -> LeagueSettings:
+        league_settings = db.league_settings.find_one({"LeagueId": self.LeagueId})
+        if not league_settings:
+            raise ValueError("League settings not found")
+        return LeagueSettings(**league_settings)
+
+    def validate_draft_pick(self):
+        league_settings = self.get_league_settings()
+        team_golfers_count = db.golfers.count_documents({"TeamId": self.TeamId})
+
+        if team_golfers_count >= league_settings.MaxGolfersPerTeam:
+            raise ValueError("Team already has the maximum number of golfers allowed")
+
+    def validate_num_of_uses(self):
+        league_settings = self.get_league_settings()
+        golfer_num_of_uses = leag
+
+    @root_validator(pre=False)
+    def run_validate_draft_pick(cls, values):
+        instance = cls(**values)
+        instance.validate_draft_pick()
+        return values
+    
+    @root_validator
+    def validate_num_of_uses()
 
     @validator('RoundNumber', 'PickNumber')
     def pick_must_be_positive(cls, v):
@@ -324,9 +402,8 @@ class DraftPick(BaseModel):
             raise ValueError('Round number and pick number must be positive')
         return v
 
-
 class Draft(BaseModel):
-    Id: Optional[PyObjectId] = Field(alias='_id')
+    _id: Optional[PyObjectId] = Field(alias='_id')
     LeagueId: str
     StartDate: datetime
     EndDate: Optional[datetime] = None
