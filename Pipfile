@@ -14,6 +14,7 @@ importlib-resources = "*"
 ipdb = "*"
 pydantic = "*"
 flask-socketio = "*"
+bcrypt = "*"
 
 [dev-packages]
 

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 from config import db
 import re
+import bcrypt
 
 class PyObjectId(ObjectId):
     @classmethod
@@ -239,6 +240,17 @@ class User(BaseModel):
         allow_population_by_field_name = True
         json_encoders = {ObjectId: str}
 
+    @staticmethod
+    def hash_password(password: str) -> str:
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+        return hashed_password.decode('utf-8')
+
+    def save(self, db):
+        self.Password = self.hash_password(self.Password)
+        user_dict = self.dict(by_alias=True)
+        db.users.insert_one(user_dict)
+
     @validator('Username')
     def validate_username(cls, v):
         # Add logic to check for unique username in the database
@@ -249,7 +261,7 @@ class User(BaseModel):
     @validator('Username')
     def validate_username(cls, v):
         # Add logic to check for unique username in the database
-        if len(v) < 8:
+        if len(v) < 5:
             raise ValueError('Username must have at least 8 characters.')
         return v
 
@@ -265,7 +277,17 @@ class User(BaseModel):
         # Ensure the password has at least one uppercase letter, one lowercase letter, one digit, and one special character
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', v) or not len(v) >= 8:
             raise ValueError('Password must contain at least one uppercase letter, one lowercase letter, one digit, one special character, and must be at least 8 characters.')
-        return v
+        return cls.hash_password(v) 
+
+    def check_password(plain_password: str, hashed_password: str) -> bool:
+        """
+        Validate a password by comparing it with the stored hashed password.
+
+        :param plain_password: The plain text password entered by the user.
+        :param hashed_password: The hashed password stored in the database.
+        :return: True if the password matches, False otherwise.
+        """
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 class Week(BaseModel):
     _id: Optional[PyObjectId] = Field(alias='_id')
@@ -274,6 +296,14 @@ class Week(BaseModel):
     Standings: List[PyObjectId]                                           
     FreeAgentSignings: List[PyObjectId]
     Matchups: List[Tuple[PyObjectId, PyObjectId]]
+    TournamentId: PyObjectId
+
+    @validator('TournamentId')
+    def check_tournament_id_exists(cls, v):
+        tournament = db.tournaments.find_one({"_id": v})
+        if not tournament:
+            raise ValueError("The tournament does not exist.")
+        return v
 
     @validator('WeekNumber')
     def week_number_must_be_valid(cls, v):
@@ -382,7 +412,7 @@ class LeagueSettings(BaseModel):
 class Team(BaseModel):
     _id: Optional[PyObjectId] = Field(alias='_id')
     TeamName: str
-    ProfilePicture: str = Field(description="Profile picture for team")
+    ProfilePicture: Optional[str] = Field(description="Profile picture for team")
     Golfers: Dict[PyObjectId, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
     OwnerId: PyObjectId
     LeagueId: PyObjectId
