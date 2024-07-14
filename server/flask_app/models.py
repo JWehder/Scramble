@@ -295,7 +295,7 @@ class Week(BaseModel):
     SeasonId: PyObjectId
     Standings: List[PyObjectId]                                           
     FreeAgentSignings: List[PyObjectId]
-    Matchups: List[Tuple[PyObjectId, PyObjectId]]
+    Matchups: List[List[PyObjectId, PyObjectId]]
     TournamentId: PyObjectId
 
     @validator('TournamentId')
@@ -416,6 +416,8 @@ class Team(BaseModel):
     Golfers: Dict[PyObjectId, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
     OwnerId: PyObjectId
     LeagueId: PyObjectId
+    DraftPicks: List[PyObjectId]
+    Points: Optional[int] = Field(description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
 
     class Config:
         allow_population_by_field_name = True
