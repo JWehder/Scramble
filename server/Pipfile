@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+flask = "*"
+flask-migrate = "*"
+flask-restful = "*"
+flask-sqlalchemy = "*"
+flask-cors = "*"
+importlib-resources = "*"
+ipdb = "*"
+pydantic = "*"
+flask-socketio = "*"
+bcrypt = "*"
+gspread = "*"
+pandas = "*"
+python-dotenv = "*"
+pymongo = "*"
+selenium = "*"
+
+[dev-packages]
+
+[requires]
+python_full_version = "3.8.13.13"

@@ -1,3 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+
+    .sidebar-tooltip-container {
+        @apply relative flex items-center justify-center
+        h-12 w-12 mx-auto shadow-lg bg-sand text-dark hover:cursor-pointer
+        rounded-3xl ease-linear;
+    }
+
+    .sidebar-tooltip {
+        @apply absolute w-auto m-2 min-w-max rounded-md
+        shadow-md text-light bg-middle text-xs font-bold transition-all duration-100 scale-0 origin-left z-50 opacity-90;
+    }
+
+    .tooltip-container {
+        @apply relative items-center justify-center
+        inline-block mx-auto
+        hover:text-white hover:cursor-pointer
+        rounded-3xl transition-all duration-300 ease-linear;
+    }
+
+    .tooltip {
+        @apply min-w-max rounded-md
+        shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-100 scale-0 justify-center flex items-center z-50;
+    }
+
+}
+
+.lobster-two-regular-italic {
+    font-family: "Lobster Two", sans-serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: xx-large;
+    color: green;
+}

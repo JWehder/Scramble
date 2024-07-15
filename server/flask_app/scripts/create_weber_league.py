@@ -79,25 +79,25 @@ def process_worksheet(worksheet):
 #     LeagueId: PyObjectId
 
 league = LeagueSettings(
-    _id: Optional[PyObjectId] = Field(alias='_id')
-    SnakeDraft = True,
-    StrokePlay = True,
-    ScorePlay = False,
-    MinFreeAgentDraftRounds = 1
-    MaxGolfersPerTeam = 3,
-    NumOfStarters = 3,
-    NumOfBenchGolfers = 0,
-    MaxDraftedPlayers = 3,
-    PointsPerScore = {},
-    NumOfBenchGolfers = 2,
-    MaxDraftedPlayers = 3,
-    PointsPerPlacing = [10, 8, 7, 6, 5, 4, 3, 2, 1]
-    Tournaments: List[PyObjectId] = Field(default_factory = lambda: get_all_tournament_ids())
-    MaxNumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
-    DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")
-    SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
-    HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
-    LeagueId: PyObjectId
+    # _id: Optional[PyObjectId] = Field(alias='_id')
+    # SnakeDraft = True,
+    # StrokePlay = True,
+    # ScorePlay = False,
+    # MinFreeAgentDraftRounds = 1
+    # MaxGolfersPerTeam = 3,
+    # NumOfStarters = 3,
+    # NumOfBenchGolfers = 0,
+    # MaxDraftedPlayers = 3,
+    # PointsPerScore = {},
+    # NumOfBenchGolfers = 2,
+    # MaxDraftedPlayers = 3,
+    # PointsPerPlacing = [10, 8, 7, 6, 5, 4, 3, 2, 1]
+    # Tournaments: List[PyObjectId] = Field(default_factory = lambda: get_all_tournament_ids())
+    # MaxNumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
+    # DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")
+    # SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
+    # HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
+    # LeagueId: PyObjectId
 )
 
 
