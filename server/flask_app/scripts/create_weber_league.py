@@ -91,7 +91,7 @@ league = LeagueSettings(
     PointsPerScore = {},
     NumOfBenchGolfers = 2,
     MaxDraftedPlayers = 3,
-    PointsPerPlacing: List[int] = Field(default_factory=lambda: [10, 8, 6, 5, 4, 3, 2, 1], description="Points awarded for placements")
+    PointsPerPlacing = [10, 8, 7, 6, 5, 4, 3, 2, 1]
     Tournaments: List[PyObjectId] = Field(default_factory = lambda: get_all_tournament_ids())
     MaxNumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
     DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")

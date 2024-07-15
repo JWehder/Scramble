@@ -299,6 +299,7 @@ class Week(BaseModel):
     TournamentId: PyObjectId
     TournamentId: PyObjectId
     TeamResults: List[PyObjectId]
+    LeagueId: PyObjectId
 
     @validator('TournamentId')
     def check_tournament_id_exists(cls, v):
@@ -312,6 +313,57 @@ class Week(BaseModel):
         if not (1 <= v <= 52):
             raise ValueError('Week number must be between 1 and 52')
         return v
+
+    def set_standings(self) -> bool:
+        league_id = team_results[0].LeagueId
+        league_settings = db.leaguessettings.find_one({"LeagueId": league_id})
+
+        if league_settings.get("HeadToHead"):
+            return False
+
+        team_results = []
+        
+        for team_result_id in self.TeamResults:
+            team_result_doc = db.teamresults.find_one({"_id": team_result_id})
+            if team_result_doc:
+                team_results.append(TeamResult(**team_result_doc))
+
+        # Determine the scoring type from the league settings
+        if team_results:
+
+            if league_settings is None:
+                raise ValueError("League settings not found.")
+
+            # Sort team results based on TotalPoints
+            sorted_team_results = sorted(team_results, key=lambda x: x.TotalPoints, reverse=True)
+
+            # Assign placing based on sorted results
+            for placing, team_result in enumerate(sorted_team_results, start=1):
+                # create a variable to hold the number of points the team is expected to get based off their current place
+                points_from_placing = 0
+
+                points_per_placing_arr = league_settings.get("PointsPerPlacing")
+
+                # number of places that add to an overall teams score in the standings
+                num_of_scoring_places = len(points_per_placing_arr)
+
+                if placing > num_of_scoring_places:
+                    points_from_placing = 0
+                else:
+                    points_from_placing += points_per_placing_arr[placing - 1]
+
+                db.teamresults.update_one(
+                    {"_id": team_result._id},
+                    {"$set": {
+                        "Placing": placing, 
+                        "PointsFromPlacing": points_from_placing
+                        }}
+                )
+
+            # Update the standings
+            self.Standings = [team_result._id for team_result in sorted_team_results]
+        
+        return True 
 
 class Season(BaseModel):
     _id: Optional[PyObjectId] = Field(alias='_id')
