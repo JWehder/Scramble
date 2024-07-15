@@ -15,8 +15,10 @@ ipdb = "*"
 pydantic = "*"
 flask-socketio = "*"
 python-dotenv = "*"
+pymongo = "*"
+selenium = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8.13"
+python_full_version = "3.8.13.13"

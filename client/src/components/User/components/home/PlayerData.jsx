@@ -4,9 +4,11 @@ export default function PlayerData({ rank, name, age, even }) {
 
     const brightness = even ? 'brightness-125' : '';
 
+    const exampleData = ["-3.2", "Top 10s", "Avg Placing", "Fedex Odds"];
+
     return (
-        <div className={`w-full flex bg-middle h-20 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate`}>
-            <div className="text-center flex w-3/6 items-center">
+        <div className={`w-full flex bg-middle h-14 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate p-2`}>
+            <div className="text-center flex w-1/2 items-center">
                 <div className="w-1/6">
                     {rank}
                 </div>
@@ -16,7 +18,7 @@ export default function PlayerData({ rank, name, age, even }) {
                             <Avatar 
                             imgUrl={""}
                             name={name}
-                            size={"12"}
+                            size={"10"}
                             />
                         </div>
 
@@ -31,19 +33,16 @@ export default function PlayerData({ rank, name, age, even }) {
                     </div>
                 </div>
             </div>
-            <div className="w-3/6 flex flex-row items-center">
-                <div className="flex flex-col w-1/3 items-center justify-center">
-                    -3.2
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center">
-                    Top 10s
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                    Avg Placing
-                </div>
-                <div className="flex flex-col w-1/3 items-center justify-center pr-2">
-                    Fedex Odds
-                </div>
+            <div className="w-1/2 flex flex-row items-center space-x-5">
+                {
+                    exampleData.map((data) => {
+                        return (
+                            <div className="flex flex-col w-6 flex-grow items-center justify-center">
+                                {data}
+                            </div>
+                        )
+                    })
+                }
             </div>
         </div>
     )

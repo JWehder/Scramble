@@ -61,6 +61,7 @@ const initialState = {
     loginModal: false,
     status: "idle",
     playerModal: true,
+    holesComparisonChart: false,
     leagues: [
         {
         "name": "Jake's League",
@@ -112,6 +113,9 @@ const userSlice = createSlice({
         },
         setPlayerModal (state) {
           state.playerModal = !(state.playerModal)
+        },
+        setHolesComparisonChart (state) {
+          state.holesComparisonChart = !state.holesComparisonChart;
         }
     },
     extraReducers: builder => {
@@ -196,6 +200,6 @@ const userSlice = createSlice({
     }
 });
 
-export const { setSavedChanges, setLoginModal, setPlayerModal } = userSlice.actions;
+export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart } = userSlice.actions;
 
 export default userSlice.reducer;

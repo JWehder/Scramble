@@ -3,7 +3,7 @@ import Standings from './Standings';
 import Roster from './Roster';
 import { useState } from 'react';
 import Leaderboard from './Leaderboard';
-import Players from './Players';
+import Golfers from './Golfers';
 import SquigglyUnderline from "../../../Utils/components/SquigglyLine"
 import Schedule from './Schedule';
 import { useSelector } from 'react-redux';
@@ -42,7 +42,7 @@ export default function LeagueDashboard() {
 
                 <div className='p-5 flex items-center justify-center w-1/3'>
                         <SquigglyUnderline 
-                        items={[{name:"Schedule"}, {name: "Standings"}, {name:"Team"}, {name:"Leaderboard"}, {name:"Players"}]}
+                        items={[{name:"Schedule"}, {name: "Standings"}, {name:"Team"}, {name:"Leaderboard"}, {name:"Golfers"}]}
                         setActiveComponent={setActiveComponent}
                         active={activeComponent}
                         />
@@ -75,9 +75,9 @@ export default function LeagueDashboard() {
                         <Leaderboard />
                     </div>
                 }
-                { activeComponent === "Players" && 
+                { activeComponent === "Golfers" && 
                     <div className='flex items-center justify-center'>
-                        <Players />
+                        <Golfers />
                     </div>
                 }
                 { activeComponent === "Schedule" && 
