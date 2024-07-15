@@ -12,6 +12,8 @@ flask-sqlalchemy = "*"
 flask-cors = "*"
 importlib-resources = "*"
 ipdb = "*"
+pydantic = "*"
+flask-socketio = "*"
 python-dotenv = "*"
 pymongo = "*"
 selenium = "*"
@@ -19,4 +21,4 @@ selenium = "*"
 [dev-packages]
 
 [requires]
-python_full_version = "3.8.13"
+python_full_version = "3.8.13.13"
