@@ -295,8 +295,10 @@ class Week(BaseModel):
     SeasonId: PyObjectId
     Standings: List[PyObjectId]                                           
     FreeAgentSignings: List[PyObjectId]
-    Matchups: List[List[PyObjectId, PyObjectId]]
+    Matchups: List[Dict[PyObjectId, PyObjectId]]
     TournamentId: PyObjectId
+    TournamentId: PyObjectId
+    TeamResults: List[PyObjectId]
 
     @validator('TournamentId')
     def check_tournament_id_exists(cls, v):
@@ -361,18 +363,29 @@ class League(BaseModel):
 class LeagueSettings(BaseModel):
     _id: Optional[PyObjectId] = Field(alias='_id')
     SnakeDraft: bool = Field(default=True, ge=1, description="the order of picks reverses with each round")
+    StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
+    ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
+    PointsPerScore: Optional[dict] = Field(default_factory=lambda: {    'Birdies': 3,
+    'Eagles': 5,
+    'Pars': 1,
+    'Albatross': 7,
+    'Bogeys': -3,
+    'DoubleBogeys': -5,
+    'WorseThanDoubleBogeys': -7
+    }, description="Points awarded per round performance")
     MinFreeAgentDraftRounds: int = Field(default=3, ge=1, description="Minimum number of draft rounds that need to be created each week")
     MaxGolfersPerTeam: int = Field(default=3, ge=1, description="Maximum number of golfers per team")
     NumOfStarters: int = Field(default=2, ge=1, description="Number of starters per team")
     NumOfBenchGolfers: int = Field(default=1, ge=1, description="Number of bench players per team")
     MaxDraftedPlayers: int = Field(default=1, ge=0, description="Number of draft players per week")
-    ScoringSystem: List[int] = Field(default_factory=lambda: [10, 8, 6, 5, 4, 3, 2, 1], description="Points awarded for placements")
+    PointsPerPlacing: List[int] = Field(default_factory=lambda: [10, 8, 6, 5, 4, 3, 2, 1], description="Points awarded for placements")
     Tournaments: List[PyObjectId] = Field(default_factory = lambda: get_all_tournament_ids())
     MaxNumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
     DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")
     SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
     HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
     LeagueId: PyObjectId
+    DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
 
     @validator('MinFreeAgentDraftRounds')
     def max_num_of_draft_rounds(cls, v):
@@ -407,6 +420,12 @@ class LeagueSettings(BaseModel):
     def drafting_period_must_be_valid(cls, v):
         if v not in ["weekly", "biweekly", "monthly"]:
             raise ValueError('Drafting period must be one of: "weekly", "biweekly", "monthly"')
+        return v
+
+    @validator('NumOfBenchGolfers')
+    def bench_players_under_limit(cls, v, values):
+        if v > values['MaxGolfersPerTeam'] or v > values[""]:
+            return ValueError("Your number of bench golfers must be less than your starters and max amount of players allowed on a team.")
         return v
 
 class Team(BaseModel):
@@ -469,6 +488,54 @@ class Team(BaseModel):
             golfer['is_bench'] = self.Golfers[golfer_id]['IsBench']
         
         return golfers
+
+class TeamResult(BaseModel):
+    _id: Optional[PyObjectId] = Field(alias='_id')
+    TeamId: PyObjectId
+    LeagueId: PyObjectId
+    TournamentId: PyObjectId
+    WeekStart: datetime
+    WeekEnd: datetime
+    TotalPoints: int = 0
+    GolfersScores: Dict[PyObjectId, Dict[str, int]]
+    Placing: int = 0
+    PointsFromPlacing: int = 0
+    
+    class Config:
+        allow_population_by_field_name = True
+        json_encoders = {PyObjectId: str}
+    
+    @validator('Placing')
+    def defined_players_must_be_less_than_max(cls, v, values):
+        num_of_teams_in_league = len(db.leagues.find_one({"_id": values["LeagueId"]}).Teams)
+        if v > num_of_teams_in_league:
+            raise ValueError('The placing the team currently is in is not possible based on the amount of teams in the league')
+        return v
+
+    def calculate_player_scores(self, db):
+        league_settings = db.leaguessettings.find_one({"LeagueId": self.LeagueId})
+        
+        if league_settings is None:
+            raise ValueError("League settings not found.")
+        
+        points_per_score = league_settings.get('PointsPerScore', {})
+        
+        for golfer_id in self.GolfersScores.items():
+            golfer_details = db.golfertournamentdetails.find_one({"GolferId": golfer_id, "TournamentId": self.TournamentId})
+            
+            if golfer_details is None:
+                continue
+            
+            if league_settings.get('StrokePlay'):
+                self.GolfersScores[golfer_id]['TotalScore'] = golfer_details.get('TotalScore', 0)
+            elif league_settings.get('ScorePlay'):
+                for score_type in ['Birdies', 'Pars', 'Bogeys', 'DoubleBogeys', 'WorseThanDoubleBogeys']:
+                    historical_num_of_score_type = self.GolfersScores[golfer_id].get(score_type, 0)
+                    curr_num_of_score_type = golfer_details.get(score_type, 0)
+                    if historical_num_of_score_type != curr_num_of_score_type:
+                        difference_in_score_type_count = curr_num_of_score_type - historical_num_of_score_type
+                        self.TotalPoints += (points_per_score.get(score_type, 0) * difference_in_score_type_count)
+                        self.GolfersScores[golfer_id][score_type] = curr_num_of_score_type
 
 class Draft(BaseModel):
     _id: Optional[PyObjectId] = Field(alias='_id')
