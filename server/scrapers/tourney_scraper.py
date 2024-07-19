@@ -9,6 +9,15 @@ import json
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait, Select
 import os
+from selenium.common.exceptions import NoSuchElementException
+import pytz
+
+def check_data_exists(parent_element, query_element):
+    try:
+        data = parent_element.find_element(By.CSS_SELECTOR, query_element)
+        return True if data else False
+    except NoSuchElementException:
+        return False
 
 def save_tournament(tournament_name, tournament_details):
 
@@ -38,143 +47,266 @@ def save_tournament(tournament_name, tournament_details):
 
 tournaments = [
     {
-        "EndDate": "2024-01-07T00:00:00",
-        "StartDate": "2024-01-04T00:00:00",
-        "Name": "The Sentry",
+        "EndDate": "2024-07-21T00:00:00",
+        "StartDate": "2024-07-18T00:00:00",
+        "Name": "The Open",
         "Venue": [
-            "Kapalua Resort (Plantation Course)"
+            "Royal Troon Golf Course"
         ],
-        "City": "Kapalua",
-        "State": "HI",
+        "City": "Troon",
+        "State": "Scotland",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580329",
-            "https://www.espn.com/golf/player/_/id/3449/chris-kirk"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580360",
+            "https://www.espn.com/golf/player/_/id/1225/brian-harman"
         ]
     },
     {
-        "EndDate": "2024-01-14T00:00:00",
-        "StartDate": "2024-01-11T00:00:00",
-        "Name": "Sony Open in Hawaii",
+        "EndDate": "2024-07-21T00:00:00",
+        "StartDate": "2024-07-18T00:00:00",
+        "Name": "Barracuda Championship",
         "Venue": [
-            "Waialae Country Club"
+            "Tahoe Mountain Club (Old Greenwood)"
         ],
-        "City": "Honolulu",
-        "State": "HI",
-        "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580330",
-            "https://www.espn.com/golf/player/_/id/5462/grayson-murray"
-        ]
-    },
-    {
-        "EndDate": "2024-01-21T00:00:00",
-        "StartDate": "2024-01-18T00:00:00",
-        "Name": "The American Express",
-        "Venue": [
-            "La Quinta Country Club"
-        ],
-        "City": "La Quinta",
+        "City": "Truckee",
         "State": "CA",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580331",
-            "https://www.espn.com/golf/player/_/id/4832046/nick-dunlap"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580361",
+            "https://www.espn.com/golf/player/_/id/4419142/akshay-bhatia"
         ]
     },
     {
-        "EndDate": "2024-01-27T00:00:00",
-        "StartDate": "2024-01-24T00:00:00",
-        "Name": "Farmers Insurance Open",
+        "EndDate": "2024-07-28T00:00:00",
+        "StartDate": "2024-07-25T00:00:00",
+        "Name": "3M Open",
         "Venue": [
-            "Torrey Pines (North Course)"
+            "TPC Twin Cities"
         ],
-        "City": "La Jolla",
+        "City": "Blaine",
+        "State": "MN",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580362",
+            "https://www.espn.com/golf/player/_/id/4404991/lee-hodges"
+        ]
+    },
+    {
+        "EndDate": "2024-08-11T00:00:00",
+        "StartDate": "2024-08-08T00:00:00",
+        "Name": "Wyndham Championship",
+        "Venue": [
+            "Sedgefield Country Club"
+        ],
+        "City": "Greensboro",
+        "State": "NC",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580363",
+            "https://www.espn.com/golf/player/_/id/676/lucas-glover"
+        ]
+    },
+    {
+        "EndDate": "2024-08-18T00:00:00",
+        "StartDate": "2024-08-15T00:00:00",
+        "Name": "FedEx St. Jude Championship",
+        "Venue": [
+            "TPC Southwind"
+        ],
+        "City": "Memphis",
+        "State": "TN",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580364",
+            "https://www.espn.com/golf/player/_/id/676/lucas-glover"
+        ]
+    },
+    {
+        "EndDate": "2024-08-25T00:00:00",
+        "StartDate": "2024-08-22T00:00:00",
+        "Name": "BMW Championship",
+        "Venue": [
+            "Castle Pines Golf Club"
+        ],
+        "City": "Castle Rock",
+        "State": "CO",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580365",
+            "https://www.espn.com/golf/player/_/id/4364873/viktor-hovland"
+        ]
+    },
+    {
+        "EndDate": "2024-09-01T00:00:00",
+        "StartDate": "2024-08-22T00:00:00",
+        "Name": "TOUR Championship",
+        "Venue": [
+            "East Lake Golf Club"
+        ],
+        "City": "Atlanta",
+        "State": "GA",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580366",
+            "https://www.espn.com/golf/player/_/id/4364873/viktor-hovland"
+        ]
+    },
+    {
+        "EndDate": "2024-09-15T00:00:00",
+        "StartDate": "2024-09-12T00:00:00",
+        "Name": "Napa Valley Golf Championship",
+        "Venue": [
+            "Silverado Resort and Spa (North Course)"
+        ],
+        "City": "Napa",
         "State": "CA",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580332",
-            "https://www.espn.com/golf/player/_/id/10596/matthieu-pavon"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693936",
+            "https://www.espn.com/golf/player/_/id/10980/sahith-theegala"
         ]
     },
     {
-        "EndDate": "2024-02-03T00:00:00",
-        "StartDate": "2024-02-01T00:00:00",
-        "Name": "AT&T Pebble Beach Pro-Am",
+        "EndDate": "2024-09-29T00:00:00",
+        "StartDate": "2024-09-26T00:00:00",
+        "Name": "Presidents Cup",
         "Venue": [
-            "Spyglass Hill GC"
+            "The Royal Montreal Golf Club"
         ],
-        "City": "Pebble Beach",
-        "State": "CA",
+        "City": "Ile Bizard",
+        "State": "PQ",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580333",
-            "https://www.espn.com/golf/player/_/id/11119/wyndham-clark"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401656722"
         ]
     },
     {
-        "EndDate": "2024-02-11T00:00:00",
-        "StartDate": "2024-02-08T00:00:00",
-        "Name": "WM Phoenix Open",
+        "EndDate": "2024-10-06T00:00:00",
+        "StartDate": "2024-10-03T00:00:00",
+        "Name": "Sanderson Farms Championship",
         "Venue": [
-            "TPC Scottsdale (Stadium Course)"
+            "Country Club of Jackson"
         ],
-        "City": "Scottsdale",
-        "State": "AZ",
+        "City": "Jackson",
+        "State": "MS",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580334",
-            "https://www.espn.com/golf/player/_/id/3792/nick-taylor"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693937",
+            "https://www.espn.com/golf/player/_/id/1059/luke-list"
         ]
     },
     {
-        "EndDate": "2024-02-18T00:00:00",
-        "StartDate": "2024-02-15T00:00:00",
-        "Name": "The Genesis Invitational",
+        "EndDate": "2024-10-13T00:00:00",
+        "StartDate": "2024-10-10T00:00:00",
+        "Name": "Black Desert Championship",
         "Venue": [
-            "Riviera Country Club"
+            "Black Desert Resort Golf Course"
         ],
-        "City": "Pacific Palisades",
-        "State": "CA",
+        "City": "Ivins",
+        "State": "UT",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580335",
-            "https://www.espn.com/golf/player/_/id/5860/hideki-matsuyama"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693938"
         ]
     },
     {
-        "EndDate": "2024-02-25T00:00:00",
-        "StartDate": "2024-02-22T00:00:00",
-        "Name": "Mexico Open at Vidanta",
+        "EndDate": "2024-10-20T00:00:00",
+        "StartDate": "2024-10-17T00:00:00",
+        "Name": "Shriners Children's Open",
         "Venue": [
-            "Vidanta Vallarta"
+            "TPC Summerlin"
         ],
-        "City": "Nuevo Vallarta",
+        "City": "Las Vegas",
+        "State": "NV",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693939",
+            "https://www.espn.com/golf/player/_/id/4602673/tom-kim"
+        ]
+    },
+    {
+        "EndDate": "2024-10-27T00:00:00",
+        "StartDate": "2024-10-24T00:00:00",
+        "Name": "ZOZO CHAMPIONSHIP",
+        "Venue": [
+            "Accordia Golf Narashino CC"
+        ],
+        "City": "Chiba",
+        "State": "Japan",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693940",
+            "https://www.espn.com/golf/player/_/id/10592/collin-morikawa"
+        ]
+    },
+    {
+        "EndDate": "2024-11-10T00:00:00",
+        "StartDate": "2024-11-07T00:00:00",
+        "Name": "World Wide Technology Championship",
+        "Venue": [
+            "El Cardonal at Diamante"
+        ],
+        "City": "Cabo San Lucas",
         "State": "Mexico",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580336",
-            "https://www.espn.com/golf/player/_/id/9843/jake-knapp"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693941",
+            "https://www.espn.com/golf/player/_/id/9364/erik-van-rooyen"
         ]
     },
     {
-        "EndDate": "2024-03-03T00:00:00",
-        "StartDate": "2024-02-22T00:00:00",
-        "Name": "Cognizant Classic",
+        "EndDate": "2024-11-17T00:00:00",
+        "StartDate": "2024-11-14T00:00:00",
+        "Name": "Butterfield Bermuda Championship",
         "Venue": [
-            "PGA National Resort & Spa (The Champion)"
+            "Port Royal Golf Course"
         ],
-        "City": "Palm Beach Gardens",
-        "State": "FL",
+        "City": "Southampton Parish",
+        "State": "Bermuda",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580337",
-            "https://www.espn.com/golf/player/_/id/4425898/austin-eckroat"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693942",
+            "https://www.espn.com/golf/player/_/id/1264/camilo-villegas"
         ]
     },
     {
-        "EndDate": "2024-03-10T00:00:00",
-        "StartDate": "2024-03-07T00:00:00",
-        "Name": "Arnold Palmer Invitational pres. by Mastercard",
+        "EndDate": "2024-11-24T00:00:00",
+        "StartDate": "2024-11-21T00:00:00",
+        "Name": "The RSM Classic",
         "Venue": [
-            "Arnold Palmer's Bay Hill Club & Lodge"
+            "Sea Island Resort (Seaside Course)"
         ],
-        "City": "Orlando",
-        "State": "FL",
+        "City": "Saint Simons Island",
+        "State": "GA",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580338",
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693943",
+            "https://www.espn.com/golf/player/_/id/4375972/ludvig-aberg"
+        ]
+    },
+    {
+        "EndDate": "2024-12-08T00:00:00",
+        "StartDate": "2024-12-05T00:00:00",
+        "Name": "Hero World Challenge",
+        "Venue": [
+            "Albany"
+        ],
+        "City": "New Providence",
+        "State": "Bahamas",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693956",
             "https://www.espn.com/golf/player/_/id/9478/scottie-scheffler"
+        ]
+    },
+    {
+        "EndDate": "2024-12-15T00:00:00",
+        "StartDate": "2024-12-12T00:00:00",
+        "Name": "Grant Thornton Invitational",
+        "Venue": [
+            "Tiburón Golf Club"
+        ],
+        "City": "Naples",
+        "State": "FL",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401618459"
+        ]
+    },
+    {
+        "EndDate": "2024-12-15T00:00:00",
+        "StartDate": "2024-12-12T00:00:00",
+        "Name": "PGA TOUR Q-School presented by Korn Ferry",
+        "Venue": [
+            "TPC Sawgrass (Dye's Valley Course)"
+        ],
+        "City": "Ponte Vedra Beach",
+        "State": "FL",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401693957",
+            "https://www.espn.com/golf/player/_/id/11342/harrison-endycott"
         ]
     },
     {
@@ -192,130 +324,188 @@ tournaments = [
         ]
     },
     {
-        "EndDate": "2024-03-17T00:00:00",
-        "StartDate": "2024-03-14T00:00:00",
-        "Name": "THE PLAYERS Championship",
+        "EndDate": "2024-05-05T00:00:00",
+        "StartDate": "2024-05-02T00:00:00",
+        "Name": "THE CJ CUP Byron Nelson",
         "Venue": [
-            "TPC Sawgrass (THE PLAYERS Stadium Course)"
+            "TPC Craig Ranch"
         ],
-        "City": "Ponte Vedra Beach",
-        "State": "FL",
-        "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580340",
-            "https://www.espn.com/golf/player/_/id/9478/scottie-scheffler"
-        ]
-    },
-    {
-        "EndDate": "2024-03-24T00:00:00",
-        "StartDate": "2024-03-21T00:00:00",
-        "Name": "Valspar Championship",
-        "Venue": [
-            "Innisbrook Resort (Copperhead Course)"
-        ],
-        "City": "Palm Harbor",
-        "State": "FL",
-        "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580341",
-            "https://www.espn.com/golf/player/_/id/5692/peter-malnati"
-        ]
-    },
-    {
-        "EndDate": "2024-03-31T00:00:00",
-        "StartDate": "2024-03-28T00:00:00",
-        "Name": "Texas Children's Houston Open",
-        "Venue": [
-            "Memorial Park Golf Course"
-        ],
-        "City": "Houston",
+        "City": "McKinney",
         "State": "TX",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580342",
-            "https://www.espn.com/golf/player/_/id/6937/stephan-jaeger"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580348",
+            "https://www.espn.com/golf/player/_/id/9658/taylor-pendrith"
         ]
     },
     {
-        "EndDate": "2024-04-07T00:00:00",
-        "StartDate": "2024-04-04T00:00:00",
-        "Name": "Valero Texas Open",
+        "EndDate": "2024-05-12T00:00:00",
+        "StartDate": "2024-05-09T00:00:00",
+        "Name": "Wells Fargo Championship",
         "Venue": [
-            "TPC San Antonio (Oaks Course)"
+            "Quail Hollow Club"
         ],
-        "City": "San Antonio",
-        "State": "TX",
+        "City": "Charlotte",
+        "State": "NC",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580343",
-            "https://www.espn.com/golf/player/_/id/4419142/akshay-bhatia"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580349",
+            "https://www.espn.com/golf/player/_/id/3470/rory-mcilroy"
         ]
     },
     {
-        "EndDate": "2024-04-14T00:00:00",
-        "StartDate": "2024-04-11T00:00:00",
-        "Name": "Masters Tournament",
+        "EndDate": "2024-05-12T00:00:00",
+        "StartDate": "2024-05-09T00:00:00",
+        "Name": "Myrtle Beach Classic",
         "Venue": [
-            "Augusta National Golf Club"
+            "Dunes Golf & Beach Club"
         ],
-        "City": "Augusta",
-        "State": "GA",
-        "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580344",
-            "https://www.espn.com/golf/player/_/id/9478/scottie-scheffler"
-        ]
-    },
-    {
-        "EndDate": "2024-04-22T00:00:00",
-        "StartDate": "2024-04-18T00:00:00",
-        "Name": "RBC Heritage",
-        "Venue": [
-            "Harbour Town Golf Links"
-        ],
-        "City": "Hilton Head Island",
+        "City": "Myrtle Beach",
         "State": "SC",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580345",
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580350",
+            "https://www.espn.com/golf/player/_/id/4690755/chris-gotterup"
+        ]
+    },
+    {
+        "EndDate": "2024-05-19T00:00:00",
+        "StartDate": "2024-05-16T00:00:00",
+        "Name": "PGA Championship",
+        "Venue": [
+            "Valhalla Golf Club"
+        ],
+        "City": "Louisville",
+        "State": "KY",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580351",
+            "https://www.espn.com/golf/player/_/id/10140/xander-schauffele"
+        ]
+    },
+    {
+        "EndDate": "2024-05-26T00:00:00",
+        "StartDate": "2024-05-23T00:00:00",
+        "Name": "Charles Schwab Challenge",
+        "Venue": [
+            "Colonial Country Club"
+        ],
+        "City": "Fort Worth",
+        "State": "TX",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580352",
+            "https://www.espn.com/golf/player/_/id/10058/davis-riley"
+        ]
+    },
+    {
+        "EndDate": "2024-06-02T00:00:00",
+        "StartDate": "2024-05-23T00:00:00",
+        "Name": "RBC Canadian Open",
+        "Venue": [
+            "Hamilton Golf & Country Club"
+        ],
+        "City": "Hamilton",
+        "State": "ON",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580353",
+            "https://www.espn.com/golf/player/_/id/11378/robert-macintyre"
+        ]
+    },
+    {
+        "EndDate": "2024-06-09T00:00:00",
+        "StartDate": "2024-06-06T00:00:00",
+        "Name": "the Memorial Tournament pres. by Workday",
+        "Venue": [
+            "Muirfield Village Golf Club"
+        ],
+        "City": "Dublin",
+        "State": "OH",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580354",
             "https://www.espn.com/golf/player/_/id/9478/scottie-scheffler"
         ]
     },
     {
-        "EndDate": "2024-04-21T00:00:00",
-        "StartDate": "2024-04-18T00:00:00",
-        "Name": "Corales Puntacana Championship",
+        "EndDate": "2024-06-16T00:00:00",
+        "StartDate": "2024-06-13T00:00:00",
+        "Name": "U.S. Open",
         "Venue": [
-            "Puntacana Resort & Club (Corales Golf Course)"
+            "Pinehurst No. 2"
         ],
-        "City": "Punta Cana",
-        "State": "Dominican Republic",
+        "City": "Pinehurst",
+        "State": "NC",
         "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580346",
-            "https://www.espn.com/golf/player/_/id/1651/billy-horschel"
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580355",
+            "https://www.espn.com/golf/player/_/id/10046/bryson-dechambeau"
+        ]
+    },
+    {
+        "EndDate": "2024-06-23T00:00:00",
+        "StartDate": "2024-06-20T00:00:00",
+        "Name": "Travelers Championship",
+        "Venue": [
+            "TPC River Highlands"
+        ],
+        "City": "Cromwell",
+        "State": "CT",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580356",
+            "https://www.espn.com/golf/player/_/id/9478/scottie-scheffler"
+        ]
+    },
+    {
+        "EndDate": "2024-06-30T00:00:00",
+        "StartDate": "2024-06-27T00:00:00",
+        "Name": "Rocket Mortgage Classic",
+        "Venue": [
+            "Detroit Golf Club"
+        ],
+        "City": "Detroit",
+        "State": "MI",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580357",
+            "https://www.espn.com/golf/player/_/id/10863/cam-davis"
+        ]
+    },
+    {
+        "EndDate": "2024-07-07T00:00:00",
+        "StartDate": "2024-07-04T00:00:00",
+        "Name": "John Deere Classic",
+        "Venue": [
+            "TPC Deere Run"
+        ],
+        "City": "Silvis",
+        "State": "IL",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580358",
+            "https://www.espn.com/golf/player/_/id/4602218/davis-thompson"
+        ]
+    },
+    {
+        "EndDate": "2024-07-14T00:00:00",
+        "StartDate": "2024-07-11T00:00:00",
+        "Name": "Genesis Scottish Open",
+        "Venue": [
+            "The Renaissance Club"
+        ],
+        "City": "North Berwick",
+        "State": "Scotland",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401580359",
+            "https://www.espn.com/golf/player/_/id/11378/robert-macintyre"
+        ]
+    },
+    {
+        "EndDate": "2024-07-14T00:00:00",
+        "StartDate": "2024-07-11T00:00:00",
+        "Name": "ISCO Championship",
+        "Venue": [
+            "Keene Trace Golf Club (Champions Course)"
+        ],
+        "City": "Nicholasville",
+        "State": "KY",
+        "Links": [
+            "https://www.espn.com/golf/leaderboard?tournamentId=401634279",
+            "https://www.espn.com/golf/player/_/id/4589438/harry-hall"
         ]
     }
 ]
-
-tournamentInfo = {
-    # espnTournamentLink: 'https://www.espn.com/golf/leaderboard?tournamentId=401580344',
-    # completed: true or false,
-    # ongoing: true or false,
-    # "Name": "The Sentry",
-    # "StartDate": "2024-01-04T00:00:00",
-    # "EndDate": "2024-01-07T00:00:00",
-    # "IsOver": true,
-    # "IsInProgress": false,
-    # winner: null
-    # "Venue": "Plantation Course at Kapalua",
-    # "Location": "Kapalua, Maui, HI",
-    # "Par": 73,
-    # "Yards": 7596,
-    # "Purse": 20000000,
-    # "StartDateTime": "2024-01-04T12:45:00",
-    # "Canceled": false,
-    # "City": "Kapalua, Maui",
-    # "State": "HI",
-    # "ZipCode": null,
-    # "Country": "USA",
-    # "Format": "Stroke",
-    # winner
-    # "Rounds": []
-}
 
 def parse_leaderboard(leaderboard, driver):
 
@@ -492,12 +682,21 @@ def parse_leaderboard(leaderboard, driver):
 import re
 from datetime import datetime
 
+def print_children(element):
+    divs = element.find_elements(By.CSS_SELECTOR, "div")
+    for div in divs:
+        print(div.get_attribute("class"), div.text)
+
 def parse_tournament_header(webpage_data):
   # grab the tournament info from the header
   header = webpage_data.find_element(By.CSS_SELECTOR, "div.Leaderboard__Header")
 
-  # grab the par and yardage
-  par_yardage = webpage_data.find_element(By.CSS_SELECTOR, "div.Leaderboard__Course__Location__Detail")
+  par, yardage = None, None
+
+  if check_data_exists(header, "div.Leaderboard__Course__Location__Detail"):
+    # grab the par and yardage
+    par_yardage = webpage_data.find_element(By.CSS_SELECTOR, "div.Leaderboard__Course__Location__Detail")
+    par, yardage = re.findall(r'(\d+)', str(par_yardage.text))
 
   # what's the status of the tournament? In progress, finished?
   status = webpage_data.find_element(By.CSS_SELECTOR, "div.status")
@@ -505,35 +704,37 @@ def parse_tournament_header(webpage_data):
   # grab the specific element with the text that discloses the tournament status
   status_text = status.find_element(By.CSS_SELECTOR, "span").text
 
-  is_completed, in_progress = False, False
-
-  if status_text == "Final":
-    is_completed = True
-  else:
-    in_progress = True
-
-  par, yardage = re.findall(r'(\d+)', str(par_yardage.text))
-
   # grab the tournament info from the header
-  purse_previous_winner = webpage_data.find_element(By.CSS_SELECTOR, "div.n7")
+  purse_previous_winner_text = webpage_data.find_element(By.CSS_SELECTOR, "div.n7").text
+  print(purse_previous_winner_text)
 
-  # Split the string by uppercase letters
-  split_values = re.findall('[A-Z][^A-Z]*', str(purse_previous_winner.text))
+  # Split the string based on the expected patterns
+  split_values = re.findall(r'[A-Z][^A-Z]*', purse_previous_winner_text)
 
-  purse = re.findall(r'(\d+)', purse_previous_winner.text)
+  purse = None
+  previous_winner = None
 
-  if purse:
-    purse = int(''.join(purse))
+  # Handle the different possible cases
+  if len(split_values) >= 1:
 
-  previous_winner = ''.join(split_values[-2:])
+      # Case 1: Only the purse value
+      if "Purse" in split_values[0]:
+          purse = re.findall(r'(\d+)', split_values[0])
+          purse = int(''.join(purse)) if purse else None
+
+      # Case 2: Both purse and previous winner
+      if len(split_values) > 1:
+          previous_winner = ''.join(split_values[-2:]).strip()
+        
+      # Case 3: Only previous winner
+      if "Purse" not in split_values[0] and len(split_values) > 1:
+          previous_winner = ' '.join(split_values[-2:]).strip()
 
   return {
       "Purse": purse,
       "PreviousWinner": previous_winner,
       "Par": par,
-      "Yardage": yardage,
-      "IsCompleted": is_completed,
-      "InProgress": in_progress
+      "Yardage": yardage
       }
 
 def parse_winner_score(score_str):
@@ -571,6 +772,25 @@ def parse_playoff_leaderboard(table):
 
     return playoff
 
+def get_tournament_status(start_date_str, end_date_str):
+    # Define the local timezone
+    local_timezone = pytz.timezone('US/Eastern')
+    
+    # Get the current local time
+    current_local_time = datetime.now(local_timezone)
+    
+    # Parse the start and end date strings into datetime objects
+    start_date = datetime.fromisoformat(start_date_str).replace(tzinfo=local_timezone)
+    end_date = datetime.fromisoformat(end_date_str).replace(tzinfo=local_timezone)
+    
+    # Determine if the tournament is in progress or completed
+    tournament_info = {
+        "isInProgress": start_date <= current_local_time < end_date,
+        "isCompleted": current_local_time >= end_date
+    }
+    
+    return tournament_info
+
 def parse_tournaments(tournaments):
 
     options = Options()
@@ -587,30 +807,52 @@ def parse_tournaments(tournaments):
     driver = wd
 
     parsed_tournaments = []
+    tournament_links = []
 
     for item in tournaments:
         if 'DATES' in item:
             continue
 
+        item.update(get_tournament_status(item["StartDate"], item["EndDate"]))
+
         # Load page
         driver.get(item['Links'][0])
+
+        # retrieve purse, previous winner, par, and yardage
+        item.update(parse_tournament_header(driver))
+
+        if not check_data_exists(driver, "leaderboard_no_data"):
+            parsed_tournaments.append(item)
+            continue
 
         competitors_table = driver.find_element(By.CSS_SELECTOR, "div.competitors")
 
         responsive_tables = competitors_table.find_elements(By.CSS_SELECTOR, "div.ResponsiveTable")
 
-        header = parse_tournament_header(driver)
+        # determine the amount of headers within the responsive table
+        table_headers = responsive_tables[-1].find_elements(By.CSS_SELECTOR, "th")
 
-        print(header)
+        # test if it's a legit scoreboard if it's before the tourney and they are just showing tee times.
+        if len(table_headers) <= 3:
+          # record the tee times
+          data = responsive_tables[-1].find_elements(By.CSS_SELECTOR, "tr.Table__TR")
+          item["Golfers"] = []
+          for datap in data[1:]:
+              tee_times = datap.text.split('\n')  # Split the text into lines
+              name = tee_times[0]
+              tee_time_str = tee_times[1]
+              tee_time = datetime.strptime(tee_time_str, "%I:%M %p")
+              # Convert datetime to string before appending
+              tee_time_str = tee_time.strftime("%Y-%m-%d %H:%M:%S")
+              item["Golfers"].append({"name": name, "tee_time": tee_time_str})
+          parsed_tournaments.append(item)
+          continue
 
-        # retrieve purse, previous winner, par, and yardage
-        item.update(header)
-
-        print(item['Name'])
-
+        # determine if playoff holes took place
         if len(responsive_tables) > 1:
           item["Playoff"] = True
           item["PlayoffDetails"] = parse_playoff_leaderboard(responsive_tables[0])
+
 
         item['Golfers'] = parse_leaderboard(responsive_tables[-1], driver)
 

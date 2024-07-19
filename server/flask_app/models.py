@@ -122,13 +122,13 @@ class Tournament(BaseModel):
     City: str
     State: str
     Links: List[str]
-    Purse: int
-    PreviousWinner: str
-    Par: str
-    Yardage: str
-    IsCompleted: bool
-    InProgress: bool
-    Golfers: List[PyObjectId]
+    Purse: Optional[int] = ""
+    PreviousWinner: Optional[str] = ""
+    Par: Optional[str] = ""
+    Yardage: Optional[str] = ""
+    IsCompleted: bool = False
+    InProgress: bool = False
+    Golfers: Optional[List[PyObjectId]] = []
 
     @validator('par')
     def par_must_be_valid(cls, v):
