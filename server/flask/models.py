@@ -41,6 +41,20 @@ class Hole(BaseModel):
     GolferTournamentDetailsId: PyObjectId
     RoundId: PyObjectId
 
+    def save(self) -> Optional[PyObjectId]:
+        hole_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in hole_dict and hole_dict['_id'] is not None:
+            # Update existing document
+            result = db.holes.update_one({'_id': hole_dict['_id']}, {'$set': hole_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(hole_dict['_id']))
+        else:
+            # Insert new document
+            result = db.holes.insert_one(hole_dict)
+            self._id = result.inserted_id
+        return self._id
+
     @validator('Strokes')
     def strokes_must_be_positive(cls, v):
         if v < 1:
@@ -68,6 +82,20 @@ class Round(BaseModel):
     Score: int
     Holes: List[PyObjectId]
 
+    def save(self) -> Optional[PyObjectId]:
+        round_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in round_dict and round_dict['_id'] is not None:
+            # Update existing document
+            result = db.rounds.update_one({'_id': round_dict['_id']}, {'$set': round_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(round_dict['_id']))
+        else:
+            # Insert new document
+            result = db.rounds.insert_one(round_dict)
+            self._id = result.inserted_id
+        return self._id
+
     @validator('GolferTournamentDetailsId')
     def golfer_details_exist(cls, v):
         if not db.golfertournamentdetails.find_one({"_id": v}):
@@ -94,6 +122,20 @@ class GolferTournamentDetails(BaseModel):
     FedexPts: Optional[str] = None
     TournamentId: PyObjectId
     Rounds: List[PyObjectId]
+
+    def save(self) -> Optional[PyObjectId]:
+        golfer_tournament_details_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in golfer_tournament_details_dict and golfer_tournament_details_dict['_id'] is not None:
+            # Update existing document
+            result = db.golfertournamentdetails.update_one({'_id': golfer_tournament_details_dict['_id']}, {'$set': golfer_tournament_details_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(golfer_tournament_details_dict['_id']))
+        else:
+            # Insert new document
+            result = db.golfertournamentdetails.insert_one(golfer_tournament_details_dict)
+            self._id = result.inserted_id
+        return self._id
 
     @root_validator(pre=True)
     def set_defaults(cls, values):
@@ -130,6 +172,20 @@ class Tournament(BaseModel):
     InProgress: bool = False
     Golfers: Optional[List[PyObjectId]] = []
 
+    def save(self) -> Optional[PyObjectId]:
+        tournament_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in tournament_dict and tournament_dict['_id'] is not None:
+            # Update existing document
+            result = db.tournaments.update_one({'_id': tournament_dict['_id']}, {'$set': tournament_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(tournament_dict['_id']))
+        else:
+            # Insert new document
+            result = db.tournaments.insert_one(tournament_dict)
+            self._id = result.inserted_id
+        return self._id
+
     @validator('par')
     def par_must_be_valid(cls, v):
         valid_pars = ['3', '4', '5', '6']
@@ -160,6 +216,20 @@ class Golfer(BaseModel):
     TurnedPro: Optional[str] = None
     TournamentDetails: Optional[List[GolferTournamentDetails]] = None
     OWGR: Optional[str] = None
+
+    def save(self) -> Optional[PyObjectId]:
+        golfer_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in golfer_dict and golfer_dict['_id'] is not None:
+            # Update existing document
+            result = db.golfers.update_one({'_id': golfer_dict['_id']}, {'$set': golfer_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(golfer_dict['_id']))
+        else:
+            # Insert new document
+            result = db.golfers.insert_one(golfer_dict)
+            self._id = result.inserted_id
+        return self._id
 
     @root_validator(pre=True)
     def set_defaults(cls, values):
@@ -246,10 +316,23 @@ class User(BaseModel):
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
         return hashed_password.decode('utf-8')
 
-    def save(self, db):
-        self.Password = self.hash_password(self.Password)
-        user_dict = self.dict(by_alias=True)
-        db.users.insert_one(user_dict)
+    def save(self):
+        # Hash the password before saving
+        if self.Password:
+            self.Password = self.hash_password(self.Password)
+        
+        # Convert the object to a dictionary with aliases and exclude unset fields
+        user_dict = self.dict(by_alias=True, exclude_unset=True)
+        
+        if '_id' in user_dict and user_dict['_id'] is not None:
+            # Update existing document
+            result = db.users.update_one({'_id': user_dict['_id']}, {'$set': user_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(user_dict['_id']))
+        else:
+            # Insert new document
+            result = db.users.insert_one(user_dict)
+            self._id = result.inserted_id
 
     @validator('Username')
     def validate_username(cls, v):

@@ -1,0 +1,19 @@
+{
+    "EndDate": "2024-12-15T00:00:00",
+    "StartDate": "2024-12-12T00:00:00",
+    "Name": "Grant Thornton Invitational",
+    "Venue": [
+        "Tibur\u00f3n Golf Club"
+    ],
+    "City": "Naples",
+    "State": "FL",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401618459"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": 4000000,
+    "PreviousWinner": null,
+    "Par": "72",
+    "Yardage": "6556"
+}

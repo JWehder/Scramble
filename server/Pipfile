@@ -20,6 +20,7 @@ pandas = "*"
 python-dotenv = "*"
 pymongo = "*"
 selenium = "*"
+pytz = "*"
 
 [dev-packages]
 

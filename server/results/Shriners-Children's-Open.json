@@ -1,0 +1,20 @@
+{
+    "EndDate": "2024-10-20T00:00:00",
+    "StartDate": "2024-10-17T00:00:00",
+    "Name": "Shriners Children's Open",
+    "Venue": [
+        "TPC Summerlin"
+    ],
+    "City": "Las Vegas",
+    "State": "NV",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401693939",
+        "https://www.espn.com/golf/player/_/id/4602673/tom-kim"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": null,
+    "PreviousWinner": "Tom  Kim",
+    "Par": "71",
+    "Yardage": "7255"
+}

@@ -1,0 +1,20 @@
+{
+    "EndDate": "2024-12-08T00:00:00",
+    "StartDate": "2024-12-05T00:00:00",
+    "Name": "Hero World Challenge",
+    "Venue": [
+        "Albany"
+    ],
+    "City": "New Providence",
+    "State": "Bahamas",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401693956",
+        "https://www.espn.com/golf/player/_/id/9478/scottie-scheffler"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": 5000000,
+    "PreviousWinner": "Scottie Scheffler",
+    "Par": "72",
+    "Yardage": "7309"
+}

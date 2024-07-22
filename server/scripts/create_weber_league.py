@@ -1,8 +1,8 @@
+from flask.models import LeagueSettings
 import gspread
 import pandas as pd
 from pymongo import MongoClient
 import os
-from config import LeagueSettings
 
 passcode = os.getenv("MONGO_PASSWORD")
 

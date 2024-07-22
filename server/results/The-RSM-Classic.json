@@ -1,0 +1,20 @@
+{
+    "EndDate": "2024-11-24T00:00:00",
+    "StartDate": "2024-11-21T00:00:00",
+    "Name": "The RSM Classic",
+    "Venue": [
+        "Sea Island Resort (Seaside Course)"
+    ],
+    "City": "Saint Simons Island",
+    "State": "GA",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401693943",
+        "https://www.espn.com/golf/player/_/id/4375972/ludvig-aberg"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": null,
+    "PreviousWinner": "Winner Ludvig \u00c5berg",
+    "Par": "70",
+    "Yardage": "7005"
+}

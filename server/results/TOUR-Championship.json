@@ -1,0 +1,20 @@
+{
+    "EndDate": "2024-09-01T00:00:00",
+    "StartDate": "2024-08-22T00:00:00",
+    "Name": "TOUR Championship",
+    "Venue": [
+        "East Lake Golf Club"
+    ],
+    "City": "Atlanta",
+    "State": "GA",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401580366",
+        "https://www.espn.com/golf/player/_/id/4364873/viktor-hovland"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": null,
+    "PreviousWinner": "Viktor  Hovland",
+    "Par": "70",
+    "Yardage": "7346"
+}

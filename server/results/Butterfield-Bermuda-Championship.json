@@ -1,0 +1,20 @@
+{
+    "EndDate": "2024-11-17T00:00:00",
+    "StartDate": "2024-11-14T00:00:00",
+    "Name": "Butterfield Bermuda Championship",
+    "Venue": [
+        "Port Royal Golf Course"
+    ],
+    "City": "Southampton Parish",
+    "State": "Bermuda",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401693942",
+        "https://www.espn.com/golf/player/_/id/1264/camilo-villegas"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": null,
+    "PreviousWinner": "Camilo  Villegas",
+    "Par": null,
+    "Yardage": null
+}

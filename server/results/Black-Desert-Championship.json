@@ -1,0 +1,19 @@
+{
+    "EndDate": "2024-10-13T00:00:00",
+    "StartDate": "2024-10-10T00:00:00",
+    "Name": "Black Desert Championship",
+    "Venue": [
+        "Black Desert Resort Golf Course"
+    ],
+    "City": "Ivins",
+    "State": "UT",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401693938"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": null,
+    "PreviousWinner": null,
+    "Par": null,
+    "Yardage": null
+}

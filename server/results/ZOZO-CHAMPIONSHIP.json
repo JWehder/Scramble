@@ -1,0 +1,20 @@
+{
+    "EndDate": "2024-10-27T00:00:00",
+    "StartDate": "2024-10-24T00:00:00",
+    "Name": "ZOZO CHAMPIONSHIP",
+    "Venue": [
+        "Accordia Golf Narashino CC"
+    ],
+    "City": "Chiba",
+    "State": "Japan",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401693940",
+        "https://www.espn.com/golf/player/_/id/10592/collin-morikawa"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": null,
+    "PreviousWinner": "Collin  Morikawa",
+    "Par": null,
+    "Yardage": null
+}

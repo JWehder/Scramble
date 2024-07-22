@@ -1,0 +1,20 @@
+{
+    "EndDate": "2024-08-25T00:00:00",
+    "StartDate": "2024-08-22T00:00:00",
+    "Name": "BMW Championship",
+    "Venue": [
+        "Castle Pines Golf Club"
+    ],
+    "City": "Castle Rock",
+    "State": "CO",
+    "Links": [
+        "https://www.espn.com/golf/leaderboard?tournamentId=401580365",
+        "https://www.espn.com/golf/player/_/id/4364873/viktor-hovland"
+    ],
+    "isInProgress": false,
+    "isCompleted": false,
+    "Purse": 20000000,
+    "PreviousWinner": "Viktor Hovland",
+    "Par": null,
+    "Yardage": null
+}
