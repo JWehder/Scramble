@@ -4,13 +4,14 @@ from dotenv import load_dotenv
 import json
 import re
 import sys
+from create_players_with_player_pages import create_golfers_in_tournament
 
-# Add the parent directory to the Python path
-parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(parent_directory)
+# Adjust the paths for MacOS
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Now you can import models from flask_app
-from flask.models import  Tournament # Replace YourModelClass with the actual class you want to import
+from flask_app.models import Tournament, GolferTournamentDetails, Round # Replace YourModelClass with the actual class you want to import
+from flask_app.config import db
 
 load_dotenv()
 
@@ -38,10 +39,10 @@ for filename in os.listdir(directory):
         json_files.append(json_file_path)
 
 # Iterate through all JSON files
-for json_file_path in json_files[6:]:
+for json_file_path in json_files:
     # Load tournament data from JSON file
     with open(json_file_path, "r") as file:
-        tournament_data = json.load(file)
+        tournament_data = json.load(file)           
         
         # Process tournament data here
         split_full_name = tournament_data["PreviousWinner"].split(' ')
@@ -68,6 +69,9 @@ for json_file_path in json_files[6:]:
         tournament_id = tournament.save()
 
         if tournament_data["Golfers"]: 
+            # if the golfers data is available, create records for them if there aren't any already.
+            create_golfers_in_tournament(tournament_data["Links"][0])
+
             # Iterate over golfers
             for golfer_data in tournament_data["Golfers"]:
 
@@ -97,48 +101,50 @@ for json_file_path in json_files[6:]:
                     continue
 
                 # Insert Golfer Tournament Details
-                golfer_details = {
-                    "GolferId": golfer["_id"],
-                    "Position": golfer_data.get("Position"),
-                    "Name": golfer["FirstName"] + " " + golfer["LastName"],
-                    "Score": golfer_data.get("Score"),
-                    "R1": golfer_data.get("R1"),
-                    "R2": golfer_data.get("R2"),
-                    "R3": golfer_data.get("R3"),
-                    "R4": golfer_data.get("R4"),
-                    "TotalStrokes": golfer_data.get("TotalStrokes"),
-                    "Earnings": golfer_data.get("Earnings"),
-                    "FedexPts": golfer_data.get("FedexPts"),
-                    "TournamentId": tournament_id,
-                    "Rounds": []
-                }
+                golfer_details = GolferTournamentDetails(
+                    GolferId= golfer["_id"],
+                    Position= golfer_data.get("Position"),
+                    Name= golfer["FirstName"] + " " + golfer["LastName"],
+                    Score= golfer_data.get("Score"),
+                    R1= golfer_data.get("R1"),
+                    R2= golfer_data.get("R2"),
+                    R3= golfer_data.get("R3"),
+                    R4= golfer_data.get("R4"),
+                    TotalStrokes= golfer_data.get("TotalStrokes"),
+                    Earnings= golfer_data.get("Earnings"),
+                    FedexPts= golfer_data.get("FedexPts"),
+                    TournamentId= tournament_id,
+                    Rounds= []
+                )
                 
-                details_id = db.golfertournamentdetails.insert_one(golfer_details).inserted_id
+                golfer_details_id = golfer_details.save()
 
                 # Append to the TournamentDetails array
                 db.golfers.update_one(
                     {"_id": golfer["_id"]},
-                    {"$push": {"TournamentDetails": details_id}}
+                    {"$push": {"TournamentDetails": golfer_details_id}}
                 )
 
                 # Add Rounds and Holes
                 for round_data in golfer_data["Rounds"]:
 
-                    round_id = db.rounds.insert_one({
-                            "GolferTournamentDetailsId": details_id,
-                            "Round": round_data["Round"],
-                            "Birdies": round_data["Birdies"],
-                            "Eagles": round_data["Eagles"],
-                            "Pars": round_data["Pars"],
-                            "Albatross": round_data["Albatross"],
-                            "Bogeys": round_data["Bogeys"],
-                            "DoubleBogeys": round_data["DoubleBogeys"],
-                            "WorseThanDoubleBogeys": round_data["WorseThanDoubleBogeys"],
-                            "Score": round_data["Score"],
-                    }).inserted_id
+                    round = Round(
+                            GolferTournamentDetailsId= golfer_details_id,
+                            Round= round_data["Round"],
+                            Birdies= round_data["Birdies"],
+                            Eagles= round_data["Eagles"],
+                            Pars= round_data["Pars"],
+                            Albatross= round_data["Albatross"],
+                            Bogeys= round_data["Bogeys"],
+                            DoubleBogeys= round_data["DoubleBogeys"],
+                            WorseThanDoubleBogeys= round_data["WorseThanDoubleBogeys"],
+                            Score= round_data["Score"],
+                    )
+
+                    round_id = round.save()
 
                     for hole_data in round_data["Holes"]:
-                        hole_data["GolferTournamentDetailsId"] = details_id
+                        hole_data["GolferTournamentDetailsId"] = golfer_details_id
                         hole_data["RoundId"] = round_id
                         hole_id = db.holes.insert_one(hole_data).inserted_id
 
@@ -149,7 +155,7 @@ for json_file_path in json_files[6:]:
                     db.rounds.update_one( {"_id": round_id}, {"$set": {"Holes": holes_documents}} )
 
                     # Append Round reference to Golfer Tournament Details
-                    db.golfertournamentdetails.update_one({"_id": details_id}, {"$push": {"Rounds": round_id }})
+                    db.golfertournamentdetails.update_one({"_id": golfer_details_id}, {"$push": {"Rounds": round_id }})
 
             # Find golfers associated with this tournament
             golfers_documents = list(
@@ -158,5 +164,6 @@ for json_file_path in json_files[6:]:
 
             for golfer_doc in golfers_documents:
                 db.tournaments.update_one( {"_id": tournament_id}, {"$push": {"Golfers": golfer_doc }} )
-
+        else:
+            db.tournaments.update_one( {"_id": tournament_id}, {"$push": {"Golfers": [] }} )
 client.close()

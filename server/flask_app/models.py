@@ -2,7 +2,13 @@ from typing import List, Optional, Tuple, Dict
 from pydantic import BaseModel, Field, EmailStr, validator, root_validator
 from datetime import datetime, timedelta
 from bson import ObjectId
+
+# Add this line to ensure the correct path
+import sys
+import os
+sys.path.append(os.path.dirname(__file__))
 from config import db
+
 import re
 import bcrypt
 
@@ -18,8 +24,8 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type='string')
+    def __get_pydantic_json_schema__(cls, schema):
+        schema.update(type="string")
 
 def get_all_tournament_ids():
     tournaments_collection = db.tournaments
@@ -27,7 +33,7 @@ def get_all_tournament_ids():
     return [ObjectId(tid) for tid in tournament_ids]
 
 class Hole(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     Strokes: int
     Par: bool
     NetScore: int
@@ -69,7 +75,7 @@ class Hole(BaseModel):
 
 
 class Round(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     GolferTournamentDetailsId: PyObjectId
     Round: str
     Birdies: int
@@ -94,21 +100,21 @@ class Round(BaseModel):
             # Insert new document
             result = db.rounds.insert_one(round_dict)
             self._id = result.inserted_id
-        return self._id
+        return self.id
 
-    @validator('GolferTournamentDetailsId')
+    @field_validator('GolferTournamentDetailsId')
     def golfer_details_exist(cls, v):
         if not db.golfertournamentdetails.find_one({"_id": v}):
             raise ValueError("No value found for that golfertournamentdetails id")
 
-    @validator('Score')
+    @field_validator('Score')
     def score_must_be_positive(cls, v):
         if v < 1:
             raise ValueError('Score must be positive')
         return v
 
 class GolferTournamentDetails(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     GolferId: PyObjectId
     Position: str
     Name: str
@@ -135,7 +141,7 @@ class GolferTournamentDetails(BaseModel):
             # Insert new document
             result = db.golfertournamentdetails.insert_one(golfer_tournament_details_dict)
             self._id = result.inserted_id
-        return self._id
+        return self.id
 
     @root_validator(pre=True)
     def set_defaults(cls, values):
@@ -156,7 +162,7 @@ class GolferTournamentDetails(BaseModel):
         return values
 
 class Tournament(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     EndDate: datetime
     StartDate: datetime
     Name: str
@@ -184,9 +190,9 @@ class Tournament(BaseModel):
             # Insert new document
             result = db.tournaments.insert_one(tournament_dict)
             self._id = result.inserted_id
-        return self._id
+        return self.id
 
-    @validator('par')
+    @validator('Par')
     def par_must_be_valid(cls, v):
         valid_pars = ['3', '4', '5', '6']
         if v not in valid_pars:
@@ -194,7 +200,7 @@ class Tournament(BaseModel):
         return v
 
 class Golfer(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     Rank: str
     FirstName: str
     LastName: str
@@ -229,7 +235,7 @@ class Golfer(BaseModel):
             # Insert new document
             result = db.golfers.insert_one(golfer_dict)
             self._id = result.inserted_id
-        return self._id
+        return self.id
 
     @root_validator(pre=True)
     def set_defaults(cls, values):
@@ -300,7 +306,7 @@ class Golfer(BaseModel):
 
 
 class User(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     Username: str
     Email: EmailStr
     Password: str
@@ -332,7 +338,7 @@ class User(BaseModel):
         else:
             # Insert new document
             result = db.users.insert_one(user_dict)
-            self._id = result.inserted_id
+            self.id = result.inserted_id
 
     @validator('Username')
     def validate_username(cls, v):
@@ -342,7 +348,7 @@ class User(BaseModel):
         return v
 
     @validator('Username')
-    def validate_username(cls, v):
+    def validate_username_length(cls, v):
         # Add logic to check for unique username in the database
         if len(v) < 5:
             raise ValueError('Username must have at least 8 characters.')
@@ -373,7 +379,7 @@ class User(BaseModel):
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 class Week(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     WeekNumber: int
     SeasonId: PyObjectId
     Standings: List[PyObjectId]                                           
@@ -449,7 +455,7 @@ class Week(BaseModel):
         return True 
 
 class Season(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     SeasonNumber: int
     StartDate: datetime
     EndDate: datetime
@@ -471,7 +477,7 @@ class Season(BaseModel):
         return v
 
 class League(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     Name: str
     CommissionerId: str
     Teams: List[str] = []
@@ -496,7 +502,7 @@ class League(BaseModel):
         allow_population_by_field_name = True
 
 class LeagueSettings(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     SnakeDraft: bool = Field(default=True, ge=1, description="the order of picks reverses with each round")
     StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
     ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
@@ -564,7 +570,7 @@ class LeagueSettings(BaseModel):
         return v
 
 class Team(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     TeamName: str
     ProfilePicture: Optional[str] = Field(description="Profile picture for team")
     Golfers: Dict[PyObjectId, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
@@ -625,7 +631,7 @@ class Team(BaseModel):
         return golfers
 
 class TeamResult(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     TeamId: PyObjectId
     LeagueId: PyObjectId
     TournamentId: PyObjectId
@@ -673,7 +679,7 @@ class TeamResult(BaseModel):
                         self.GolfersScores[golfer_id][score_type] = curr_num_of_score_type
 
 class Draft(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     LeagueId: str
     StartDate: datetime
     EndDate: Optional[datetime] = None
@@ -733,7 +739,7 @@ class Draft(BaseModel):
         }
 
 class DraftPick(BaseModel):
-    _id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id')
     TeamId: str
     GolferId: str
     RoundNumber: int

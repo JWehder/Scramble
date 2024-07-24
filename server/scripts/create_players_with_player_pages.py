@@ -6,19 +6,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 import re
-from pymongo import MongoClient
+import sys
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-passcode = os.getenv("MONGO_PASSWORD")
-
-uri = f"mongodb+srv://jakewehder:{passcode}@cluster0.gbnbssg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
-client = MongoClient(uri)
-
-db = client.scramble
+# Adjust the paths for MacOS
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from flask_app.config import db
 
 golfers_collection = db.golfers
 
@@ -51,9 +44,7 @@ wd = webdriver.Chrome(options=options)
 
 driver = wd
 
-tournament_links = ["https://www.espn.com/golf/leaderboard?tournamentId=401580338", "https://www.espn.com/golf/leaderboard?tournamentId=401580333", "https://www.espn.com/golf/leaderboard?tournamentId=401580337", "https://www.espn.com/golf/leaderboard?tournamentId=401580346", "https://www.espn.com/golf/leaderboard?tournamentId=401580332", "https://www.espn.com/golf/leaderboard?tournamentId=401580344", "https://www.espn.com/golf/leaderboard?tournamentId=401580336", "https://www.espn.com/golf/leaderboard?tournamentId=401580345", "https://www.espn.com/golf/leaderboard?tournamentId=401580330", "https://www.espn.com/golf/leaderboard?tournamentId=401580342", "https://www.espn.com/golf/leaderboard?tournamentId=401580331", "https://www.espn.com/golf/leaderboard?tournamentId=401580335", "https://www.espn.com/golf/leaderboard?tournamentId=401580340", "https://www.espn.com/golf/leaderboard?tournamentId=401580329", "https://www.espn.com/golf/leaderboard?tournamentId=401580343", "https://www.espn.com/golf/leaderboard?tournamentId=401580341", "https://www.espn.com/golf/leaderboard?tournamentId=401580334"]
-
-for tournament_link in tournament_links:
+def create_golfers_in_tournament(tournament_link: str) -> None:
   # Load page
   driver.get(tournament_link)
 
@@ -117,5 +108,3 @@ for tournament_link in tournament_links:
         continue
 
 driver.quit()  
-
-client.close()
