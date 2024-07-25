@@ -31,20 +31,23 @@ def convert_to_date(date_string):
 
     return birth_date
 
-options = Options()
-
-options = webdriver.ChromeOptions()
-options.add_argument('--no-sandbox')
-options.headless = True
-
-options.add_argument('--headless=new')
-
-# Only pass options once when creating the WebDriver instance
-wd = webdriver.Chrome(options=options)
-
-driver = wd
 
 def create_golfers_in_tournament(tournament_link: str) -> None:
+
+  # Establish a connection
+  options = Options()
+
+  options = webdriver.ChromeOptions()
+  options.add_argument('--no-sandbox')
+  options.headless = True
+
+  options.add_argument('--headless=new')
+
+  # Only pass options once when creating the WebDriver instance
+  wd = webdriver.Chrome(options=options)
+
+  driver = wd
+
   # Load page
   driver.get(tournament_link)
 
@@ -53,19 +56,28 @@ def create_golfers_in_tournament(tournament_link: str) -> None:
   golfer_links = []
 
   for golfer in golfers:
-    golfer_links.append(golfer.get_attribute('href'))
+    golfer_link = {golfer.text: golfer.get_attribute('href')}
+    golfer_links.append({golfer.text: golfer.get_attribute('href')})
 
-  for golfer_link in golfer_links:
+  for golfer in golfer_links:
+    golfer_link, player_name = None, None
+    for key, value in golfer.items():
+      golfer_link = value
+      player_name = key
     driver.get(golfer_link)
 
     # create a dict to hold all the info collected from the individual page
     golfer_detail = {}
     player_header = driver.find_element(By.CSS_SELECTOR, "div.PlayerHeader__Container")
-    player_name = player_header.find_element(By.CSS_SELECTOR, "h1.PlayerHeader__Name").text.split('\n')
+    player_name = golfer_link.text.split('\n')
+
     print(player_name)
-    first_name, last_name = [name[0] + name[1:].lower() for name in player_name]
-    # Query the golfer collection for the first and last name
-    query_golfer = golfers_collection.find_one({"FirstName": first_name, "LastName": last_name})
+    first_name, last_name = [name[0] + name[1:] for name in player_name]
+    # query the database for names case insensitively 
+    query_golfer = db.golfers.find_one({
+        "FirstName": {"$regex": f"^{first_name}$", "$options": "i"},
+        "LastName": {"$regex": f"^{last_name}$", "$options": "i"}
+      })
     # if we do not have the golfer in the database
     if query_golfer == None:
         golfer_detail["FirstName"], golfer_detail["LastName"] = first_name, last_name
@@ -107,4 +119,4 @@ def create_golfers_in_tournament(tournament_link: str) -> None:
       else:
         continue
 
-driver.quit()  
+  driver.quit()  

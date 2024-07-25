@@ -5,26 +5,36 @@ import json
 import re
 import sys
 from create_players_with_player_pages import create_golfers_in_tournament
+from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError
+from datetime import datetime
 
 # Adjust the paths for MacOS
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Now you can import models from flask_app
 from flask_app.models import Tournament, GolferTournamentDetails, Round # Replace YourModelClass with the actual class you want to import
-from flask_app.config import db
 
+# Load environment variables from .env file
 load_dotenv()
 
 passcode = os.getenv("MONGO_PASSWORD")
 
 uri = f"mongodb+srv://jakewehder:{passcode}@cluster0.gbnbssg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+# Initialize the MongoDB client
 
-# MongoDB Connection
-client = MongoClient(uri)
-db = client.scramble
-
+try:
+    client = MongoClient(uri, serverSelectionTimeoutMS=30000)
+    db = client.scramble
+    print("Database connection successful.")
+except ServerSelectionTimeoutError as e:
+    print(f"Database connection failed: {e}")
 # Path to the directory containing JSON files
 directory = "../results/"
+
+directory = os.path.abspath("../results/")
+
+print(db)
 
 # List to store the paths of all JSON files
 json_files = []
@@ -42,33 +52,42 @@ for filename in os.listdir(directory):
 for json_file_path in json_files:
     # Load tournament data from JSON file
     with open(json_file_path, "r") as file:
-        tournament_data = json.load(file)           
+        tournament_data = json.load(file)  
+
+        golfer_doc = None 
         
-        # Process tournament data here
-        split_full_name = tournament_data["PreviousWinner"].split(' ')
-        first_name, last_name = split_full_name[0], ' '.join(split_full_name[1:])
-        golfer_doc = db.golfers.find_one({ "FirstName": first_name, "LastName": last_name })
+        # Process PreviousWinner
+        if tournament_data.get("PreviousWinner"):
+            split_full_name = tournament_data["PreviousWinner"].split(' ')
+            first_name = split_full_name[0]
+            last_name = ' '.join(split_full_name[1:])
+            try:
+                golfer_doc = db.golfers.find_one({ "FirstName": first_name, "LastName": last_name })
+                print(golfer_doc["_id"])
+            except Exception as e:
+                print(f"Error retrieving golfer document: {e}")
 
         # Insert Tournament
         tournament = Tournament(
-            EndDate=tournament_data["EndDate"],
-            StartDate=tournament_data["StartDate"],
+            EndDate=datetime.strptime(tournament_data["EndDate"], '%Y-%m-%dT%H:%M:%S'),
+            StartDate=datetime.strptime(tournament_data["StartDate"], '%Y-%m-%dT%H:%M:%S'),
             Name=tournament_data["Name"],
             Venue=tournament_data["Venue"],
             City=tournament_data["City"],
             State=tournament_data["State"],
             Links=tournament_data["Links"],
             Purse=tournament_data["Purse"],
-            PreviousWinner=golfer_doc["_id"],
+            PreviousWinner=golfer_doc["_id"] if golfer_doc else None,
             Par=tournament_data["Par"],
             Yardage=tournament_data["Yardage"],
-            IsCompleted=tournament_data["IsCompleted"],
-            InProgress=tournament_data["InProgress"]
+            IsCompleted=tournament_data["isCompleted"],
+            InProgress=tournament_data["isInProgress"]
         )
 
         tournament_id = tournament.save()
+        print("Tournament ID:", tournament_id)
 
-        if tournament_data["Golfers"]: 
+        if "Golfers" in tournament_data: 
             # if the golfers data is available, create records for them if there aren't any already.
             create_golfers_in_tournament(tournament_data["Links"][0])
 
@@ -83,8 +102,11 @@ for json_file_path in json_files:
                     # Remove "(a)" and surrounding whitespace from the string
                     last_name = re.sub(r'\s*\([^)]*\)', '', last_name).strip()
 
-                # Query the golfer collection for the first and last name
-                golfer = db.golfers.find_one({"FirstName": first_name, "LastName": last_name})
+                # query the database for names case insensitively 
+                golfer = db.golfers.find_one({
+                    "FirstName": {"$regex": f"^{first_name}$", "$options": "i"},
+                    "LastName": {"$regex": f"^{last_name}$", "$options": "i"}
+                })
 
                 # Include a TournamentDetails array
                 # { TournamentDetails: [] }
@@ -166,4 +188,3 @@ for json_file_path in json_files:
                 db.tournaments.update_one( {"_id": tournament_id}, {"$push": {"Golfers": golfer_doc }} )
         else:
             db.tournaments.update_one( {"_id": tournament_id}, {"$push": {"Golfers": [] }} )
-client.close()

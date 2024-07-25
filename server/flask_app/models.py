@@ -1,5 +1,5 @@
 from typing import List, Optional, Tuple, Dict
-from pydantic import BaseModel, Field, EmailStr, validator, root_validator
+from pydantic import BaseModel, Field, EmailStr, validator, model_validator, field_validator, ConfigDict
 from datetime import datetime, timedelta
 from bson import ObjectId
 
@@ -18,7 +18,7 @@ class PyObjectId(ObjectId):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v, info):
         if not ObjectId.is_valid(v):
             raise ValueError('Invalid objectid')
         return ObjectId(v)
@@ -26,6 +26,7 @@ class PyObjectId(ObjectId):
     @classmethod
     def __get_pydantic_json_schema__(cls, schema):
         schema.update(type="string")
+        return schema
 
 def get_all_tournament_ids():
     tournaments_collection = db.tournaments
@@ -33,7 +34,7 @@ def get_all_tournament_ids():
     return [ObjectId(tid) for tid in tournament_ids]
 
 class Hole(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Strokes: int
     Par: bool
     NetScore: int
@@ -46,8 +47,14 @@ class Hole(BaseModel):
     WorseThanDoubleBogey: bool
     GolferTournamentDetailsId: PyObjectId
     RoundId: PyObjectId
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
         hole_dict = self.dict(by_alias=True, exclude_unset=True)
 
         if '_id' in hole_dict and hole_dict['_id'] is not None:
@@ -61,13 +68,13 @@ class Hole(BaseModel):
             self._id = result.inserted_id
         return self._id
 
-    @validator('Strokes')
+    @field_validator('Strokes')
     def strokes_must_be_positive(cls, v):
         if v < 1:
             raise ValueError('Strokes must be at least 1')
         return v
 
-    @validator('HoleNumber')
+    @field_validator('HoleNumber')
     def hole_number_must_be_valid(cls, v):
         if not (1 <= v <= 18):
             raise ValueError('Hole number must be between 1 and 18')
@@ -75,7 +82,7 @@ class Hole(BaseModel):
 
 
 class Round(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     GolferTournamentDetailsId: PyObjectId
     Round: str
     Birdies: int
@@ -87,8 +94,14 @@ class Round(BaseModel):
     WorseThanDoubleBogeys: int
     Score: int
     Holes: List[PyObjectId]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
         round_dict = self.dict(by_alias=True, exclude_unset=True)
 
         if '_id' in round_dict and round_dict['_id'] is not None:
@@ -106,6 +119,7 @@ class Round(BaseModel):
     def golfer_details_exist(cls, v):
         if not db.golfertournamentdetails.find_one({"_id": v}):
             raise ValueError("No value found for that golfertournamentdetails id")
+        return v
 
     @field_validator('Score')
     def score_must_be_positive(cls, v):
@@ -114,7 +128,7 @@ class Round(BaseModel):
         return v
 
 class GolferTournamentDetails(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     GolferId: PyObjectId
     Position: str
     Name: str
@@ -128,8 +142,14 @@ class GolferTournamentDetails(BaseModel):
     FedexPts: Optional[str] = None
     TournamentId: PyObjectId
     Rounds: List[PyObjectId]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
         golfer_tournament_details_dict = self.dict(by_alias=True, exclude_unset=True)
 
         if '_id' in golfer_tournament_details_dict and golfer_tournament_details_dict['_id'] is not None:
@@ -143,7 +163,7 @@ class GolferTournamentDetails(BaseModel):
             self._id = result.inserted_id
         return self.id
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def set_defaults(cls, values):
         field_defaults = {
             int: 0,
@@ -162,7 +182,7 @@ class GolferTournamentDetails(BaseModel):
         return values
 
 class Tournament(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     EndDate: datetime
     StartDate: datetime
     Name: str
@@ -170,15 +190,21 @@ class Tournament(BaseModel):
     City: str
     State: str
     Links: List[str]
-    Purse: Optional[int] = ""
-    PreviousWinner: Optional[str] = ""
-    Par: Optional[str] = ""
-    Yardage: Optional[str] = ""
+    Purse: Optional[int] = None
+    PreviousWinner: Optional[PyObjectId] = None
+    Par: Optional[str] = None
+    Yardage: Optional[str] = None
     IsCompleted: bool = False
     InProgress: bool = False
     Golfers: Optional[List[PyObjectId]] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
         tournament_dict = self.dict(by_alias=True, exclude_unset=True)
 
         if '_id' in tournament_dict and tournament_dict['_id'] is not None:
@@ -192,15 +218,15 @@ class Tournament(BaseModel):
             self._id = result.inserted_id
         return self.id
 
-    @validator('Par')
+    @field_validator('Par')
     def par_must_be_valid(cls, v):
-        valid_pars = ['3', '4', '5', '6']
-        if v not in valid_pars:
-            raise ValueError(f'Par must be one of {valid_pars}')
+        if int(v) > 80:
+            raise ValueError(f'Par must be valid')
         return v
 
+
 class Golfer(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Rank: str
     FirstName: str
     LastName: str
@@ -222,8 +248,14 @@ class Golfer(BaseModel):
     TurnedPro: Optional[str] = None
     TournamentDetails: Optional[List[GolferTournamentDetails]] = None
     OWGR: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
         golfer_dict = self.dict(by_alias=True, exclude_unset=True)
 
         if '_id' in golfer_dict and golfer_dict['_id'] is not None:
@@ -237,7 +269,7 @@ class Golfer(BaseModel):
             self._id = result.inserted_id
         return self.id
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def set_defaults(cls, values):
         field_defaults = {
             int: 0,
@@ -255,50 +287,50 @@ class Golfer(BaseModel):
         
         return values
 
-    @validator('Rank', 'OWGR')
+    @field_validator('Rank', 'OWGR')
     def rank_and_owgr_must_be_valid(cls, v):
         if not v.isdigit() or int(v) <= 0:
             raise ValueError('Rank and OWGR must be positive integers')
         return v
 
-    @validator('Age')
+    @field_validator('Age')
     def age_must_be_positive(cls, v):
         if v <= 0:
             raise ValueError('Age must be a positive integer')
         return v
 
-    @validator('Earnings', 'FedexPts', 'Events', 'Rounds', 'Cuts', 'Top10s', 'Wins')
+    @field_validator('Earnings', 'FedexPts', 'Events', 'Rounds', 'Cuts', 'Top10s', 'Wins')
     def must_be_non_negative(cls, v):
         if v < 0:
             raise ValueError('Value must be non-negative')
         return v
 
-    @validator('AvgScore')
+    @field_validator('AvgScore')
     def avg_score_must_be_valid(cls, v):
         if v <= 0 or v > 120:
             raise ValueError('Average score must be a positive number and realistic')
         return v
 
-    @validator('GolferPageLink')
+    @field_validator('GolferPageLink')
     def must_be_valid_url(cls, v):
         if not v.startswith("http"):
             raise ValueError('Golfer page link must be a valid URL')
         return v
 
-    @validator('Birthdate')
+    @field_validator('Birthdate')
     def birthdate_must_be_valid(cls, v):
         if not isinstance(v, datetime):
             raise ValueError('Birthdate must be a valid datetime')
         return v
 
-    @validator('TurnedPro')
+    @field_validator('TurnedPro')
     def turned_pro_must_be_valid_year(cls, v):
         if not v.isdigit() or int(v) < 1900 or int(v) > datetime.now().year:
             raise ValueError('TurnedPro must be a valid year')
         return v
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         json_encoders = {
             ObjectId: str,
             datetime: lambda v: v.isoformat()
@@ -306,14 +338,16 @@ class Golfer(BaseModel):
 
 
 class User(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Username: str
     Email: EmailStr
     Password: str
     Teams: List[str] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         json_encoders = {ObjectId: str}
 
     @staticmethod
@@ -322,7 +356,11 @@ class User(BaseModel):
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
         return hashed_password.decode('utf-8')
 
-    def save(self):
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
         # Hash the password before saving
         if self.Password:
             self.Password = self.hash_password(self.Password)
@@ -339,29 +377,30 @@ class User(BaseModel):
             # Insert new document
             result = db.users.insert_one(user_dict)
             self.id = result.inserted_id
+        return self.id
 
-    @validator('Username')
+    @field_validator('Username')
     def validate_username(cls, v):
         # Add logic to check for unique username in the database
         if any(user['User'] == v for user in db.users):
             raise ValueError('Username already exists.')
         return v
 
-    @validator('Username')
+    @field_validator('Username')
     def validate_username_length(cls, v):
         # Add logic to check for unique username in the database
         if len(v) < 5:
             raise ValueError('Username must have at least 8 characters.')
         return v
 
-    @validator('Email')
+    @field_validator('Email')
     def validate_email(cls, v):
         # Add logic to check for unique email in the database
         if any(user['Email'] == v for user in db.users):
             raise ValueError('Email already exists')
         return v
 
-    @validator('Password')
+    @field_validator('Password')
     def validate_password(cls, v):
         # Ensure the password has at least one uppercase letter, one lowercase letter, one digit, and one special character
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', v) or not len(v) >= 8:
@@ -379,7 +418,7 @@ class User(BaseModel):
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 class Week(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     WeekNumber: int
     SeasonId: PyObjectId
     Standings: List[PyObjectId]                                           
@@ -389,15 +428,35 @@ class Week(BaseModel):
     TournamentId: PyObjectId
     TeamResults: List[PyObjectId]
     LeagueId: PyObjectId
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-    @validator('TournamentId')
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        week_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in week_dict and week_dict['_id'] is not None:
+            # Update existing document
+            result = db.weeks.update_one({'_id': week_dict['_id']}, {'$set': week_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(week_dict['_id']))
+        else:
+            # Insert new document
+            result = db.weeks.insert_one(week_dict)
+            self._id = result.inserted_id
+        return self.id
+
+    @field_validator('TournamentId')
     def check_tournament_id_exists(cls, v):
         tournament = db.tournaments.find_one({"_id": v})
         if not tournament:
             raise ValueError("The tournament does not exist.")
         return v
 
-    @validator('WeekNumber')
+    @field_validator('WeekNumber')
     def week_number_must_be_valid(cls, v):
         if not (1 <= v <= 52):
             raise ValueError('Week number must be between 1 and 52')
@@ -455,21 +514,41 @@ class Week(BaseModel):
         return True 
 
 class Season(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     SeasonNumber: int
     StartDate: datetime
     EndDate: datetime
     Weeks: List[PyObjectId]
     LeagueId: PyObjectId
     Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-    @validator('StartDate', 'EndDate')
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        season_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in season_dict and season_dict['_id'] is not None:
+            # Update existing document
+            result = db.seasons.update_one({'_id': season_dict['_id']}, {'$set': season_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(season_dict['_id']))
+        else:
+            # Insert new document
+            result = db.seasons.insert_one(season_dict)
+            self._id = result.inserted_id
+        return self.id
+
+    @field_validator('StartDate', 'EndDate')
     def dates_must_be_valid(cls, v, field):
         if not isinstance(v, datetime):
             raise ValueError(f'{field.name} must be a datetime')
         return v
 
-    @validator('EndDate')
+    @field_validator('EndDate')
     def end_date_must_be_after_start_date(cls, v, values):
         start_date = values.get('start_date')
         if start_date and v <= start_date:
@@ -477,12 +556,32 @@ class Season(BaseModel):
         return v
 
 class League(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Name: str
     CommissionerId: str
     Teams: List[str] = []
     LeagueSettingsId: PyObjectId
     Seasons: List[PyObjectId]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        league_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in league_dict and league_dict['_id'] is not None:
+            # Update existing document
+            result = db.leagues.update_one({'_id': league_dict['_id']}, {'$set': league_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(league_dict['_id']))
+        else:
+            # Insert new document
+            result = db.leagues.insert_one(league_dict)
+            self._id = result.inserted_id
+        return self.id
 
     def get_available_players(self) -> List[PyObjectId]:
         unavailable_players = set()
@@ -499,10 +598,10 @@ class League(BaseModel):
         return available_players
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 class LeagueSettings(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     SnakeDraft: bool = Field(default=True, ge=1, description="the order of picks reverses with each round")
     StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
     ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
@@ -527,50 +626,76 @@ class LeagueSettings(BaseModel):
     HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
     LeagueId: PyObjectId
     DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-    @validator('MinFreeAgentDraftRounds')
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        league_settings_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in league_settings_dict and league_settings_dict['_id'] is not None:
+            # Update existing document
+            result = db.leaguesettings.update_one({'_id': league_settings_dict['_id']}, {'$set': league_settings_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(league_settings_dict['_id']))
+        else:
+            # Insert new document
+            result = db.leaguesettings.insert_one(league_settings_dict)
+            self._id = result.inserted_id
+        return self.id
+
+    @field_validator('MinFreeAgentDraftRounds')
     def max_num_of_draft_rounds(cls, v):
         if v >= cls['MaxGolfersPerTeam']:
             raise ValueError('The amount of draft rounds that have been created are more than the max amount of players allowed per team')
 
-    @validator('SecondsPerDraftPick')
+    @field_validator('SecondsPerDraftPick')
     def time_to_draft_must_be_positive(cls, v):
         if v <= 0:
             raise ValueError('Time to draft must be a positive period of time.')
         return v
 
-    @validator('NumOfStarters')
+    @field_validator('NumOfStarters')
     def defined_players_must_be_less_than_max(cls, v, values):
         if 'NumOfStarters' in values and v >= values['NumOfStarters']:
             raise ValueError('Number of defined players must be less than the maximum number of golfers per team')
         return v
 
-    @validator('MaxDraftedPlayers')
+    @field_validator('MaxDraftedPlayers')
     def draft_players_must_fit_in_team(cls, v, values):
         if v > values['MaxGolfersPerTeam']:
             return ValueError("Your max draftable players must be less than the maximum golfers allowed on a team.")
         return v
 
-    @validator('ScoringSystem')
-    def scoring_system_must_be_non_negative(cls, v):
-        if any(points < 0 for points in v):
-            raise ValueError('Scoring system must have non-negative points')
+    @field_validator('PointsPerPlacing')
+    def points_per_placing_must_be_in_range(cls, v):
+        if any(points < -10 or points > 10 for points in v):
+            raise ValueError('Points per placing must be within the range of -10 to 10')
         return v
 
-    @validator('DraftingPeriod')
+    @field_validator('PointsPerScore')
+    def points_per_score_must_be_in_range(cls, v):
+        if any(points < -10 or points > 10 for points in v.values()):
+            raise ValueError('Points per score must be within the range of -10 to 10')
+        return v
+
+    @field_validator('DraftingPeriod')
     def drafting_period_must_be_valid(cls, v):
         if v not in ["weekly", "biweekly", "monthly"]:
             raise ValueError('Drafting period must be one of: "weekly", "biweekly", "monthly"')
         return v
 
-    @validator('NumOfBenchGolfers')
+    @field_validator('NumOfBenchGolfers')
     def bench_players_under_limit(cls, v, values):
         if v > values['MaxGolfersPerTeam'] or v > values[""]:
             return ValueError("Your number of bench golfers must be less than your starters and max amount of players allowed on a team.")
         return v
 
 class Team(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamName: str
     ProfilePicture: Optional[str] = Field(description="Profile picture for team")
     Golfers: Dict[PyObjectId, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
@@ -578,9 +703,29 @@ class Team(BaseModel):
     LeagueId: PyObjectId
     DraftPicks: List[PyObjectId]
     Points: Optional[int] = Field(description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        team_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in team_dict and team_dict['_id'] is not None:
+            # Update existing document
+            result = db.teams.update_one({'_id': team_dict['_id']}, {'$set': team_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(team_dict['_id']))
+        else:
+            # Insert new document
+            result = db.teams.insert_one(team_dict)
+            self._id = result.inserted_id
+        return self.id
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {
             ObjectId: str
@@ -631,7 +776,7 @@ class Team(BaseModel):
         return golfers
 
 class TeamResult(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamId: PyObjectId
     LeagueId: PyObjectId
     TournamentId: PyObjectId
@@ -641,12 +786,32 @@ class TeamResult(BaseModel):
     GolfersScores: Dict[PyObjectId, Dict[str, int]]
     Placing: int = 0
     PointsFromPlacing: int = 0
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        team_result_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in team_result_dict and team_result_dict['_id'] is not None:
+            # Update existing document
+            result = db.teamresults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(team_result_dict['_id']))
+        else:
+            # Insert new document
+            result = db.teamresults.insert_one(team_result_dict)
+            self._id = result.inserted_id
+        return self.id
     
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         json_encoders = {PyObjectId: str}
     
-    @validator('Placing')
+    @field_validator('Placing')
     def defined_players_must_be_less_than_max(cls, v, values):
         num_of_teams_in_league = len(db.leagues.find_one({"_id": values["LeagueId"]}).Teams)
         if v > num_of_teams_in_league:
@@ -679,13 +844,33 @@ class TeamResult(BaseModel):
                         self.GolfersScores[golfer_id][score_type] = curr_num_of_score_type
 
 class Draft(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     LeagueId: str
     StartDate: datetime
     EndDate: Optional[datetime] = None
     Rounds: int
     Picks: List[PyObjectId]
     DraftOrder: List[PyObjectId]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        draft_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in draft_dict and draft_dict['_id'] is not None:
+            # Update existing document
+            result = db.drafts.update_one({'_id': draft_dict['_id']}, {'$set': draft_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(draft_dict['_id']))
+        else:
+            # Insert new document
+            result = db.drafts.insert_one(draft_dict)
+            self._id = result.inserted_id
+        return self.id
 
     def determine_draft_order(self):
         # Find the league document
@@ -711,19 +896,19 @@ class Draft(BaseModel):
         #     self.DraftOrder = last_week['Standings'].reversed()
 
 
-    @validator('Rounds')
+    @field_validator('Rounds')
     def rounds_must_be_positive(cls, v):
         if v < 1:
             raise ValueError('Number of rounds must be positive')
         return v
 
-    @validator('StartDate', 'EndDate')
+    @field_validator('StartDate', 'EndDate')
     def dates_must_be_valid(cls, v, field):
         if not isinstance(v, datetime):
             raise ValueError(f'{field.name} must be a valid datetime')
         return v
 
-    @root_validator
+    @model_validator(mode='before')
     def end_date_must_be_after_start_date(cls, values):
         start_date = values.get('StartDate')
         end_date = values.get('EndDate')
@@ -732,19 +917,39 @@ class Draft(BaseModel):
         return values
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         json_encoders = {
             ObjectId: str,
             datetime: lambda v: v.isoformat()
         }
 
 class DraftPick(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamId: str
     GolferId: str
     RoundNumber: int
     PickNumber: int
     LeagueId: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def save(self) -> Optional[PyObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        draft_picks_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in draft_picks_dict and draft_picks_dict['_id'] is not None:
+            # Update existing document
+            result = db.draftpicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(draft_picks_dict['_id']))
+        else:
+            # Insert new document
+            result = db.draftpicks.insert_one(draft_picks_dict)
+            self._id = result.inserted_id
+        return self.id
 
     def get_league_settings(self) -> LeagueSettings:
         league_settings = db.league_settings.find_one({"LeagueId": self.LeagueId})
@@ -775,14 +980,14 @@ class DraftPick(BaseModel):
         if len(draft['Picks']) >= self.PickNumber + (self.RoundNumber - 1) * picks_per_round:
             raise ValueError("Invalid pick order")
 
-    @root_validator(pre=False)
+    @model_validator(mode='before')
     def run_validations(cls, values):
         instance = cls(**values)
         instance.validate_draft_pick()
         instance.validate_pick_timing_and_order()
         return values
 
-    @validator('RoundNumber', 'PickNumber')
+    @field_validator('RoundNumber', 'PickNumber')
     def pick_must_be_positive(cls, v):
         if v < 1:
             raise ValueError('Round number and pick number must be positive')
