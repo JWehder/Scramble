@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401580363",
         "https://www.espn.com/golf/player/_/id/676/lucas-glover"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": 7900000,
     "PreviousWinner": "Lucas Glover",
     "Par": "70",
-    "Yardage": "7131"
+    "Yardage": "7131",
+    "isInProgress": false,
+    "isCompleted": false
 }

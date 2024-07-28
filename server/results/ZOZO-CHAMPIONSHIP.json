@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401693940",
         "https://www.espn.com/golf/player/_/id/10592/collin-morikawa"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": null,
-    "PreviousWinner": "Collin Morikawa",
+    "PreviousWinner": "Collin  Morikawa",
     "Par": null,
-    "Yardage": null
+    "Yardage": null,
+    "isInProgress": false,
+    "isCompleted": false
 }

@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401693937",
         "https://www.espn.com/golf/player/_/id/1059/luke-list"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": null,
-    "PreviousWinner": "Luke List",
+    "PreviousWinner": "Luke  List",
     "Par": "72",
-    "Yardage": "7461"
+    "Yardage": "7461",
+    "isInProgress": false,
+    "isCompleted": false
 }

@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401693943",
         "https://www.espn.com/golf/player/_/id/4375972/ludvig-aberg"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": null,
-    "PreviousWinner": "Ludvig Åberg",
+    "PreviousWinner": "Winner Ludvig \u00c5berg",
     "Par": "70",
-    "Yardage": "7005"
+    "Yardage": "7005",
+    "isInProgress": false,
+    "isCompleted": false
 }

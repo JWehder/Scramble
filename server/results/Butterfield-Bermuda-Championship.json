@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401693942",
         "https://www.espn.com/golf/player/_/id/1264/camilo-villegas"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": null,
-    "PreviousWinner": "Camilo Villegas",
+    "PreviousWinner": "Camilo  Villegas",
     "Par": null,
-    "Yardage": null
+    "Yardage": null,
+    "isInProgress": false,
+    "isCompleted": false
 }

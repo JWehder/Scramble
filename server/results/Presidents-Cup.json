@@ -10,10 +10,10 @@
     "Links": [
         "https://www.espn.com/golf/leaderboard?tournamentId=401656722"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": null,
     "PreviousWinner": null,
     "Par": "69",
-    "Yardage": "7037"
+    "Yardage": "7037",
+    "isInProgress": false,
+    "isCompleted": false
 }

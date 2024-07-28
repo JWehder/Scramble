@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401693936",
         "https://www.espn.com/golf/player/_/id/10980/sahith-theegala"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": null,
-    "PreviousWinner": "Sahith Theegala",
+    "PreviousWinner": "Sahith  Theegala",
     "Par": "72",
-    "Yardage": "7123"
+    "Yardage": "7123",
+    "isInProgress": false,
+    "isCompleted": false
 }

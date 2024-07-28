@@ -2,6 +2,7 @@ from typing import List, Optional, Tuple, Dict
 from pydantic import BaseModel, Field, EmailStr, validator, model_validator, field_validator, ConfigDict
 from datetime import datetime, timedelta
 from bson import ObjectId
+from pymongo.client_session import ClientSession
 
 # Add this line to ensure the correct path
 import sys
@@ -50,7 +51,7 @@ class Hole(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -59,14 +60,14 @@ class Hole(BaseModel):
 
         if '_id' in hole_dict and hole_dict['_id'] is not None:
             # Update existing document
-            result = db.holes.update_one({'_id': hole_dict['_id']}, {'$set': hole_dict})
+            result = db.holes.update_one({'_id': hole_dict['_id']}, {'$set': hole_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(hole_dict['_id']))
         else:
             # Insert new document
-            result = db.holes.insert_one(hole_dict)
-            self._id = result.inserted_id
-        return self._id
+            result = db.holes.insert_one(hole_dict, session)
+            self.id = result.inserted_id
+        return self.id
 
     @field_validator('Strokes')
     def strokes_must_be_positive(cls, v):
@@ -79,7 +80,6 @@ class Hole(BaseModel):
         if not (1 <= v <= 18):
             raise ValueError('Hole number must be between 1 and 18')
         return v
-
 
 class Round(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
@@ -94,10 +94,11 @@ class Round(BaseModel):
     WorseThanDoubleBogeys: int
     Score: int
     Holes: List[PyObjectId]
+    TournamentId: PyObjectId
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -106,13 +107,15 @@ class Round(BaseModel):
 
         if '_id' in round_dict and round_dict['_id'] is not None:
             # Update existing document
-            result = db.rounds.update_one({'_id': round_dict['_id']}, {'$set': round_dict})
+            result = db.rounds.update_one(
+                {'_id': round_dict['_id']}, {'$set': round_dict}, session
+            )
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(round_dict['_id']))
         else:
             # Insert new document
-            result = db.rounds.insert_one(round_dict)
-            self._id = result.inserted_id
+            result = db.rounds.insert_one(round_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     @field_validator('GolferTournamentDetailsId')
@@ -123,8 +126,8 @@ class Round(BaseModel):
 
     @field_validator('Score')
     def score_must_be_positive(cls, v):
-        if v < 1:
-            raise ValueError('Score must be positive')
+        if v < -20 or v > 70:
+            raise ValueError('Score must be a realistic number.')
         return v
 
 class GolferTournamentDetails(BaseModel):
@@ -145,7 +148,7 @@ class GolferTournamentDetails(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -154,13 +157,13 @@ class GolferTournamentDetails(BaseModel):
 
         if '_id' in golfer_tournament_details_dict and golfer_tournament_details_dict['_id'] is not None:
             # Update existing document
-            result = db.golfertournamentdetails.update_one({'_id': golfer_tournament_details_dict['_id']}, {'$set': golfer_tournament_details_dict})
+            result = db.golfertournamentdetails.update_one({'_id': golfer_tournament_details_dict['_id']}, {'$set': golfer_tournament_details_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(golfer_tournament_details_dict['_id']))
         else:
             # Insert new document
-            result = db.golfertournamentdetails.insert_one(golfer_tournament_details_dict)
-            self._id = result.inserted_id
+            result = db.golfertournamentdetails.insert_one(golfer_tournament_details_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     @model_validator(mode='before')
@@ -200,7 +203,7 @@ class Tournament(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -209,25 +212,35 @@ class Tournament(BaseModel):
 
         if '_id' in tournament_dict and tournament_dict['_id'] is not None:
             # Update existing document
-            result = db.tournaments.update_one({'_id': tournament_dict['_id']}, {'$set': tournament_dict})
+            result = db.tournaments.update_one({'_id': tournament_dict['_id']}, {'$set': tournament_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(tournament_dict['_id']))
         else:
             # Insert new document
-            result = db.tournaments.insert_one(tournament_dict)
-            self._id = result.inserted_id
+            result = db.tournaments.insert_one(tournament_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     @field_validator('Par')
     def par_must_be_valid(cls, v):
-        if int(v) > 80:
-            raise ValueError(f'Par must be valid')
+        # Check if the value is not null
+        if v is not None and v != '':
+            # Check if the value is a valid integer
+            try:
+                value = int(v)
+            except ValueError:
+                raise ValueError(f'Invalid value: {v}. Par must parse to a number.')
+
+            # Ensure the numerical value is below 80
+            if value > 80:
+                raise ValueError(f'Invalid value: {value}. Par must be less than or equal to 80.')
+        
         return v
 
 
 class Golfer(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    Rank: str
+    Rank: Optional[str] = None
     FirstName: str
     LastName: str
     Age: Optional[int] = None
@@ -240,9 +253,10 @@ class Golfer(BaseModel):
     Top10s: Optional[int] = None
     Wins: Optional[int] = None
     AvgScore: Optional[float] = None
-    GolferPageLink: Optional[str] = None
+    GolferPageLink: Optional[str] = ""
     Birthdate: Optional[datetime] = None
-    Birthplace: Optional[str] = None
+    Birthplace: Optional[str] = ""
+    HtWt: Optional[str] = ""
     College: Optional[str] = None
     Swing: Optional[str] = None
     TurnedPro: Optional[str] = None
@@ -251,7 +265,7 @@ class Golfer(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -260,13 +274,13 @@ class Golfer(BaseModel):
 
         if '_id' in golfer_dict and golfer_dict['_id'] is not None:
             # Update existing document
-            result = db.golfers.update_one({'_id': golfer_dict['_id']}, {'$set': golfer_dict})
+            result = db.golfers.update_one({'_id': golfer_dict['_id']}, {'$set': golfer_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(golfer_dict['_id']))
         else:
             # Insert new document
-            result = db.golfers.insert_one(golfer_dict)
-            self._id = result.inserted_id
+            result = db.golfers.insert_one(golfer_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     @model_validator(mode='before')
@@ -356,7 +370,7 @@ class User(BaseModel):
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
         return hashed_password.decode('utf-8')
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -370,12 +384,12 @@ class User(BaseModel):
         
         if '_id' in user_dict and user_dict['_id'] is not None:
             # Update existing document
-            result = db.users.update_one({'_id': user_dict['_id']}, {'$set': user_dict})
+            result = db.users.update_one({'_id': user_dict['_id']}, {'$set': user_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(user_dict['_id']))
         else:
             # Insert new document
-            result = db.users.insert_one(user_dict)
+            result = db.users.insert_one(user_dict, session)
             self.id = result.inserted_id
         return self.id
 
@@ -431,7 +445,7 @@ class Week(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -440,13 +454,13 @@ class Week(BaseModel):
 
         if '_id' in week_dict and week_dict['_id'] is not None:
             # Update existing document
-            result = db.weeks.update_one({'_id': week_dict['_id']}, {'$set': week_dict})
+            result = db.weeks.update_one({'_id': week_dict['_id']}, {'$set': week_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(week_dict['_id']))
         else:
             # Insert new document
-            result = db.weeks.insert_one(week_dict)
-            self._id = result.inserted_id
+            result = db.weeks.insert_one(week_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     @field_validator('TournamentId')
@@ -524,7 +538,7 @@ class Season(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -533,13 +547,13 @@ class Season(BaseModel):
 
         if '_id' in season_dict and season_dict['_id'] is not None:
             # Update existing document
-            result = db.seasons.update_one({'_id': season_dict['_id']}, {'$set': season_dict})
+            result = db.seasons.update_one({'_id': season_dict['_id']}, {'$set': season_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(season_dict['_id']))
         else:
             # Insert new document
-            result = db.seasons.insert_one(season_dict)
-            self._id = result.inserted_id
+            result = db.seasons.insert_one(season_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     @field_validator('StartDate', 'EndDate')
@@ -565,7 +579,7 @@ class League(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -574,13 +588,13 @@ class League(BaseModel):
 
         if '_id' in league_dict and league_dict['_id'] is not None:
             # Update existing document
-            result = db.leagues.update_one({'_id': league_dict['_id']}, {'$set': league_dict})
+            result = db.leagues.update_one({'_id': league_dict['_id']}, {'$set': league_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(league_dict['_id']))
         else:
             # Insert new document
-            result = db.leagues.insert_one(league_dict)
-            self._id = result.inserted_id
+            result = db.leagues.insert_one(league_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     def get_available_players(self) -> List[PyObjectId]:
@@ -629,7 +643,7 @@ class LeagueSettings(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -638,13 +652,13 @@ class LeagueSettings(BaseModel):
 
         if '_id' in league_settings_dict and league_settings_dict['_id'] is not None:
             # Update existing document
-            result = db.leaguesettings.update_one({'_id': league_settings_dict['_id']}, {'$set': league_settings_dict})
+            result = db.leaguesettings.update_one({'_id': league_settings_dict['_id']}, {'$set': league_settings_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(league_settings_dict['_id']))
         else:
             # Insert new document
-            result = db.leaguesettings.insert_one(league_settings_dict)
-            self._id = result.inserted_id
+            result = db.leaguesettings.insert_one(league_settings_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     @field_validator('MinFreeAgentDraftRounds')
@@ -706,7 +720,7 @@ class Team(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -715,13 +729,13 @@ class Team(BaseModel):
 
         if '_id' in team_dict and team_dict['_id'] is not None:
             # Update existing document
-            result = db.teams.update_one({'_id': team_dict['_id']}, {'$set': team_dict})
+            result = db.teams.update_one({'_id': team_dict['_id']}, {'$set': team_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(team_dict['_id']))
         else:
             # Insert new document
-            result = db.teams.insert_one(team_dict)
-            self._id = result.inserted_id
+            result = db.teams.insert_one(team_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     class Config:
@@ -789,7 +803,7 @@ class TeamResult(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -798,13 +812,13 @@ class TeamResult(BaseModel):
 
         if '_id' in team_result_dict and team_result_dict['_id'] is not None:
             # Update existing document
-            result = db.teamresults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict})
+            result = db.teamresults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(team_result_dict['_id']))
         else:
             # Insert new document
-            result = db.teamresults.insert_one(team_result_dict)
-            self._id = result.inserted_id
+            result = db.teamresults.insert_one(team_result_dict, session)
+            self.id = result.inserted_id
         return self.id
     
     class Config:
@@ -854,7 +868,7 @@ class Draft(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -863,13 +877,13 @@ class Draft(BaseModel):
 
         if '_id' in draft_dict and draft_dict['_id'] is not None:
             # Update existing document
-            result = db.drafts.update_one({'_id': draft_dict['_id']}, {'$set': draft_dict})
+            result = db.drafts.update_one({'_id': draft_dict['_id']}, {'$set': draft_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(draft_dict['_id']))
         else:
             # Insert new document
-            result = db.drafts.insert_one(draft_dict)
-            self._id = result.inserted_id
+            result = db.drafts.insert_one(draft_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     def determine_draft_order(self):
@@ -933,7 +947,7 @@ class DraftPick(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self) -> Optional[PyObjectId]:
+    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -942,13 +956,13 @@ class DraftPick(BaseModel):
 
         if '_id' in draft_picks_dict and draft_picks_dict['_id'] is not None:
             # Update existing document
-            result = db.draftpicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict})
+            result = db.draftpicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict}, session)
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(draft_picks_dict['_id']))
         else:
             # Insert new document
-            result = db.draftpicks.insert_one(draft_picks_dict)
-            self._id = result.inserted_id
+            result = db.draftpicks.insert_one(draft_picks_dict, session)
+            self.id = result.inserted_id
         return self.id
 
     def get_league_settings(self) -> LeagueSettings:

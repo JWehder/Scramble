@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401580365",
         "https://www.espn.com/golf/player/_/id/4364873/viktor-hovland"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": 20000000,
     "PreviousWinner": "Viktor Hovland",
     "Par": null,
-    "Yardage": null
+    "Yardage": null,
+    "isInProgress": false,
+    "isCompleted": false
 }

@@ -11,10 +11,10 @@
         "https://www.espn.com/golf/leaderboard?tournamentId=401693956",
         "https://www.espn.com/golf/player/_/id/9478/scottie-scheffler"
     ],
-    "isInProgress": false,
-    "isCompleted": false,
     "Purse": 5000000,
     "PreviousWinner": "Scottie Scheffler",
     "Par": "72",
-    "Yardage": "7309"
+    "Yardage": "7309",
+    "isInProgress": false,
+    "isCompleted": false
 }
