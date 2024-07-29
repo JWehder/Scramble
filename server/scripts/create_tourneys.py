@@ -5,7 +5,7 @@ import sys
 from create_players_with_player_pages import create_golfers_in_tournament
 from datetime import datetime
 
-# Adjust the paths for MacOS
+# Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Now you can import models from flask_app
@@ -197,7 +197,7 @@ def process_files(directory, session=None):
                         {"$set": {"Rounds": round_ids}},
                         session=session
                     )
-                    
+
                 db.tournaments.update_one(
                     {"_id": tournament_id},
                     {"$push": {"Golfers": {"$each": list(db.golfertournamentdetails.find({"TournamentId": tournament_id}, session=session))}}},

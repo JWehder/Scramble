@@ -3,6 +3,10 @@ import gspread
 import pandas as pd
 from pymongo import MongoClient
 import os
+import sys
+
+# Adjust the paths for MacOS to get the flask_app directory
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 passcode = os.getenv("MONGO_PASSWORD")
 
@@ -28,13 +32,8 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 #     DraftOrder: List[PyObjectId]
 
 
-tournament_names = [
-"THE PLAYERS Championship",
-"Arnold Palmer Invitational pres. by Mastercard",
-"WM Phoenix Open",
-"The Genesis Invitational",
-"RBC Heritage",
-"Masters Tournament",
+tournament_ids = [
+
 ]
 
 # Function to process each worksheet

@@ -1,21 +1,17 @@
-from pymongo import errors
 import os
-import json
 import sys
-from create_players_with_player_pages import create_golfers_in_tournament
-from datetime import datetime
 from bson.objectid import ObjectId
 
 # Adjust the paths for MacOS
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Now you can import models from flask_app
-from flask_app.models import Tournament, GolferTournamentDetails, Round, Hole
-from flask_app.config import db, client
+from flask_app.config import db
 
 all_golfers = db.golfers.find()
 
 for golfer in all_golfers:
+    if "TournamentDetails" not in golfer:
+        continue
     deleteable_ids = []
     for tournament_detail_id in golfer['TournamentDetails']:
         golfer_details = db.golfertournamentdetails.find_one({"_id": ObjectId(tournament_detail_id)})
