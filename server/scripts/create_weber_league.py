@@ -91,6 +91,7 @@ LeagueSettings = LeagueSettings(
     ForceDrops=1,
     MaxGolfersPerTeam=3,
     WaiverType="Reverse Standings",
+    NumberOfTeams=9
     NumOfStarters=3,
     NumOfBenchGolfers=1,
     MaxDraftedPlayers=1,
