@@ -1,9 +1,10 @@
 from typing import List, Optional, Tuple, Dict
 from pydantic import BaseModel, Field, EmailStr, validator, model_validator, field_validator, ConfigDict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 from pymongo.client_session import ClientSession
 import random
+import pytz
 
 # Add this line to ensure the correct path
 import sys
@@ -35,9 +36,14 @@ def get_all_tournament_ids():
     tournament_ids = tournaments_collection.distinct('_id')
     return [ObjectId(tid) for tid in tournament_ids]
 
-def get_day_number(day_name):
+def get_day_number(day_name: str) -> int:
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     return days.index(day_name)
+
+def convert_utc_to_local(utc_dt, user_tz):
+    local_tz = pytz.timezone(user_tz)
+    local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
+    return local_dt
 
 
 class Hole(BaseModel):
@@ -465,24 +471,49 @@ class Period(BaseModel):
     updated_at: Optional[datetime] = None
 
     def add_to_waiver_pool(self, golfer_id: PyObjectId, user_id: PyObjectId, bid: int) -> bool:
-        league = db.leagues.find_one({ "_id": self.LeagueId })
+        # Fetch the league and its settings
+        league = db.leagues.find_one({"_id": self.LeagueId})
         league_settings = league["LeagueSettings"]
-        team = db.teams.find_one({ "OwnerId": user_id, "LeagueId": self.LeagueId })
+        team = db.teams.find_one({"OwnerId": user_id, "LeagueId": self.LeagueId})
 
-        today = datetime.utcnow()
-        today = get_day_number(today.weekday())
+        league_timezone = league_settings["TimeZone"]
+        
+        # Convert current UTC time to user's local time
+        utc_now = datetime.now(timezone.utc)
+        local_now = convert_utc_to_local(utc_now, league_timezone)
+        today_day_number = get_day_number(local_now.weekday())
+        
+        waiver_day_number = get_day_number(league_settings.get("WaiverDeadline"))
 
-        if today > get_day_number(league_settings.get("WaiverDeadline")):
+        if today_day_number > waiver_day_number:
             raise ValueError("The waiver deadline has passed.")
 
-        if golfer_id in self.WaiverPool:
-            if user_id in self.WaiverPool[golfer_id] and league_settings["WaiverType"] == "FAAB":
-                self.WaiverPool[golfer_id][user_id] = bid
-            elif user_id in self.WaiverPool[golfer_id] and league_settings["WaiverType"] == "Reverse Standings":
+        # Check if the golfer exists
+        check_golfer_in_db = db.golfers.find_one({"_id": golfer_id})
+        if not check_golfer_in_db:
+            raise ValueError("Sorry, that golfer does not exist.")
+
+        # Add or update the waiver pool based on waiver type
+        if golfer_id not in self.WaiverPool:
+            self.WaiverPool[golfer_id] = []
+
+        if league_settings["WaiverType"] == "FAAB":
+            existing_entry = next((entry for entry in self.WaiverPool[golfer_id] if user_id in entry), None)
+            if existing_entry:
+                existing_entry[user_id] = bid
+            else:
+                self.WaiverPool[golfer_id].append({user_id: bid})
+        elif league_settings["WaiverType"] == "Reverse Standings":
+            if user_id not in (entry.keys() for entry in self.WaiverPool[golfer_id]):
+                self.WaiverPool[golfer_id].append({user_id: team["WaiverNumber"]})
                 league = League(**league)
                 league.determine_waiver_order()
         else:
-            self.WaiverPool[golfer_id].append({ user_id: bid if league_settings["WaiverType"] == "FAAB" else team["WaiverNumber"] })
+            raise ValueError("Invalid waiver type specified in league settings.")
+
+        # Save the updated waiver pool
+        self.save()
+        return True
 
     def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
@@ -658,6 +689,8 @@ class LeagueSettings(BaseModel):
     StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
     ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
     ForceDrops: Optional[int] = 0
+    DropDeadline: Optional[str] = None
+    TimeZone: str = "UTC"
     PointsPerScore: Optional[dict] = Field(default_factory=lambda: {    'Birdies': 3,
     'Eagles': 5,
     'Pars': 1,
@@ -886,6 +919,24 @@ class League(BaseModel):
     CurrentPeriod: Optional[PyObjectId] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    def enforce_drop_deadline(self):
+        if self.LeagueSettings.get("ForceDrops") > 0:
+            league_timezone = self.LeagueSettings.get("TimeZone")
+            
+            # Convert current UTC time to user's local time
+            utc_now = datetime.now(timezone.utc)
+            local_now = convert_utc_to_local(utc_now, league_timezone)
+            today_day_number = get_day_number(local_now.weekday())
+            
+            waiver_day_number = get_day_number(self.LeagueSettings.get("DropDeadline"))
+
+            if today_day_number > waiver_day_number:
+                for id in self.Teams:
+                    team = db.teams.find_one({ "_id": id })
+                    team = Team(**team)
+                    for golfer in team.Golfers:
+
 
     def generate_matchups(self, period: Period) -> List[Tuple[PyObjectId, PyObjectId]]:
         teams = self.Teams[:]
@@ -1270,9 +1321,6 @@ class Draft(BaseModel):
 
         # Access the latest season
         latest_season = league.get_more_recent_season()
-        
-        if not latest_season:
-            raise ValueError("Latest season not found")
 
         if not latest_season['Active']:
             raise ValueError("Season is not active")
