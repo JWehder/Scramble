@@ -75,12 +75,29 @@ def process_worksheet(worksheet):
 #     Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
 
 # class League(BaseModel):
-#     _id: Optional[PyObjectId] = Field(alias='_id')
+    
 #     Name: str
 #     CommissionerId: str
 #     Teams: List[str] = []
 #     LeagueSettingsId: PyObjectId
 #     Seasons: List[PyObjectId]
+
+# Username: str
+# Email: EmailStr
+# Password: str
+# Teams: List[str] = []
+# created_at: Optional[datetime] = None
+# updated_at: Optional[datetime] = None
+
+user_id = User(
+    
+)
+
+league = League(
+    Name="Weber",
+    CommissionerId=
+)
+
 
 LeagueSettings = LeagueSettings(
     SnakeDraft=True,
@@ -89,30 +106,22 @@ LeagueSettings = LeagueSettings(
     PointsPerScore=[],
     MinFreeAgentDraftRounds=1,
     ForceDrops=1,
-    MaxGolfersPerTeam=3,
+    DropDeadline="Tuesday",
+    TimeZone="US/Eastern",
+    MaxGolfersPerTeam=4,
     WaiverType="Reverse Standings",
     NumberOfTeams=9
     NumOfStarters=3,
     NumOfBenchGolfers=1,
     MaxDraftedPlayers=1,
-    PointsPerPlacing=[10, 8, 6, 5, 4, 3, 2, 1],
-    Tournaments= [ObjectId('663168ca74d57119dcdc701d'),
-    ObjectId('66315535ee741e831355a09a'),
-    ObjectId('66314f78ee741e831355465c'),
-    ObjectId('66316b9774d57119dcdc99ee'),
-    ObjectId('66316a3474d57119dcdc852c'),
-    ObjectId('66a6d5396556c7133a4bc9ea'),
-    ObjectId('66a6d99d6556c7133a4c1d92'),
-    ObjectId('66a6e7246556c7133a4d2da3'),
-    ObjectId('66a6ebe46556c7133a4d8bb2'),
-    ObjectId('66a6f06a6556c7133a4de15d'),
-    ObjectId('66a6f9b16556c7133a4e9c39'),
-    ObjectId('66a6fbca6556c7133a4ec6fc'),
-    ObjectId('66a6d7576556c7133a4bf2d5'),
-    ObjectId('66a172dcf47cd3eec71b0d05'),
-    ObjectId('66a6e7246556c7133a4d2da3')],
+    PointsPerPlacing=[10, 8, 6, 5, 4, 3, 2, 1, 0],
+    Tournaments= tournaments,
     MaxNumberOfGolferUses=None,
-    DraftingPeriod=
+    DraftingFrequency=len(tournaments),
+    DraftStartDayOfWeek="Wednesday",
+    WaiverDeadline="Wednesday",
+    SecondsPerDraftPick=3600,
+    HeadToHead=False
     # DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")
     # SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
     # HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
@@ -121,6 +130,11 @@ LeagueSettings = LeagueSettings(
     # created_at: Optional[datetime] = None
     # updated_at: Optional[datetime] = None
 )
+
+    LeagueId: PyObjectId
+    DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 # id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
 # SnakeDraft: bool = Field(default=True, ge=1, description="the order of picks reverses with each round")

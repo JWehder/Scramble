@@ -463,12 +463,61 @@ class Period(BaseModel):
     Standings: Optional[List[PyObjectId]] = []                                        
     FreeAgentSignings: Optional[List[Dict[PyObjectId, List]]] = []
     Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
+    Drops: Optional[Dict[PyObjectId, List]] = {}
     TournamentId: PyObjectId
     TeamResults: Optional[List[PyObjectId]] = []
     LeagueId: PyObjectId
     DraftId: Optional[PyObjectId] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    def determine_reverse_standings_winners(self):
+        for golfer_id, waivers in self.WaiverPool.items():
+            sorted_waiver_numbers = sorted(waivers, key=lambda x: list(x.values())[0])
+            for entry in sorted_waiver_numbers:
+                winner_id = list(entry.keys())[0]
+                team = db.teams.find_one({"OwnerId": winner_id, "LeagueId": self.LeagueId})
+                if len(team["Golfers"]) < team["MaxGolfersPerTeam"]:
+                    team["Golfers"].append(golfer_id)
+                    db.teams.update_one({"_id": team["_id"]}, {"$set": {"Golfers": team["Golfers"]}})
+                    break
+                else:
+                    raise ValueError("There is not enough space on this team to add this golfer. Please remove a golfer.")
+
+    def determine_faab_winners(self):
+        for golfer_id, bids in self.WaiverPool.items():
+            sorted_bids = sorted(bids, key=lambda x: list(x.values())[0], reverse=True)
+            winner_entry = sorted_bids[0]
+            winner_id = list(winner_entry.keys())[0]
+            winner_bid = list(winner_entry.values())[0]
+
+            team = db.teams.find_one({"OwnerId": winner_id, "LeagueId": self.LeagueId})
+            team["Golfers"].append(golfer_id)
+            team["FAAB"] -= winner_bid
+
+            db.teams.update_one({"_id": team["_id"]}, {"$set": {"Golfers": team["Golfers"], "FAAB": team["FAAB"]}})
+
+    def determine_waiver_winners(self) -> None:
+        league = db.leagues.find_one({"_id": self.LeagueId})
+        league_settings = league["LeagueSettings"]
+
+        league_timezone = league_settings["TimeZone"]
+        
+        utc_now = datetime.now(timezone.utc)
+        local_now = convert_utc_to_local(utc_now, league_timezone)
+        today_day_number = local_now.weekday()
+        
+        waiver_day_number = get_day_number(league_settings.get("WaiverDeadline"))
+
+        if today_day_number <= waiver_day_number:
+            raise ValueError("The waiver deadline has not passed yet.")
+        
+        if league_settings["WaiverType"] == "FAAB":
+            self.determine_faab_winners()
+        elif league_settings["WaiverType"] == "Reverse Standings":
+            self.determine_reverse_standings_winners()
+        else:
+            raise ValueError("Invalid waiver type specified in league settings.")
 
     def add_to_waiver_pool(self, golfer_id: PyObjectId, user_id: PyObjectId, bid: int) -> bool:
         # Fetch the league and its settings
@@ -838,6 +887,44 @@ class Team(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
+    def drop_player(self, team_id: PyObjectId, golfer_id: PyObjectId) -> bool:
+        # Find the team
+        team = db.teams.find_one({"_id": team_id})
+
+        if not team:
+            raise ValueError("The team you entered does not exist.")
+
+        if golfer_id not in team["Golfers"]:
+            raise ValueError(f"Player with ID {golfer_id} is not on the team.")
+        else:
+            # Update the team by removing the golfer
+            db.teams.update_one(
+                {"_id": team_id},
+                {"$pull": {"Golfers": golfer_id}}
+            )
+            
+            # Update the period's drop list
+            league = db.leagues.find_one({"_id": self.LeagueId})
+            if league:
+                current_period = db.periods.find_one({"LeagueId": self.LeagueId, "StartDate": {"$lte": datetime.utcnow()}, "EndDate": {"$gte": datetime.utcnow()}})
+                if current_period:
+                    period_id = current_period["_id"]
+                    drops = current_period.get("Drops", {})
+
+                    if team_id in drops:
+                        drops[team_id].append(golfer_id)
+                    else:
+                        drops[team_id] = [golfer_id]
+
+                    db.periods.update_one(
+                        {"_id": period_id},
+                        {"$set": {"Drops": drops}}
+                    )
+                else:
+                    raise ValueError("No current period found for the league.")
+        
+        return True
+
     def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
@@ -920,6 +1007,32 @@ class League(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
+    def remove_lowest_ogwr_golfer(team_id: PyObjectId) -> PyObjectId:
+        # Find the team by ID
+        team = db.teams.find_one({"_id": ObjectId(team_id)})
+        if not team:
+            raise ValueError("Team not found.")
+
+        # Get the list of golfer IDs
+        golfer_ids = team['Golfers']
+        
+        # Query and sort golfers by OGWR to get the lowest one
+        lowest_golfer = db.golfers.find({"_id": {"$in": golfer_ids}}).sort("OGWR", 1).limit(1)
+        
+        lowest_golfer = list(lowest_golfer)
+        if not lowest_golfer:
+            raise ValueError("No golfers found in the team.")
+
+        # Remove the golfer with the lowest OGWR from the team
+        lowest_golfer_id = lowest_golfer[0]['_id']
+        
+        db.teams.update_one(
+            {"_id": ObjectId(team_id)},
+            {"$pull": {"Golfers": lowest_golfer_id}}
+        )
+
+        return lowest_golfer_id
+
     def enforce_drop_deadline(self):
         if self.LeagueSettings.get("ForceDrops") > 0:
             league_timezone = self.LeagueSettings.get("TimeZone")
@@ -929,14 +1042,16 @@ class League(BaseModel):
             local_now = convert_utc_to_local(utc_now, league_timezone)
             today_day_number = get_day_number(local_now.weekday())
             
-            waiver_day_number = get_day_number(self.LeagueSettings.get("DropDeadline"))
+            drop_day_number = get_day_number(self.LeagueSettings.get("DropDeadline"))
 
-            if today_day_number > waiver_day_number:
+            if today_day_number > drop_day_number:
+                period = self.get_most_recent_period()
                 for id in self.Teams:
-                    team = db.teams.find_one({ "_id": id })
-                    team = Team(**team)
-                    for golfer in team.Golfers:
-
+                    # force drop players if the team owner has not to do so
+                    # according to the league settings force drop rules
+                    while period.Drops[id] < self.LeagueSettings.get("ForceDrops"):
+                        # remove the last golfer from their team
+                        self.remove_lowest_ogwr_golfer(id)
 
     def generate_matchups(self, period: Period) -> List[Tuple[PyObjectId, PyObjectId]]:
         teams = self.Teams[:]
