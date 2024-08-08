@@ -7,9 +7,11 @@ from bson.objectid import ObjectId
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flask_app.models import LeagueSettings
+from flask_app.models import LeagueSettings, User, League
 
 passcode = os.getenv("MONGO_PASSWORD")
+test_user_username = os.getenv("TEST_USER_USERNAME")
+test_user_password = os.getenv("TEST_USER_PASSWORD")
 
 uri = f"mongodb+srv://jakewehder:{passcode}@cluster0.gbnbssg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
@@ -65,39 +67,41 @@ def process_worksheet(worksheet):
     df = pd.DataFrame(rows[1:], columns=rows[0])
     return df
 
-# class Season(BaseModel):
-#     _id: Optional[PyObjectId] = Field(alias='_id')
-#     SeasonNumber: int
-#     StartDate: datetime
-#     EndDate: datetime
-#     Weeks: List[PyObjectId]
-#     LeagueId: PyObjectId
-#     Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
 
-# class League(BaseModel):
-    
-#     Name: str
-#     CommissionerId: str
-#     Teams: List[str] = []
-#     LeagueSettingsId: PyObjectId
-#     Seasons: List[PyObjectId]
-
-# Username: str
-# Email: EmailStr
-# Password: str
-# Teams: List[str] = []
+# id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
+# SeasonNumber: int
+# StartDate: datetime
+# EndDate: datetime
+# Periods: List[PyObjectId]
+# LeagueId: PyObjectId
+# Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
 # created_at: Optional[datetime] = None
 # updated_at: Optional[datetime] = None
 
-user_id = User(
-    
+user = User(
+    Username=f'{test_user_username}',
+    Email='jake.wehder@gmail.com',
+    Password=f'{test_user_password}',
+    Teams=[]
+)
+user_id = user.save()
+
+season = Season(
+    SeasonNumber= 1,
+    StartDate= 
 )
 
 league = League(
     Name="Weber",
-    CommissionerId=
+    CommissionerId=user_id,
+    Teams=[],
+    LeagueSettings= {},
+    Seasons=[],
+    CurrentStandings=[],
+    WaiverOrder=[],
+    CurrentPeriod=None
 )
-
+league_id = league.save()
 
 LeagueSettings = LeagueSettings(
     SnakeDraft=True,
@@ -110,60 +114,24 @@ LeagueSettings = LeagueSettings(
     TimeZone="US/Eastern",
     MaxGolfersPerTeam=4,
     WaiverType="Reverse Standings",
-    NumberOfTeams=9
+    NumberOfTeams=9,
     NumOfStarters=3,
     NumOfBenchGolfers=1,
     MaxDraftedPlayers=1,
     PointsPerPlacing=[10, 8, 6, 5, 4, 3, 2, 1, 0],
-    Tournaments= tournaments,
+    Tournaments= tournament_ids,
     MaxNumberOfGolferUses=None,
-    DraftingFrequency=len(tournaments),
+    DraftingFrequency=1,
     DraftStartDayOfWeek="Wednesday",
     WaiverDeadline="Wednesday",
     SecondsPerDraftPick=3600,
-    HeadToHead=False
-    # DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")
-    # SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
-    # HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
-    # LeagueId: PyObjectId
-    # DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
-    # created_at: Optional[datetime] = None
-    # updated_at: Optional[datetime] = None
+    HeadToHead=False,
+    LeagueId= league_id,
+    DefaultPointsForNonPlacers= 0
 )
 
-    LeagueId: PyObjectId
-    DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-# id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-# SnakeDraft: bool = Field(default=True, ge=1, description="the order of picks reverses with each round")
-# StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
-# ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
-# PointsPerScore: Optional[dict] = Field(default_factory=lambda: {    'Birdies': 3,
-# 'Eagles': 5,
-# 'Pars': 1,
-# 'Albatross': 7,
-# 'Bogeys': -3,
-# 'DoubleBogeys': -5,
-# 'WorseThanDoubleBogeys': -7
-# }, description="Points awarded per round performance")
-# MinFreeAgentDraftRounds: int = Field(default=3, ge=1, description="Minimum number of draft rounds that need to be created each period")
-# MaxGolfersPerTeam: int = Field(default=3, ge=1, description="Maximum number of golfers per team")
-# WaiverType: str = Field(default="Reverse Standings", description="Determine the priority with which teams receive in picking up free agents")
-# NumOfStarters: int = Field(default=2, ge=1, description="Number of starters per team")
-# NumOfBenchGolfers: int = Field(default=1, ge=1, description="Number of bench players per team")
-# MaxDraftedPlayers: int = Field(default=1, ge=0, description="Number of draft players per period")
-# PointsPerPlacing: List[int] = Field(default_factory=lambda: [10, 8, 6, 5, 4, 3, 2, 1], description="Points awarded for placements")
-# Tournaments: List[PyObjectId] = Field(default_factory = lambda: get_all_tournament_ids())
-# MaxNumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
-# DraftingPeriod: str = Field(default="weekly", description="Period for drafting new players")
-# SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
-# HeadToHead: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
-# LeagueId: PyObjectId
-# DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
-# created_at: Optional[datetime] = None
-# updated_at: Optional[datetime] = None
+League.create_periods_between_tournaments()
+League.create_initial_teams()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
