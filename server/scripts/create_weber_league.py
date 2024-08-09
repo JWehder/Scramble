@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flask_app.models import LeagueSettings, User, League
+from flask_app.models import LeagueSettings, User, League, FantasyLeagueSeason
 
 passcode = os.getenv("MONGO_PASSWORD")
 test_user_username = os.getenv("TEST_USER_USERNAME")
@@ -53,6 +53,8 @@ tournament_ids = [
     ObjectId('66a6e7246556c7133a4d2da3')
 ]
 
+
+
 # PGA Championship
 
 for tournament_id in tournament_ids:
@@ -78,60 +80,69 @@ def process_worksheet(worksheet):
 # created_at: Optional[datetime] = None
 # updated_at: Optional[datetime] = None
 
-user = User(
-    Username=f'{test_user_username}',
-    Email='jake.wehder@gmail.com',
-    Password=f'{test_user_password}',
-    Teams=[]
-)
-user_id = user.save()
 
-season = Season(
-    SeasonNumber= 1,
-    StartDate= 
-)
+def create_test_weber_league():
+    user = User(
+        Username=f'{test_user_username}',
+        Email='jake.wehder@gmail.com',
+        Password=f'{test_user_password}',
+        Teams=[]
+    )
 
-league = League(
-    Name="Weber",
-    CommissionerId=user_id,
-    Teams=[],
-    LeagueSettings= {},
-    Seasons=[],
-    CurrentStandings=[],
-    WaiverOrder=[],
-    CurrentPeriod=None
-)
-league_id = league.save()
+    user_id = user.save()
 
-LeagueSettings = LeagueSettings(
-    SnakeDraft=True,
-    StrokePlay=True,
-    ScorePlay=False,
-    PointsPerScore=[],
-    MinFreeAgentDraftRounds=1,
-    ForceDrops=1,
-    DropDeadline="Tuesday",
-    TimeZone="US/Eastern",
-    MaxGolfersPerTeam=4,
-    WaiverType="Reverse Standings",
-    NumberOfTeams=9,
-    NumOfStarters=3,
-    NumOfBenchGolfers=1,
-    MaxDraftedPlayers=1,
-    PointsPerPlacing=[10, 8, 6, 5, 4, 3, 2, 1, 0],
-    Tournaments= tournament_ids,
-    MaxNumberOfGolferUses=None,
-    DraftingFrequency=1,
-    DraftStartDayOfWeek="Wednesday",
-    WaiverDeadline="Wednesday",
-    SecondsPerDraftPick=3600,
-    HeadToHead=False,
-    LeagueId= league_id,
-    DefaultPointsForNonPlacers= 0
-)
+    fantasy_league_season = FantasyLeagueSeason(
+        SeasonNumber= 1,
+        StartDate= 
+    )
 
-League.create_periods_between_tournaments()
-League.create_initial_teams()
+    league = League(
+        Name="Weber",
+        CommissionerId=user_id,
+        Teams=[],
+        LeagueSettings= {},
+        Seasons=[],
+        CurrentStandings=[],
+        WaiverOrder=[],
+        CurrentPeriod=None
+    )
+    league_id = league.save()
+
+    LeagueSettings = LeagueSettings(
+        SnakeDraft=True,
+        StrokePlay=True,
+        ScorePlay=False,
+        PointsPerScore=[],
+        MinFreeAgentDraftRounds=1,
+        ForceDrops=1,
+        DropDeadline="Tuesday",
+        TimeZone="US/Eastern",
+        MaxGolfersPerTeam=4,
+        WaiverType="Reverse Standings",
+        NumberOfTeams=9,
+        NumOfStarters=3,
+        NumOfBenchGolfers=1,
+        MaxDraftedPlayers=1,
+        PointsPerPlacing=[10, 8, 6, 5, 4, 3, 2, 1, 0],
+        Tournaments= tournament_ids,
+        MaxNumberOfGolferUses=None,
+        DraftingFrequency=1,
+        DraftStartDayOfWeek="Wednesday",
+        WaiverDeadline="Wednesday",
+        SecondsPerDraftPick=3600,
+        HeadToHead=False,
+        LeagueId= league_id,
+        DefaultPointsForNonPlacers= 0
+    )
+
+    League.create_periods_between_tournaments()
+    League.create_initial_teams()
+
+
+test_league = db.leagues.find_one({ "Name": "Weber" })
+
+if not test_league: 
+    create_test_weber_league()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
