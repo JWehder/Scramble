@@ -34,7 +34,6 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 #     Picks: List[PyObjectId]
 #     DraftOrder: List[PyObjectId]
 
-
 tournament_ids = [
     ObjectId('663168ca74d57119dcdc701d'),
     ObjectId('66315535ee741e831355a09a'),
@@ -53,13 +52,11 @@ tournament_ids = [
     ObjectId('66a6e7246556c7133a4d2da3')
 ]
 
-
-
-# PGA Championship
-
-for tournament_id in tournament_ids:
-    tournament = db.tournaments.find_one({ "_id": tournament_id })
-    print(tournament["Name"])
+# Fetch the documents based on tournament IDs
+sorted_tournaments = list(db.tournaments.find(
+    {"_id": {"$in": tournament_ids}},
+    sort=[("StartDate")] 
+))
 
 # Function to process each worksheet
 def process_worksheet(worksheet):
@@ -91,11 +88,6 @@ def create_test_weber_league():
 
     user_id = user.save()
 
-    fantasy_league_season = FantasyLeagueSeason(
-        SeasonNumber= 1,
-        StartDate= 
-    )
-
     league = League(
         Name="Weber",
         CommissionerId=user_id,
@@ -107,6 +99,25 @@ def create_test_weber_league():
         CurrentPeriod=None
     )
     league_id = league.save()
+
+    # Find the tournament with the earliest start date
+    first_tournament = sorted_tournaments[0]
+
+    # Find the tournament with the latest end date
+    last_tournament = sorted_tournaments[-1]
+
+    fantasy_league_season = FantasyLeagueSeason(
+        SeasonNumber= 1,
+        StartDate=first_tournament["StartDate"],
+        EndDate=last_tournament["EndDate"],
+        Tournaments=tournament_ids,
+        LeagueId=league_id,
+        Active=True
+    )
+
+    fantasy_league_season_id = fantasy_league_season.save()
+
+    league.create_periods_between_tournaments()
 
     LeagueSettings = LeagueSettings(
         SnakeDraft=True,
@@ -135,41 +146,52 @@ def create_test_weber_league():
         DefaultPointsForNonPlacers= 0
     )
 
-    League.create_periods_between_tournaments()
-    League.create_initial_teams()
+    league.create_initial_teams()
 
 
-test_league = db.leagues.find_one({ "Name": "Weber" })
+# test_league = db.leagues.find_one({ "Name": "Weber" })
 
-if not test_league: 
-    create_test_weber_league()
+# if not test_league: 
+#     create_test_weber_league()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
     golfers_usage = {}
 
-    first_spreadsheet = spreadsheet.worksheets()[0]
+    first_spreadsheet = spreadsheet.worksheets()[3]
 
     a_cell_counter = 3
     while a_cell_counter < 29:
-        golfers_usage[first_spreadsheet.acell(f'A{a_cell_counter}').value] = {}
-        # week results: 
-        # class Week(BaseModel):
-        #     _id: Optional[PyObjectId] = Field(alias='_id')
-        #     WeekNumber: int
-        #     SeasonId: PyObjectId
-        #     Standings: List[PyObjectId]                                           
-        #     FreeAgentSignings: List[PyObjectId]
-        #     Matchups: List[Tuple[PyObjectId, PyObjectId]]
-        #     TournamentId: PyObjectId
+        team = first_spreadsheet.acell(f'A{a_cell_counter}').value
+        golfers_usage[team] = []
+        # class TeamResult(BaseModel):
+        # TeamId: PyObjectId
+        # LeagueId: PyObjectId
+        # TournamentId: PyObjectId
+        # PeriodId: PyObjectId
+        # TotalPoints: int = 0
+        # GolfersScores: Dict[PyObjectId, Dict[str, int]]
+        # Placing: Optional[int] = 0
+        # PointsFromPlacing: int = 0
+        # created_at: Optional[datetime] = None
+        # updated_at: Optional[datetime] = None
 
         b_cell_counter = a_cell_counter
         a_cell_counter += 3
         while b_cell_counter < a_cell_counter:
             player = first_spreadsheet.acell(f'B{b_cell_counter}').value
-            print(player.split(" "))
-            # golfers = db.golfers.find_one({ })
 
+            print(player)
+
+            test_tourney_id = ObjectId('66316b9774d57119dcdc99ee')
+
+            golfer_tournament_details = db.golfertournamentdetails.find_one({ "Name": f"{player}", "TournamentId": test_tourney_id })
+
+            if golfer_tournament_details:
+                golfers_usage[team].append({player: golfer_tournament_details["Score"]})
+            else:
+                golfers_usage[team].append({player: 0})
+            
             b_cell_counter += 1
         
         # class Team(BaseModel):
@@ -202,10 +224,38 @@ def compile_golfers_usage(spreadsheet):
     #                     golfers_usage[team_name][golfer] = 0
     #                 golfers_usage[team_name][golfer] += 1
     
-    # return golfers_usage
+    # Remove the newline characters from the keys
+    cleaned_golfers_usage = {key.strip(): value for key, value in golfers_usage.items()}
+
+    # processed_dict = {}
+
+    # for manager, players in cleaned_golfers_usage.items():
+    #     main_players = []
+    #     bench_players = []
+        
+    #     for player in players:
+    #         if '(' in player and ')' in player:
+    #             # Split the string into the main player and the bench player
+    #             main, bench = player.split('(')
+    #             main = main.strip()  # Clean up whitespace
+    #             bench = bench.replace(')', '').strip()  # Remove the closing parenthesis and clean up whitespace
+                
+    #             # Add to respective lists
+    #             main_players.append(main)
+    #             bench_players.append(bench)
+    #         else:
+    #             main_players.append(player.strip())
+        
+    #     processed_dict[manager] = {
+    #         'main': main_players,
+    #         'bench': bench_players
+    #     }
+
+    return cleaned_golfers_usage
 
 # Get golfers usage data
-# golfers_usage = compile_golfers_usage(spreadsheet)
+golfers_usage = compile_golfers_usage(spreadsheet)
+print(golfers_usage)
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():

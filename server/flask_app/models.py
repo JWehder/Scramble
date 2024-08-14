@@ -45,7 +45,6 @@ def convert_utc_to_local(utc_dt, user_tz):
     local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
     return local_dt
 
-
 class Hole(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Strokes: int
@@ -212,6 +211,7 @@ class Tournament(BaseModel):
     IsCompleted: bool = False
     InProgress: bool = False
     Golfers: Optional[List[PyObjectId]] = []
+    ProSeason: Optional[PyObjectId]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -459,7 +459,7 @@ class Period(BaseModel):
     EndDate: datetime
     PeriodNumber: int = Field(description="whatever number field this is in the list of periods total")
     WaiverPool: Optional[List[Dict]] = []
-    SeasonId: PyObjectId
+    FantasyLeagueSeasonId: PyObjectId
     Standings: Optional[List[PyObjectId]] = []                                        
     FreeAgentSignings: Optional[List[Dict[PyObjectId, List]]] = []
     Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
@@ -689,12 +689,39 @@ class Period(BaseModel):
         
         return True 
 
-class Season(BaseModel):
+class ProSeason(BaseModel):
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
+    League: str
+    StartDate: datetime
+    EndDate: datetime
+    Competitions: List[PyObjectId] = []
+    Active: bool = Field(default=False, description="Determine whether the season is currently active")
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def save(self) -> PyObjectId:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        season_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in season_dict and season_dict['_id'] is not None:
+            result = db.proSeasons.update_one({'_id': season_dict['_id']}, {'$set': season_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(season_dict['_id']))
+        else:
+            result = db.proSeasons.insert_one(season_dict)
+            self.id = result.inserted_id
+
+        return self.id
+
+class FantasyLeagueSeason(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     SeasonNumber: int
     StartDate: datetime
     EndDate: datetime
-    Periods: List[PyObjectId]
+    Periods: Optional[List[PyObjectId]]
     Tournaments: List[PyObjectId] = []
     LeagueId: PyObjectId
     Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
@@ -706,16 +733,16 @@ class Season(BaseModel):
         if not self.created_at:
             self.created_at = self.updated_at
 
-        season_dict = self.dict(by_alias=True, exclude_unset=True)
+        fantasy_league_season_dict = self.dict(by_alias=True, exclude_unset=True)
 
-        if '_id' in season_dict and season_dict['_id'] is not None:
+        if '_id' in fantasy_league_season_dict and fantasy_league_season_dict['_id'] is not None:
             # Update existing document
-            result = db.seasons.update_one({'_id': season_dict['_id']}, {'$set': season_dict}, session)
+            result = db.fantasyLeagueSeasons.update_one({'_id': fantasy_league_season_dict['_id']}, {'$set': fantasy_league_season_dict}, session)
             if result.matched_count == 0:
-                raise ValueError("No document found with _id: {}".format(season_dict['_id']))
+                raise ValueError("No document found with _id: {}".format(fantasy_league_season_dict['_id']))
         else:
             # Insert new document
-            result = db.seasons.insert_one(season_dict, session)
+            result = db.fantasyLeagueSeasons.insert_one(fantasy_league_season_dict, session)
             self.id = result.inserted_id
         return self.id
 
@@ -734,40 +761,40 @@ class Season(BaseModel):
 
 class LeagueSettings(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    SnakeDraft: bool = Field(default=True, ge=1, description="The order of picks reverses with each round.")
-    NumberOfTeams: Optional[int] = Field(default=8, description="Number of the teams within the league.")
-    StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
-    ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
-    ForceDrops: Optional[int] = 0
-    DropDeadline: Optional[str] = None
-    TimeZone: str = "UTC"
-    PointsPerScore: Optional[dict] = Field(default_factory=lambda: {    'Birdies': 3,
-    'Eagles': 5,
-    'Pars': 1,
-    'Albatross': 7,
-    'Bogeys': -3,
-    'DoubleBogeys': -5,
-    'WorseThanDoubleBogeys': -7
-    }, description="Points awarded per round performance")
-    MinFreeAgentDraftRounds: int = Field(default=3, ge=1, description="Minimum number of draft rounds that need to be created each period")
-    MaxGolfersPerTeam: int = Field(default=3, ge=1, description="Maximum number of golfers per team")
-    WaiverType: str = Field(default="Reverse Standings", description="Determine the priority with which teams receive in picking up free agents")
-    NumOfStarters: int = Field(default=2, ge=1, description="Number of starters per team")
-    NumOfBenchGolfers: int = Field(default=1, ge=1, description="Number of bench players per team")
-    MaxDraftedPlayers: int = Field(default=1, ge=0, description="Number of draft players per period")
-    PointsPerPlacing: Optional[List[int]] = Field(default=[], description="Points awarded for placements")
-    Tournaments: List[PyObjectId] = Field(default_factory = lambda: get_all_tournament_ids())
-    MaxNumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
+    created_at: Optional[datetime] = None
+    DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
     DraftingFrequency: int = Field(default=0, description="The number of times the league drafts in between tournaments.")
     DraftStartDayOfWeek: Optional[str] = Field(default="Monday", description="Day of the week in which the draft starts before a tournament or season.")
     DraftStartTime: Optional[str] = Field(default="12:00", description="Time of day when the draft starts, in HH:MM format.")
-    WaiverDeadline: Optional[str] = Field(default = "Wednesday", description="Day of the week where players on waivers are distributed.")
-    SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
+    DropDeadline: Optional[str] = None
+    ForceDrops: Optional[int] = 0
     HeadToHead: bool = Field(default=False, description="Determine whether the competition is league wide or just between two users for each week.")
     LeagueId: PyObjectId
-    DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
-    created_at: Optional[datetime] = None
+    MaxDraftedPlayers: int = Field(default=1, ge=0, description="Number of draft players per period")
+    MaxGolfersPerTeam: int = Field(default=3, ge=1, description="Maximum number of golfers per team")
+    MaxNumOfGolferUses: Optional[int] = Field(default=None, description="Number of times a golfer can be used")
+    MinFreeAgentDraftRounds: int = Field(default=3, ge=1, description="Minimum number of draft rounds that need to be created each period")
+    NumOfBenchGolfers: int = Field(default=1, ge=1, description="Number of bench players per team")
+    NumOfStarters: int = Field(default=2, ge=1, description="Number of starters per team")
+    NumberOfTeams: Optional[int] = Field(default=8, description="Number of the teams within the league.")
+    PointsPerPlacing: Optional[List[int]] = Field(default=[], description="Points awarded for placements")
+    PointsPerScore: Optional[dict] = Field(default_factory=lambda: {
+        'Birdies': 3,
+        'Eagles': 5,
+        'Pars': 1,
+        'Albatross': 7,
+        'Bogeys': -3,
+        'DoubleBogeys': -5,
+        'WorseThanDoubleBogeys': -7
+    }, description="Points awarded per round performance")
+    ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
+    SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
+    SnakeDraft: bool = Field(default=True, ge=1, description="The order of picks reverses with each round.")
+    StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
+    TimeZone: str = "UTC"
     updated_at: Optional[datetime] = None
+    WaiverDeadline: Optional[str] = Field(default="Wednesday", description="Day of the week where players on waivers are distributed.")
+    WaiverType: str = Field(default="Reverse Standings", description="Determine the priority with which teams receive in picking up free agents")
 
     def determine_points_per_placing(self):
         if not self.PointsPerPlacing:
@@ -1018,20 +1045,20 @@ class League(BaseModel):
     Name: str
     CommissionerId: str
     Teams: List[PyObjectId] = []
-    LeagueSettings: Optional[LeagueSettings] = {}
-    Seasons: Optional[List[PyObjectId]] = []
+    LeagueSettings: Optional[LeagueSettings] = None
+    FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
     CurrentStandings: Optional[List[Team]]
-    CurrentSeason: Optional[PyObjectId] = None
+    CurrentFantasyLeagueSeasonId: Optional[PyObjectId] = None
     WaiverOrder: Optional[List[PyObjectId]] = []
     CurrentPeriod: Optional[PyObjectId] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def find_current_season(self) -> Optional[Season]:
-        if self.CurrentSeason:
-            current_season = db.seasons.find_one({"_id": self.CurrentSeason})
+    def find_current_season(self) -> Optional[FantasyLeagueSeason]:
+        if self.CurrentFantasyLeagueSeason:
+            current_season = db.fantasyLeagueSeasons.find_one({"_id": self.CurrentFantasyLeagueSeason})
             if current_season:
-                return Season(**current_season)
+                return FantasyLeagueSeason(**current_season)
         return None
 
     def convert_to_datetime(self, day_of_week: str, time_str: str, timezone_str: str) -> datetime:
@@ -1052,7 +1079,7 @@ class League(BaseModel):
         return draft_start
 
     def create_initial_season(self, tournaments: List[PyObjectId]) -> PyObjectId:
-        if not self.Seasons or len(self.Seasons) < 1:
+        if not self.FantasyLeagueSeasons or len(self.FantasyLeagueSeasons) < 1:
             if not tournaments:
                 raise ValueError("No tournaments specified for the initial season.")
 
@@ -1065,8 +1092,8 @@ class League(BaseModel):
             first_tournament_doc = tournament_docs[0]
             last_tournament_doc = tournament_docs[-1]
 
-            first_season = Season(
-                SeasonNumber=1,
+            first_season = FantasyLeagueSeason(
+                FantasyLeagueSeasonNumber=1,
                 StartDate=first_tournament_doc["StartDate"],
                 EndDate=last_tournament_doc["EndDate"],
                 Periods=[],
@@ -1079,8 +1106,8 @@ class League(BaseModel):
 
             first_season_id = first_season.save()
 
-            self.Seasons.append(first_season_id)
-            self.CurrentSeason = first_season_id
+            self.FantasyLeagueSeasons.append(first_season_id)
+            self.CurrentFantasyLeagueSeason = first_season_id
             self.save()
 
             return first_season_id
@@ -1105,7 +1132,7 @@ class League(BaseModel):
         first_tournament_doc = tournament_docs[0]
         last_tournament_doc = tournament_docs[-1]
 
-        next_season = Season(
+        next_season = FantasyLeagueSeason(
             SeasonNumber=next_season_number,
             StartDate=first_tournament_doc["StartDate"],
             EndDate=last_tournament_doc["EndDate"],
@@ -1119,7 +1146,7 @@ class League(BaseModel):
 
         next_season_id = next_season.save()
 
-        self.Seasons.append(next_season_id)
+        self.FantasyLeagueSeasons.append(next_season_id)
         self.CurrentSeason = next_season_id
         self.save()
 
@@ -1233,7 +1260,7 @@ class League(BaseModel):
     def create_periods_between_tournaments(self):
         # Fetch all selected tournaments for the league
         league_settings = self.LeagueSettings
-        if not league_settings or not league_settings.get("Tournaments"):
+        if not league_settings:
             raise ValueError("No tournaments found for this league.")
 
         tournament_ids = league_settings["Tournaments"]
@@ -1259,7 +1286,7 @@ class League(BaseModel):
                 EndDate=next_tournament["StartDate"],
                 PeriodNumber=i + 1,
                 TournamentId=current_tournament["_id"],
-                SeasonId=league_settings["SeasonId"]
+                FantasyLeagueSeasonId=self.CurrentFantasyLeagueSeasonId
             )
 
             if (i + 1) in draft_periods:
@@ -1306,13 +1333,13 @@ class League(BaseModel):
 
             self.save()
 
-    def get_most_recent_season(self) -> Season:
+    def get_most_recent_season(self) -> FantasyLeagueSeason:
         current_date = datetime.utcnow()
-        season = db.seasons.find_one(
+        season = db.fantasyLeagueSeasons.find_one(
             {"LeagueId": self.id, "StartDate": {"$gt": current_date}},
             sort=[("StartDate", -1)]
         )
-        return Season(**season) if season else None
+        return FantasyLeagueSeason(**season) if season else None
 
     def get_most_recent_period(self):
         current_date = datetime.utcnow()
@@ -1366,7 +1393,7 @@ class League(BaseModel):
             StartDate=datetime.utcnow(),
             EndDate=first_tournament["EndDate"],
             PeriodNumber=0,
-            SeasonId=first_tournament["SeasonId"]
+            FantasyLeagueSeasonId=self.CurrentFantasyLeagueSeasonId
         )
 
         # Create the first draft before the first tournament
@@ -1559,7 +1586,7 @@ class Draft(BaseModel):
         league = League(**league)
 
         # Access the latest season
-        latest_season = league.get_more_recent_season()
+        latest_season = league.get_most_recent_season()
 
         if not latest_season['Active']:
             raise ValueError("Season is not active")
@@ -1585,7 +1612,7 @@ class Draft(BaseModel):
         
         # Update the draft order in the database
         db.drafts.update_one(
-            {"SeasonId": self.LeagueId},
+            {"FantasyLeagueSeasonId": self.LeagueId},
             {"$set": {"DraftOrder": self.DraftOrder}},
             upsert=True
         )
