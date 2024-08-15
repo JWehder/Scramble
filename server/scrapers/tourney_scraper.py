@@ -67,6 +67,18 @@ tournaments = [
     }
 ]
 
+def determine_score_from_rounds(golfer_tournament_results: dict):
+    score_total = 0
+    for round in golfer_tournament_results["Rounds"]:
+        score_total += round["Score"]
+
+    if score_total > 0:
+        return "+" + str(score_total)
+    elif score_total == 0:
+        return "E"
+    else:
+        return "-" + str(score_total)
+
 def parse_leaderboard(leaderboard, driver):
 
   competitors_table = leaderboard
@@ -111,6 +123,8 @@ def parse_leaderboard(leaderboard, driver):
 
     golfer_tournament_results['Earnings'] = ''.join(re.findall(r'(\d+)', golfer_tournament_results['Earnings']))
 
+    print(golfer_tournament_results["FirstName"] + golfer_tournament_results["LastName"])
+
     # Scroll to the element
     actions = ActionChains(driver)
     actions.move_to_element(element_to_click).perform()
@@ -119,7 +133,7 @@ def parse_leaderboard(leaderboard, driver):
     element_to_click.click()
 
     # wait for player detail element to be active so I can get hole by hole scoring
-    player_detail = WebDriverWait(driver, 1).until(
+    player_detail = WebDriverWait(driver, 8).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, "div.Leaderboard__Player__Detail"))
     )
 
@@ -179,8 +193,8 @@ def parse_leaderboard(leaderboard, driver):
         # enter in total par for the course/ round
         round_detail["TotalPar"] = int(par[-2:])
 
-        # Calculate under par score
-        round_detail["Score"] = round_detail["StrokesPlayed"] - round_detail["TotalPar"]
+        # add an integer variable to hold the calculated score under par 
+        score_total = 0
 
         hole = 1
 
@@ -188,6 +202,9 @@ def parse_leaderboard(leaderboard, driver):
             score = strokes - par
             # Determine whether each score is albatross, birdie, par, bogey, double bogey, or worse
             # Assuming albatross = -3, birdie = -2, par = -1, bogey = 1, double bogey = 2, worse = 3
+            
+            score_total += score
+
             score_types = {
                 'albatross': score == -3,
                 'eagle': score == -2,
@@ -233,9 +250,23 @@ def parse_leaderboard(leaderboard, driver):
             elif score_types['worse_than_double_bogey']:
                 round_detail['WorseThanDoubleBogeys'] += 1
 
+        round_detail["Score"] = score_total
+
         if "Rounds" not in golfer_tournament_results:
             golfer_tournament_results['Rounds'] = []
         golfer_tournament_results['Rounds'].append(round_detail)
+
+    if golfer_tournament_results["Score"] == "WD":
+        golfer_tournament_results["WD"] = True
+        golfer_tournament_results["Cut"] = False
+        golfer_tournament_results["Score"] = determine_score_from_rounds(golfer_tournament_results)
+    elif golfer_tournament_results["Score"] == "CUT":
+        golfer_tournament_results["WD"] = False
+        golfer_tournament_results["Cut"] = True
+        golfer_tournament_results["Score"] = determine_score_from_rounds(golfer_tournament_results)
+    else:
+        golfer_tournament_results["WD"] = False
+        golfer_tournament_results["Cut"] = False
 
     golfers.append(golfer_tournament_results)
 
@@ -243,7 +274,7 @@ def parse_leaderboard(leaderboard, driver):
     element_to_click.click()
 
     # Allow some time for the page to update before proceeding
-    WebDriverWait(driver, 1).until_not(
+    WebDriverWait(driver, 2).until_not(
         EC.visibility_of_element_located((By.CSS_SELECTOR, "div.Leaderboard__Player__Detail"))
     )
 
@@ -385,11 +416,11 @@ def parse_tournaments(tournaments):
         print(item)
         name = item["Name"]
 
-        found_one = db.tournaments.find_one({ "Name": item["Name"], "StartDate": datetime.strptime(item["StartDate"], '%Y-%m-%dT%H:%M:%S') })
+        # found_one = db.tournaments.find_one({ "Name": item["Name"], "StartDate": datetime.strptime(item["StartDate"], '%Y-%m-%dT%H:%M:%S') })
 
-        if found_one:
-            print(f"Found {name} in the db. Skipping...")
-            continue
+        # if found_one:
+        #     print(f"Found {name} in the db. Skipping...")
+        #     continue
 
         # Load page
         driver.get(item['Links'][0])

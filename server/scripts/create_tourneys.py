@@ -4,6 +4,7 @@ import json
 import sys
 from create_players_with_player_pages import create_golfers_in_tournament
 from datetime import datetime
+from bson.objectid import ObjectId
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -111,104 +112,101 @@ def process_files(directory, session=None):
                 InProgress=tournament_data["isInProgress"]
             )
 
-            print(session)
-            tournament_id = tournament.save(session)
+            tournament_id = tournament.save()
 
             if "Golfers" in tournament_data:
-                print("for golfers")
-                create_golfers_in_tournament(tournament_data["Links"][0])
-
-                for golfer_data in tournament_data["Golfers"]:
-                    golfer_split_values = golfer_data["Name"].split(" ")
-                    first_name, last_name = golfer_split_values[0], ' '.join(golfer_split_values[1:])
-
-                    golfer = db.golfers.find_one({
-                        "FirstName": {"$regex": f"^{first_name}$", "$options": "i"},
-                        "LastName": {"$regex": f"^{last_name}$", "$options": "i"}
-                    }, session=session)
-
-                    if golfer and "TournamentDetails" not in golfer:
-                        db.golfers.update_one(
-                            {"_id": golfer["_id"]},
-                            {"$set": {"TournamentDetails": []}},
-                            session=session
-                        )
-
-                    if not golfer:
-                        continue
-
-                    golfer_details = GolferTournamentDetails(
-                        GolferId=golfer["_id"],
-                        Position=golfer_data.get("Position"),
-                        Name=golfer["FirstName"] + " " + golfer["LastName"],
-                        Score=golfer_data.get("Score"),
-                        R1=golfer_data.get("R1"),
-                        R2=golfer_data.get("R2"),
-                        R3=golfer_data.get("R3"),
-                        R4=golfer_data.get("R4"),
-                        TotalStrokes=golfer_data.get("TotalStrokes"),
-                        Earnings=golfer_data.get("Earnings"),
-                        FedexPts=golfer_data.get("FedexPts"),
-                        TournamentId=tournament_id,
-                        Rounds=[]
-                    )
-
-                    golfer_details_id = golfer_details.save(session)
-                    print(golfer_details_id)
-
-                    db.golfers.update_one(
-                        {"_id": golfer["_id"]},
-                        {"$push": {"TournamentDetails": golfer_details_id}},
-                        session=session
-                    )
-
-                    # hold all the rounds for this particular golfer detail
-                    round_ids = []
-
-                    for round_data in golfer_data["Rounds"]:
-                        round = Round(
-                            GolferTournamentDetailsId=golfer_details_id,
-                            Round=round_data["Round"],
-                            Birdies=round_data["Birdies"],
-                            Eagles=round_data["Eagles"],
-                            Pars=round_data["Pars"],
-                            Albatross=round_data["Albatross"],
-                            Bogeys=round_data["Bogeys"],
-                            DoubleBogeys=round_data["DoubleBogeys"],
-                            WorseThanDoubleBogeys=round_data["WorseThanDoubleBogeys"],
-                            Score=round_data["Score"],
-                            TournamentId=tournament_id,
-                            Holes=[]
-                        )
-
-                        round_id = round.save(session)
-                        round_ids.append(round_id)
-
-                        process_round_data(round_data, golfer_details_id, round_id, session)
-
-                        db.rounds.update_one(
-                            {"_id": round_id},
-                            {"$set": {"Holes": list(db.holes.find({"RoundId": round_id}, session=session))}},
-                            session=session
-                        )
-
-                    db.golfertournamentdetails.update_one(
-                        {"_id": golfer_details_id},
-                        {"$set": {"Rounds": round_ids}},
-                        session=session
-                    )
-
-                db.tournaments.update_one(
-                    {"_id": tournament_id},
-                    {"$push": {"Golfers": {"$each": list(db.golfertournamentdetails.find({"TournamentId": tournament_id}, session=session))}}},
-                    session=session
-                )
+                handle_golfer_data(tournament_data, tournament_id)
             else:
                 db.tournaments.update_one(
                     {"_id": tournament_id},
                     {"$set": {"Golfers": []}},
                     session=session
                 )
+
+def handle_golfer_data(tournament_data: dict, tournament_id: ObjectId):
+    print("for golfers")
+    create_golfers_in_tournament(tournament_data["Links"][0])
+
+    for golfer_data in tournament_data["Golfers"]:
+        golfer_split_values = golfer_data["Name"].split(" ")
+        first_name, last_name = golfer_split_values[0], ' '.join(golfer_split_values[1:])
+
+        golfer = db.golfers.find_one({
+            "FirstName": {"$regex": f"^{first_name}$", "$options": "i"},
+            "LastName": {"$regex": f"^{last_name}$", "$options": "i"}
+        })
+
+        if golfer and "TournamentDetails" not in golfer:
+            db.golfers.update_one(
+                {"_id": golfer["_id"]},
+                {"$set": {"TournamentDetails": []}}
+            )
+
+        if not golfer:
+            continue
+
+        golfer_details = GolferTournamentDetails(
+            GolferId=golfer["_id"],
+            Position=golfer_data.get("Position"),
+            Name=golfer["FirstName"] + " " + golfer["LastName"],
+            Score=golfer_data.get("Score"),
+            R1=golfer_data.get("R1"),
+            R2=golfer_data.get("R2"),
+            R3=golfer_data.get("R3"),
+            R4=golfer_data.get("R4"),
+            TotalStrokes=golfer_data.get("TotalStrokes"),
+            Earnings=golfer_data.get("Earnings"),
+            FedexPts=golfer_data.get("FedexPts"),
+            TournamentId=tournament_id,
+            Rounds=[]
+        )
+
+        golfer_details_id = golfer_details.save()
+        print(golfer_details_id)
+
+        db.golfers.update_one(
+            {"_id": golfer["_id"]},
+            {"$push": {"TournamentDetails": golfer_details_id}}
+        )
+
+        # hold all the rounds for this particular golfer detail
+        round_ids = []
+
+        for round_data in golfer_data["Rounds"]:
+            round = Round(
+                GolferTournamentDetailsId=golfer_details_id,
+                Round=round_data["Round"],
+                Birdies=round_data["Birdies"],
+                Eagles=round_data["Eagles"],
+                Pars=round_data["Pars"],
+                Albatross=round_data["Albatross"],
+                Bogeys=round_data["Bogeys"],
+                DoubleBogeys=round_data["DoubleBogeys"],
+                WorseThanDoubleBogeys=round_data["WorseThanDoubleBogeys"],
+                Score=round_data["Score"],
+                TournamentId=tournament_id,
+                Holes=[]
+            )
+
+            round_id = round.save()
+            round_ids.append(round_id)
+
+            process_round_data(round_data, golfer_details_id, round_id)
+
+            db.rounds.update_one(
+                {"_id": round_id},
+                {"$set": {"Holes": list(db.holes.find({"RoundId": round_id}))}},
+            )
+
+        db.golfertournamentdetails.update_one(
+            {"_id": golfer_details_id},
+            {"$set": {"Rounds": round_ids}}
+        )
+
+    db.tournaments.update_one(
+        {"_id": tournament_id},
+        {"$push": {"Golfers": {"$each": list(db.golfertournamentdetails.find({"TournamentId": tournament_id}))}}},
+    )
 
 if __name__ == "__main__":
     directory = "../results"  # Replace with the actual directory path

@@ -11,10 +11,6 @@ collection = db['golfertournamentdetails']
 def calculate_final_score_for_cut_or_wd(document):
     # Implement your logic here if needed to determine the final score
 
-    
-
-    for 
-
     return document['Score']
 
 # Iterate through all documents and update them
