@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flask_app.models import LeagueSettings, User, League, FantasyLeagueSeason
+from flask_app.models import LeagueSettings, User, League
 
 passcode = os.getenv("MONGO_PASSWORD")
 test_user_username = os.getenv("TEST_USER_USERNAME")
@@ -77,7 +77,6 @@ def process_worksheet(worksheet):
 # created_at: Optional[datetime] = None
 # updated_at: Optional[datetime] = None
 
-
 def create_test_weber_league():
     user = User(
         Username=f'{test_user_username}',
@@ -92,34 +91,20 @@ def create_test_weber_league():
         Name="Weber",
         CommissionerId=user_id,
         Teams=[],
-        LeagueSettings= {},
-        Seasons=[],
+        FantasyLeagueSeasons=[],
+        CurrentFantasyLeagueSeasonId=None,
         CurrentStandings=[],
+        LeagueSettings=None,
         WaiverOrder=[],
         CurrentPeriod=None
     )
     league_id = league.save()
 
-    # Find the tournament with the earliest start date
-    first_tournament = sorted_tournaments[0]
+    fantasy_league_season_id = league.create_initial_season(sorted_tournaments)
 
-    # Find the tournament with the latest end date
-    last_tournament = sorted_tournaments[-1]
+    league.save()
 
-    fantasy_league_season = FantasyLeagueSeason(
-        SeasonNumber= 1,
-        StartDate=first_tournament["StartDate"],
-        EndDate=last_tournament["EndDate"],
-        Tournaments=tournament_ids,
-        LeagueId=league_id,
-        Active=True
-    )
-
-    fantasy_league_season_id = fantasy_league_season.save()
-
-    league.create_periods_between_tournaments()
-
-    LeagueSettings = LeagueSettings(
+    league_settings = LeagueSettings(
         SnakeDraft=True,
         StrokePlay=True,
         ScorePlay=False,
@@ -146,13 +131,22 @@ def create_test_weber_league():
         DefaultPointsForNonPlacers= 0
     )
 
+    league_settings.drafting_period_must_be_valid()
+
+    league_settings.save()
+
+    league.LeagueSettings = league_settings
+
+    league.save()
+
+    league.create_periods_between_tournaments()
     league.create_initial_teams()
 
 
-# test_league = db.leagues.find_one({ "Name": "Weber" })
+test_league = db.leagues.find_one({ "Name": "Weber" })
 
-# if not test_league: 
-#     create_test_weber_league()
+if not test_league: 
+    create_test_weber_league()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
@@ -254,8 +248,8 @@ def compile_golfers_usage(spreadsheet):
     return cleaned_golfers_usage
 
 # Get golfers usage data
-golfers_usage = compile_golfers_usage(spreadsheet)
-print(golfers_usage)
+# golfers_usage = compile_golfers_usage(spreadsheet)
+# print(golfers_usage)
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():

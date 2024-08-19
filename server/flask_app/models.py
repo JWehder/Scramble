@@ -1,5 +1,5 @@
 from typing import List, Optional, Tuple, Dict
-from pydantic import BaseModel, Field, EmailStr, validator, model_validator, field_validator, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, root_validator, model_validator, field_validator
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 from pymongo.client_session import ClientSession
@@ -71,12 +71,12 @@ class Hole(BaseModel):
 
         if '_id' in hole_dict and hole_dict['_id'] is not None:
             # Update existing document
-            result = db.holes.update_one({'_id': hole_dict['_id']}, {'$set': hole_dict}, session)
+            result = db.holes.update_one({'_id': hole_dict['_id']}, {'$set': hole_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(hole_dict['_id']))
         else:
             # Insert new document
-            result = db.holes.insert_one(hole_dict, session)
+            result = db.holes.insert_one(hole_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -119,13 +119,13 @@ class Round(BaseModel):
         if '_id' in round_dict and round_dict['_id'] is not None:
             # Update existing document
             result = db.rounds.update_one(
-                {'_id': round_dict['_id']}, {'$set': round_dict}, session
+                {'_id': round_dict['_id']}, {'$set': round_dict}
             )
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(round_dict['_id']))
         else:
             # Insert new document
-            result = db.rounds.insert_one(round_dict, session)
+            result = db.rounds.insert_one(round_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -168,12 +168,12 @@ class GolferTournamentDetails(BaseModel):
 
         if '_id' in golfer_tournament_details_dict and golfer_tournament_details_dict['_id'] is not None:
             # Update existing document
-            result = db.golfertournamentdetails.update_one({'_id': golfer_tournament_details_dict['_id']}, {'$set': golfer_tournament_details_dict}, session)
+            result = db.golfertournamentdetails.update_one({'_id': golfer_tournament_details_dict['_id']}, {'$set': golfer_tournament_details_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(golfer_tournament_details_dict['_id']))
         else:
             # Insert new document
-            result = db.golfertournamentdetails.insert_one(golfer_tournament_details_dict, session)
+            result = db.golfertournamentdetails.insert_one(golfer_tournament_details_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -224,12 +224,12 @@ class Tournament(BaseModel):
 
         if '_id' in tournament_dict and tournament_dict['_id'] is not None:
             # Update existing document
-            result = db.tournaments.update_one({'_id': tournament_dict['_id']}, {'$set': tournament_dict}, session)
+            result = db.tournaments.update_one({'_id': tournament_dict['_id']}, {'$set': tournament_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(tournament_dict['_id']))
         else:
             # Insert new document
-            result = db.tournaments.insert_one(tournament_dict, session)
+            result = db.tournaments.insert_one(tournament_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -286,12 +286,12 @@ class Golfer(BaseModel):
 
         if '_id' in golfer_dict and golfer_dict['_id'] is not None:
             # Update existing document
-            result = db.golfers.update_one({'_id': golfer_dict['_id']}, {'$set': golfer_dict}, session)
+            result = db.golfers.update_one({'_id': golfer_dict['_id']}, {'$set': golfer_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(golfer_dict['_id']))
         else:
             # Insert new document
-            result = db.golfers.insert_one(golfer_dict, session)
+            result = db.golfers.insert_one(golfer_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -406,20 +406,20 @@ class User(BaseModel):
         
         if '_id' in user_dict and user_dict['_id'] is not None:
             # Update existing document
-            result = db.users.update_one({'_id': user_dict['_id']}, {'$set': user_dict}, session)
+            result = db.users.update_one({'_id': user_dict['_id']}, {'$set': user_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(user_dict['_id']))
         else:
             # Insert new document
-            result = db.users.insert_one(user_dict, session)
+            result = db.users.insert_one(user_dict)
             self.id = result.inserted_id
         return self.id
 
     @field_validator('Username')
-    def validate_username(cls, v):
-        # Add logic to check for unique username in the database
-        if any(user['User'] == v for user in db.users):
-            raise ValueError('Username already exists.')
+    def validate_username_existence(cls, v):
+        # Query the collection to find if any document has a "User" field equal to the provided value
+        if db.users.find_one({"User": v}):
+            raise ValueError(f"Username '{v}' is already taken.")
         return v
 
     @field_validator('Username')
@@ -432,7 +432,7 @@ class User(BaseModel):
     @field_validator('Email')
     def validate_email(cls, v):
         # Add logic to check for unique email in the database
-        if any(user['Email'] == v for user in db.users):
+        if db.users.find_one({"Email": v}):
             raise ValueError('Email already exists')
         return v
 
@@ -573,12 +573,12 @@ class Period(BaseModel):
 
         if '_id' in period_dict and period_dict['_id'] is not None:
             # Update existing document
-            result = db.periods.update_one({'_id': period_dict['_id']}, {'$set': period_dict}, session)
+            result = db.periods.update_one({'_id': period_dict['_id']}, {'$set': period_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(v['_id']))
         else:
             # Insert new document
-            result = db.periods.insert_one(period_dict, session)
+            result = db.periods.insert_one(period_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -721,7 +721,7 @@ class FantasyLeagueSeason(BaseModel):
     SeasonNumber: int
     StartDate: datetime
     EndDate: datetime
-    Periods: Optional[List[PyObjectId]]
+    Periods: Optional[List[PyObjectId]] = []
     Tournaments: List[PyObjectId] = []
     LeagueId: PyObjectId
     Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
@@ -737,14 +737,27 @@ class FantasyLeagueSeason(BaseModel):
 
         if '_id' in fantasy_league_season_dict and fantasy_league_season_dict['_id'] is not None:
             # Update existing document
-            result = db.fantasyLeagueSeasons.update_one({'_id': fantasy_league_season_dict['_id']}, {'$set': fantasy_league_season_dict}, session)
+            result = db.fantasyLeagueSeasons.update_one({'_id': fantasy_league_season_dict['_id']}, {'$set': fantasy_league_season_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(fantasy_league_season_dict['_id']))
         else:
             # Insert new document
-            result = db.fantasyLeagueSeasons.insert_one(fantasy_league_season_dict, session)
+            result = db.fantasyLeagueSeasons.insert_one(fantasy_league_season_dict)
             self.id = result.inserted_id
         return self.id
+    
+    @model_validator(mode='before')
+    def validate_and_convert_dates(cls, values):
+        start_date = values.get('StartDate')
+        end_date = values.get('EndDate')
+
+        if isinstance(start_date, str):
+            values['StartDate'] = datetime.fromisoformat(start_date)
+        
+        if isinstance(end_date, str):
+            values['EndDate'] = datetime.fromisoformat(end_date)
+        
+        return values
 
     @field_validator('StartDate', 'EndDate')
     def dates_must_be_valid(cls, v, field):
@@ -752,12 +765,15 @@ class FantasyLeagueSeason(BaseModel):
             raise ValueError(f'{field.name} must be a datetime')
         return v
 
-    @field_validator('EndDate')
-    def end_date_must_be_after_start_date(cls, v, values):
-        start_date = values.get('start_date')
-        if start_date and v <= start_date:
+    @model_validator(mode='before')
+    def validate_dates(cls, values):
+        start_date = values.get('StartDate')
+        end_date = values.get('EndDate')
+
+        if start_date and end_date and end_date <= start_date:
             raise ValueError('End date must be after start date')
-        return v
+
+        return values
 
 class LeagueSettings(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
@@ -825,20 +841,20 @@ class LeagueSettings(BaseModel):
 
         if '_id' in league_settings_dict and league_settings_dict['_id'] is not None:
             # Update existing document
-            result = db.leaguesettings.update_one({'_id': league_settings_dict['_id']}, {'$set': league_settings_dict}, session=session)
+            result = db.leagueSettings.update_one({'_id': league_settings_dict['_id']}, {'$set': league_settings_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(league_settings_dict['_id']))
         else:
             # Insert new document
-            result = db.leaguesettings.insert_one(league_settings_dict, session=session)
+            result = db.leagueSettings.insert_one(league_settings_dict)
             self.id = result.inserted_id
             # If league_id is provided, associate the new LeagueSettings with the League
             if league_id is not None:
-                db.leagues.update_one({'_id': league_id}, {'$set': {'LeagueSettings': self.id}}, session=session)
+                db.leagues.update_one({'_id': league_id}, {'$set': {'LeagueSettings': league_settings_dict}})
 
         # Update the associated league document with the updated settings
         if league_id is not None:
-            db.leagues.update_one({'_id': league_id}, {'$set': {'LeagueSettings': league_settings_dict}}, session=session)
+            db.leagues.update_one({'_id': league_id}, {'$set': {'LeagueSettings': league_settings_dict}})
 
         return self.id
 
@@ -851,10 +867,16 @@ class LeagueSettings(BaseModel):
             raise ValueError('DraftStartTime must be a valid time in HH:MM format')
         return v
 
-    @field_validator('NumberOfTeams')
-    def num_of_teams_is_even_num(cls, v, values):
-        if v % 2 != 0 and values['HeadToHead'] == True:
-            raise ValueError("The number of teams in your league must be even if you want to play a head to head league.")
+    # only matters if the league is running head to head matchups
+    @model_validator(mode='before')
+    def validate_number_of_teams(cls, values):
+        number_of_teams = values.get('NumberOfTeams')
+        head_to_head = values.get('HeadToHead')
+
+        if head_to_head and number_of_teams % 2 != 0:
+            raise ValueError("The number of teams in your league must be even if you want to play a head-to-head league.")
+
+        return values
 
     @field_validator('NumberOfTeams')
     def num_of_teams_constraint(cls, v):
@@ -872,17 +894,26 @@ class LeagueSettings(BaseModel):
             raise ValueError('Time to draft must be a positive period of time.')
         return v
 
-    @field_validator('NumOfStarters')
-    def defined_players_must_be_less_than_max(cls, v, values):
-        if 'NumOfStarters' in values and v >= values['NumOfStarters']:
-            raise ValueError('Number of defined players must be less than the maximum number of golfers per team')
-        return v
+    @model_validator(mode='before')
+    def validate_num_of_starters(cls, values):
+        num_of_starters = values.get('NumOfStarters')
+        max_golfers_per_team = values.get('MaxGolfersPerTeam')
 
-    @field_validator('MaxDraftedPlayers')
-    def draft_players_must_fit_in_team(cls, v, values):
-        if v > values['MaxGolfersPerTeam']:
-            return ValueError("Your max draftable players must be less than the maximum golfers allowed on a team.")
-        return v
+        if max_golfers_per_team is not None and num_of_starters >= max_golfers_per_team:
+            raise ValueError('Number of defined players must be less than the maximum number of golfers per team.')
+
+        return values
+
+    @model_validator(mode='before')
+    def validate_max_drafted_players(cls, values):
+        max_drafted_players = values.get('MaxDraftedPlayers')
+        max_golfers_per_team = values.get('MaxGolfersPerTeam')
+
+        if max_drafted_players is not None and max_golfers_per_team is not None:
+            if max_drafted_players > max_golfers_per_team:
+                raise ValueError("Max draftable players must be less than or equal to the maximum golfers allowed on a team.")
+        
+        return values
 
     @field_validator('PointsPerPlacing')
     def points_per_placing_must_be_in_range(cls, v):
@@ -896,24 +927,28 @@ class LeagueSettings(BaseModel):
             raise ValueError('Points per score must be within the range of -10 to 10')
         return v
 
-    @field_validator('DraftingFrequency')
-    def drafting_period_must_be_valid(cls, v, values):
-        league = db.leagues.find_one({ "_id": values["LeagueId"] })
-        if v > len(league["Tournaments"]):
-            raise ValueError("You cannot have more drafts than you have selected tournaments")
-        return v
-
     @field_validator('WaiverType')
     def define_waiver_fomat(cls, v):
         if v not in ["FirstToLast", "Bidding"]:
             raise ValueError("Waiver type must be either a bidding format or first to last.")
         return v
 
-    @field_validator('NumOfBenchGolfers')
-    def bench_players_under_limit(cls, v, values):
-        if v > values['MaxGolfersPerTeam'] or v > values[""]:
-            return ValueError("Your number of bench golfers must be less than your starters and max amount of players allowed on a team.")
-        return v
+    @model_validator(mode = 'before')
+    def bench_players_under_limit(cls, values):
+        num_of_bench_golfers = values.get('NumOfBenchGolfers')
+        max_golfers_per_team = values.get('MaxGolfersPerTeam')
+        num_of_starters = values.get('NumOfStarters')
+
+        if num_of_bench_golfers > max_golfers_per_team or num_of_bench_golfers > num_of_starters // 2:
+            return ValueError("Your number of bench golfers must be less than half your starters count and less than max amount of players allowed on a team.")
+        return values
+
+    def drafting_period_must_be_valid(self):
+        league = db.leagues.find_one({ "_id": self.LeagueId })
+        season = db.fantasyLeagueSeasons.find_one({ "_id": league["CurrentFantasyLeagueSeasonId"], "LeagueId": league["_id"]})
+        if self.DraftingFrequency > len(season["Tournaments"]):
+            raise ValueError("You cannot have more drafts than you have selected tournaments")
+        return True
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -980,12 +1015,12 @@ class Team(BaseModel):
 
         if '_id' in team_dict and team_dict['_id'] is not None:
             # Update existing document
-            result = db.teams.update_one({'_id': team_dict['_id']}, {'$set': team_dict}, session)
+            result = db.teams.update_one({'_id': team_dict['_id']}, {'$set': team_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(team_dict['_id']))
         else:
             # Insert new document
-            result = db.teams.insert_one(team_dict, session)
+            result = db.teams.insert_one(team_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -1043,7 +1078,7 @@ class Team(BaseModel):
 class League(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Name: str
-    CommissionerId: str
+    CommissionerId: PyObjectId
     Teams: List[PyObjectId] = []
     LeagueSettings: Optional[LeagueSettings] = None
     FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
@@ -1059,6 +1094,32 @@ class League(BaseModel):
             current_season = db.fantasyLeagueSeasons.find_one({"_id": self.CurrentFantasyLeagueSeason})
             if current_season:
                 return FantasyLeagueSeason(**current_season)
+        return None
+
+    def determine_current_fantasy_league_season(self) -> Optional[ObjectId]:
+        current_date = datetime.now()
+
+        for season_id in self.FantasyLeagueSeasons:
+            # Assuming you have a way to get a FantasyLeagueSeason by its ID
+            season = db.fantasyleagueseasons.find_one({"_id": season_id})
+
+            if season:
+                start_date = season.get("startdate")
+                end_date = season.get("enddate")
+
+                if start_date <= current_date <= end_date:
+                    # Update the league with the current FantasyLeagueSeasonId
+                    db.leagues.update_one(
+                        {"_id": self.id},
+                        {"$set": {"CurrentFantasyLeagueSeasonId": season_id}}
+                    )
+                    return season_id
+
+        # If no current season is found, you may want to clear the current season
+        db.leagues.update_one(
+            {"_id": self.id},
+            {"$set": {"CurrentFantasyLeagueSeasonId": None}}
+        )
         return None
 
     def convert_to_datetime(self, day_of_week: str, time_str: str, timezone_str: str) -> datetime:
@@ -1078,27 +1139,25 @@ class League(BaseModel):
         draft_start = draft_start.replace(hour=hour, minute=minute, second=0, microsecond=0)
         return draft_start
 
-    def create_initial_season(self, tournaments: List[PyObjectId]) -> PyObjectId:
+    def create_initial_season(self, tournaments: List[Tournament]) -> PyObjectId:
         if not self.FantasyLeagueSeasons or len(self.FantasyLeagueSeasons) < 1:
             if not tournaments:
                 raise ValueError("No tournaments specified for the initial season.")
 
-            # Fetch the first and last tournaments from the database
-            tournament_docs = list(db.tournaments.find({"_id": {"$in": tournaments}}))
-            if not tournament_docs:
-                raise ValueError("Could not find the specified tournaments in the database.")
+            first_tournament_doc = tournaments[0]
+            last_tournament_doc = tournaments[-1]
 
-            tournament_docs = sorted(tournament_docs, key=lambda x: x["StartDate"])
-            first_tournament_doc = tournament_docs[0]
-            last_tournament_doc = tournament_docs[-1]
+            tournament_ids = [ObjectId(tournament["_id"]) for tournament in tournaments]
+
+            print(first_tournament_doc['StartDate'], last_tournament_doc['EndDate'])
 
             first_season = FantasyLeagueSeason(
-                FantasyLeagueSeasonNumber=1,
+                SeasonNumber=1,
                 StartDate=first_tournament_doc["StartDate"],
                 EndDate=last_tournament_doc["EndDate"],
                 Periods=[],
                 LeagueId=self.id,
-                Tournaments=tournaments,
+                Tournaments=tournament_ids,
                 Active=True,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
@@ -1107,7 +1166,7 @@ class League(BaseModel):
             first_season_id = first_season.save()
 
             self.FantasyLeagueSeasons.append(first_season_id)
-            self.CurrentFantasyLeagueSeason = first_season_id
+            self.CurrentFantasyLeagueSeasonId = first_season_id
             self.save()
 
             return first_season_id
@@ -1258,16 +1317,22 @@ class League(BaseModel):
         return True
 
     def create_periods_between_tournaments(self):
-        # Fetch all selected tournaments for the league
-        league_settings = self.LeagueSettings
-        if not league_settings:
-            raise ValueError("No tournaments found for this league.")
+        # Fetch all selected tournaments for this season and league
+        season_id = self.CurrentFantasyLeagueSeasonId
+        if not season_id:
+            raise ValueError("there is no current season ongoing for this league")
 
-        tournament_ids = league_settings["Tournaments"]
+        season_doc = db.fantasyLeagueSeasons.find_one({ 
+            "_id": season_id
+        })
+
+        tournament_ids = season_doc["Tournaments"]
         tournaments = list(db.tournaments.find({"_id": {"$in": tournament_ids}}).sort("StartDate"))
 
         if not tournaments or len(tournaments) < 2:
             raise ValueError("Insufficient tournaments to create periods.")
+        
+        league_settings = self.LeagueSettings
 
         # Determine draft frequency
         draft_frequency = league_settings.get("DraftFrequency")
@@ -1453,12 +1518,12 @@ class League(BaseModel):
 
         if '_id' in league_dict and league_dict['_id'] is not None:
             # Update existing document
-            result = db.leagues.update_one({'_id': league_dict['_id']}, {'$set': league_dict}, session)
+            result = db.leagues.update_one({'_id': league_dict['_id']}, {'$set': league_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(league_dict['_id']))
         else:
             # Insert new document
-            result = db.leagues.insert_one(league_dict, session)
+            result = db.leagues.insert_one(league_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -1501,12 +1566,12 @@ class TeamResult(BaseModel):
 
         if '_id' in team_result_dict and team_result_dict['_id'] is not None:
             # Update existing document
-            result = db.teamresults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict}, session)
+            result = db.teamresults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(team_result_dict['_id']))
         else:
             # Insert new document
-            result = db.teamresults.insert_one(team_result_dict, session)
+            result = db.teamresults.insert_one(team_result_dict)
             self.id = result.inserted_id
         return self.id
     
@@ -1514,12 +1579,15 @@ class TeamResult(BaseModel):
         populate_by_name = True
         json_encoders = {PyObjectId: str}
     
-    @field_validator('Placing')
-    def defined_players_must_be_less_than_max(cls, v, values):
-        num_of_teams_in_league = len(db.leagues.find_one({"_id": values["LeagueId"]}).Teams)
-        if v > num_of_teams_in_league:
+    @model_validator(mode = 'before')
+    def placing_is_less_than_teams(cls, values):
+        league_id = values.get('LeagueId')
+        placing = values.get('Placing')
+
+        num_of_teams_in_league = len(db.leagues.find_one({"_id": league_id }).Teams)
+        if placing > num_of_teams_in_league:
             raise ValueError('The placing the team currently is in is not possible based on the amount of teams in the league')
-        return v
+        return values
 
     def calculate_player_scores(self, db):
         league_settings = db.leaguessettings.find_one({"LeagueId": self.LeagueId})
@@ -1567,12 +1635,12 @@ class Draft(BaseModel):
 
         if '_id' in draft_dict and draft_dict['_id'] is not None:
             # Update existing document
-            result = db.drafts.update_one({'_id': draft_dict['_id']}, {'$set': draft_dict}, session)
+            result = db.drafts.update_one({'_id': draft_dict['_id']}, {'$set': draft_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(draft_dict['_id']))
         else:
             # Insert new document
-            result = db.drafts.insert_one(draft_dict, session)
+            result = db.drafts.insert_one(draft_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -1633,7 +1701,7 @@ class Draft(BaseModel):
     @model_validator(mode='before')
     def end_date_must_be_after_start_date(cls, values):
         start_date = values.get('StartDate')
-        end_date = values.get('EndDate')
+        end_date = values.data.get('EndDate')
         if end_date and start_date and end_date <= start_date:
             raise ValueError('End date must be after start date')
         return values
@@ -1664,12 +1732,12 @@ class DraftPick(BaseModel):
 
         if '_id' in draft_picks_dict and draft_picks_dict['_id'] is not None:
             # Update existing document
-            result = db.draftpicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict}, session)
+            result = db.draftpicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(draft_picks_dict['_id']))
         else:
             # Insert new document
-            result = db.draftpicks.insert_one(draft_picks_dict, session)
+            result = db.draftpicks.insert_one(draft_picks_dict)
             self.id = result.inserted_id
         return self.id
 
@@ -1702,7 +1770,7 @@ class DraftPick(BaseModel):
         if len(draft['Picks']) >= self.PickNumber + (self.RoundNumber - 1) * picks_per_round:
             raise ValueError("Invalid pick order")
 
-    @model_validator(mode='before')
+    @root_validator(pre=True)
     def run_validations(cls, values):
         instance = cls(**values)
         instance.validate_draft_pick()

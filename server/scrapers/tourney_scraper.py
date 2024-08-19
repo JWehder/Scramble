@@ -17,6 +17,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from flask_app.config import db
+from scripts.create_tourneys import handle_golfer_data
 
 def check_data_exists(parent_element: str, query_element: str) -> bool:
     try:
@@ -426,9 +427,9 @@ def parse_tournaments(tournaments):
         driver.get(item['Links'][0])
 
         # retrieve purse, previous winner, par, and yardage
-        item.update(parse_tournament_header(driver))
+        # item.update(parse_tournament_header(driver))
 
-        item.update(get_tournament_status(item["StartDate"], item["EndDate"]))
+        # item.update(get_tournament_status(item["StartDate"], item["EndDate"]))
 
         if check_data_exists(driver, "div.leaderboard_no_data"):
             print("here")
@@ -476,16 +477,32 @@ def parse_tournaments(tournaments):
         item['WinnerStrokes'] = first_place_golfer['TotalStrokes']
         item['WinnerName'] = first_place_golfer['FirstName'] + " " + first_place_golfer['LastName']
 
-        parsed_tournaments.append(item)
+        # parsed_tournaments.append(item)
 
-        name = item['Name'].split(' ')
-        name = '-'.join(name)
+        found_tournament = db.tournaments.find_one({
+            "Name": item["Name"]
+        })
 
-        save_tournament(name, item)
+        if found_tournament:
+            handle_golfer_data(item, found_tournament["_id"])
+        else:
+            name = item['Name'].split(' ')
+            name = '-'.join(name)
+
+            save_tournament(name, item)
 
     driver.quit()
 
-    return parsed_tournaments
+    return True
+
+# Define the cutoff date
+cutoff_date = datetime(2024, 8, 14)
+
+# Query to find tournaments that started before the cutoff date
+tournaments = db.tournaments.find({
+    "StartDate": {"$lt": cutoff_date}
+})
 
 # Call the parsing method with the provided array
-parsed_tournaments = parse_tournaments(tournaments)
+parse_tournaments(tournaments)
+

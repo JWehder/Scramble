@@ -24,15 +24,13 @@ for tournament in all_tournaments_with_golfers:
     # Clear the Golfers array in the tournament document
     db.tournaments.update_one({ "_id": tournament["_id"] }, { "$set": { "Golfers": [] }})
 
-    # Iterate over each golfer in the Golfers array
-    for golfer in golfers:
-        golfer_id = golfer["_id"]
-        
-        # Delete the golfer tournament details document
-        db.golfertournamentdetails.delete_one({ "_id": golfer_id })
-        
-        # Delete associated rounds and holes
-        db.rounds.delete_many({ "GolferTournamentDetailsId": golfer_id })
-        db.holes.delete_many({ "GolferTournamentDetailsId": golfer_id })
+# Delete all golfer tournament details
+db.golfertournamentdetails.delete_many({})
+
+# Delete all rounds
+db.rounds.delete_many({})
+
+# Delete all holes
+db.holes.delete_many({})
 
 client.close()

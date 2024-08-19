@@ -2,7 +2,6 @@ from pymongo import errors
 import os
 import json
 import sys
-from create_players_with_player_pages import create_golfers_in_tournament
 from datetime import datetime
 from bson.objectid import ObjectId
 
@@ -12,10 +11,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Now you can import models from flask_app
 from flask_app.models import Tournament, GolferTournamentDetails, Round, Hole
 from flask_app.config import db, client
+from scripts.create_players_with_player_pages import create_golfers_in_tournament
 
 MAX_RETRIES = 5
 
-def process_round_data(round_data, golfer_details_id, round_id, session):
+def process_round_data(round_data, golfer_details_id, round_id, session=None):
     for hole_data in round_data["Holes"]:
         hole_data["GolferTournamentDetailsId"] = golfer_details_id
         hole_data["RoundId"] = round_id
@@ -35,7 +35,7 @@ def process_round_data(round_data, golfer_details_id, round_id, session):
             RoundId=hole_data["RoundId"]
         )
 
-        hole.save(session)
+        hole.save()
 
 def process_tournament_data(directory, use_transaction=False):
     def run_transaction_with_retry(txn_func, session):
@@ -76,52 +76,53 @@ def process_files(directory, session=None):
         with open(json_file_path, "r") as file:
             tournament_data = json.load(file)
 
-            golfer_doc = None
-
-            if tournament_data.get("PreviousWinner"):
-                split_full_name = tournament_data["PreviousWinner"].split(' ')
-                first_name = split_full_name[0]
-                last_name = ' '.join(split_full_name[1:])
-                golfer_doc = db.golfers.find_one(
-                    {"FirstName": first_name, "LastName": last_name}, session=session
-                )
-
             # Check if the tournament already exists
             existing_tournament = db.tournaments.find_one(
-                {"Name": tournament_data["Name"], "StartDate": datetime.strptime(tournament_data["StartDate"], '%Y-%m-%dT%H:%M:%S')},
-                session=session
+                {"Name": tournament_data["Name"], "StartDate": datetime.strptime(tournament_data["StartDate"], '%Y-%m-%dT%H:%M:%S')}
             )
 
             if existing_tournament:
                 print(f"Tournament {tournament_data['Name']} already exists. Skipping...")
                 continue
 
-            tournament = Tournament(
-                EndDate=datetime.strptime(tournament_data["EndDate"], '%Y-%m-%dT%H:%M:%S'),
-                StartDate=datetime.strptime(tournament_data["StartDate"], '%Y-%m-%dT%H:%M:%S'),
-                Name=tournament_data["Name"],
-                Venue=tournament_data["Venue"],
-                City=tournament_data["City"],
-                State=tournament_data["State"],
-                Links=tournament_data["Links"],
-                Purse=tournament_data["Purse"],
-                PreviousWinner=golfer_doc["_id"] if golfer_doc else None,
-                Par=tournament_data["Par"],
-                Yardage=tournament_data["Yardage"],
-                IsCompleted=tournament_data["isCompleted"],
-                InProgress=tournament_data["isInProgress"]
-            )
+            handle_tournament_data(tournament_data)
 
-            tournament_id = tournament.save()
+def handle_tournament_data(tournament_data: dict):
+    golfer_doc = None
 
-            if "Golfers" in tournament_data:
-                handle_golfer_data(tournament_data, tournament_id)
-            else:
-                db.tournaments.update_one(
-                    {"_id": tournament_id},
-                    {"$set": {"Golfers": []}},
-                    session=session
-                )
+    if tournament_data.get("PreviousWinner"):
+        split_full_name = tournament_data["PreviousWinner"].split(' ')
+        first_name = split_full_name[0]
+        last_name = ' '.join(split_full_name[1:])
+        golfer_doc = db.golfers.find_one(
+            {"FirstName": first_name, "LastName": last_name}
+        )
+
+    tournament = Tournament(
+        EndDate=datetime.strptime(tournament_data["EndDate"], '%Y-%m-%dT%H:%M:%S'),
+        StartDate=datetime.strptime(tournament_data["StartDate"], '%Y-%m-%dT%H:%M:%S'),
+        Name=tournament_data["Name"],
+        Venue=tournament_data["Venue"],
+        City=tournament_data["City"],
+        State=tournament_data["State"],
+        Links=tournament_data["Links"],
+        Purse=tournament_data["Purse"],
+        PreviousWinner=golfer_doc["_id"] if golfer_doc else None,
+        Par=tournament_data["Par"],
+        Yardage=tournament_data["Yardage"],
+        IsCompleted=tournament_data["isCompleted"],
+        InProgress=tournament_data["isInProgress"]
+    )
+
+    tournament_id = tournament.save()
+
+    if "Golfers" in tournament_data:
+        handle_golfer_data(tournament_data, tournament_id)
+    else:
+        db.tournaments.update_one(
+            {"_id": tournament_id},
+            {"$set": {"Golfers": []}}
+        )
 
 def handle_golfer_data(tournament_data: dict, tournament_id: ObjectId):
     print("for golfers")

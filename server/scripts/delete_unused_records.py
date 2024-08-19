@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from flask_app.config import db
 
-all_golfers = db.golfers.find()
+all_golfers = db.golfers.find({})
 
 for golfer in all_golfers:
     if "TournamentDetails" not in golfer:
