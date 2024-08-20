@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from flask_app.config import db
 
-tournaments_collection = db['tournaments']  # Replace with your collection name
+tournaments_collection = db.tournaments  # Replace with your collection name
 
 def convert_string_dates_to_datetime():
     # Find all tournaments with StartDate and EndDate fields as strings

@@ -495,12 +495,9 @@ def parse_tournaments(tournaments):
 
     return True
 
-# Define the cutoff date
-cutoff_date = datetime(2024, 8, 14)
-
 # Query to find tournaments that started before the cutoff date
 tournaments = db.tournaments.find({
-    "StartDate": {"$lt": cutoff_date}
+    "Golfers": []
 })
 
 # Call the parsing method with the provided array
