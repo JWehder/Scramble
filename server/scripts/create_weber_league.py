@@ -143,10 +143,10 @@ def create_test_weber_league():
     league.create_initial_teams()
 
 
-test_league = db.leagues.find_one({ "Name": "Weber" })
+# test_league = db.leagues.find_one({ "Name": "Weber" })
 
-if not test_league: 
-    create_test_weber_league()
+# if not test_league: 
+#     create_test_weber_league()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
@@ -174,9 +174,7 @@ def compile_golfers_usage(spreadsheet):
         a_cell_counter += 3
         while b_cell_counter < a_cell_counter:
             player = first_spreadsheet.acell(f'B{b_cell_counter}').value
-
-            print(player)
-
+            
             test_tourney_id = ObjectId('66316b9774d57119dcdc99ee')
 
             golfer_tournament_details = db.golfertournamentdetails.find_one({ "Name": f"{player}", "TournamentId": test_tourney_id })
@@ -248,8 +246,8 @@ def compile_golfers_usage(spreadsheet):
     return cleaned_golfers_usage
 
 # Get golfers usage data
-# golfers_usage = compile_golfers_usage(spreadsheet)
-# print(golfers_usage)
+golfers_usage = compile_golfers_usage(spreadsheet)
+print(golfers_usage)
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():
