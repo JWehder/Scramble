@@ -34,6 +34,15 @@ for golfer in all_golfers:
         )
 
     print(f"Deleted TournamentDetails IDs for golfer {golfer['_id']}: {deleteable_ids}")
+
+all_rounds = db.rounds.find()
+
+for round in all_rounds:
+    golfer_details = db.golfertournamentdetails.find_one({ "_id": round['GolferTournamentDetailsId'] })
+
+    if not golfer_details:
+        db.rounds.delete_many({"GolferTournamentDetailsId": ObjectId(tournament_detail_id)})
+        db.holes.delete_many({"GolferTournamentDetailsId": ObjectId(tournament_detail_id)})
     
 
         

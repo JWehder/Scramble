@@ -149,7 +149,7 @@ def handle_golfer_data(tournament_data: dict, tournament_id: ObjectId):
         golfer_details = GolferTournamentDetails(
             GolferId=golfer["_id"],
             Position=golfer_data.get("Position"),
-            Name=golfer["FirstName"] + " " + golfer["LastName"],
+            Name=golfer["Name"],
             Score=golfer_data.get("Score"),
             R1=golfer_data.get("R1"),
             R2=golfer_data.get("R2"),
