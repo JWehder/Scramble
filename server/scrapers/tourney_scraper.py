@@ -1,4 +1,3 @@
-import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -68,9 +67,9 @@ tournaments = [
     }
 ]
 
-def determine_score_from_rounds(golfer_tournament_results: dict):
+def determine_score_from_rounds(rounds: list):
     score_total = 0
-    for r in golfer_tournament_results["Rounds"]:
+    for r in rounds:
         score_total += r["Score"]
 
     if score_total > 0:
@@ -78,7 +77,7 @@ def determine_score_from_rounds(golfer_tournament_results: dict):
     elif score_total == 0:
         return "E"
     else:
-        return "-" + str(score_total)
+        return str(score_total)
 
 def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
 
@@ -136,7 +135,7 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
 
         golfer_tournament_results['Earnings'] = ''.join(re.findall(r'(\d+)', golfer_tournament_results['Earnings']))
 
-        print(golfer_tournament_results["FirstName"] + " " + golfer_tournament_results["LastName"])
+        print(golfer_tournament_results["Name"])
 
         # Scroll to the element
         actions = ActionChains(driver)
@@ -176,42 +175,53 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
                 # Query the page for the table displaying the golfer's scorecard
                 table = player_detail.find_element(By.CSS_SELECTOR, "table.Table")
 
-                # Query the headers which are the holes
-                holes = table.find_elements(By.CSS_SELECTOR, "thead.Table__header-group")
-
                 # Query the par and score for the golfer
                 par_scores = table.find_element(By.CSS_SELECTOR, "tbody.Table__TBODY")
 
-                # Select the value by the current round
-                select.select_by_visible_text(round.text)
+                # Find all score elements with specific score classes, excluding totals
+                score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score:not(.total)")
+
+                total_score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score.total")
+
+                # Extract the text from each element
+                scores = [elem.text for elem in score_elements]
+
+                # Determine the midpoint to split the array
+                midpoint = len(scores) // 2
+
+                # Split the scores array into two halves
+                par_score_scores = scores[:midpoint]
+                golfer_scores = scores[midpoint:]
 
                 # Extract integers less than or equal to six
-                par_score = (par_scores.text).split('\n')
-                par = par_score[0]
-                score = par_score[1]
-                par_matches = re.findall(r'\b[1-6]\b', str(par))
-                score_matches = re.findall(r'\b[1-11]\b', str(score))
-                    
+                par = total_score_elements[3].text
+                total_strokes = total_score_elements[7].text
+                # par_matches = re.findall(r'\b[1-6]\b', str(par))
+                # score_matches = re.findall(r'\b([1-9]|10|11)\b', str(score))
+
+                round_detail["Score"] = int(par) - int(total_strokes)
+
                 # Convert string arrays to integer arrays
-                hole_strokes = [int(match) for match in score_matches]
-                par_scores = [int(match) for match in par_matches]
+                hole_strokes = [int(match) for match in golfer_scores]
+                par_scores = [int(match) for match in par_score_scores]
+
+                if int(total_strokes) != sum(hole_strokes) or int(par) != sum(par_scores):
+                    print(round_detail["Round"])
+                    print(par_scores)
+                    print(hole_strokes)
 
                 # Calculate total score
-                round_detail["StrokesPlayed"] = int(score[-2:])
+                round_detail["StrokesPlayed"] = int(total_strokes)
 
                 # Enter in total par for the course/round
-                round_detail["TotalPar"] = int(par[-2:])
-
-                # Add an integer variable to hold the calculated score under par 
-                score_total = 0
+                round_detail["TotalPar"] = int(par)
 
                 hole = 1
 
                 for strokes, par in zip(hole_strokes, par_scores):
                     score = strokes - par
-                    # Determine whether each score is albatross, birdie, par, bogey, double bogey, or worse
 
-                    score_total += score
+                    # Determine whether each score is albatross, birdie, par, bogey, double bogey, or worse
 
                     score_types = {
                         'albatross': score == -3,
@@ -258,13 +268,14 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
                     elif score_types['worse_than_double_bogey']:
                         round_detail['WorseThanDoubleBogeys'] += 1
 
-                round_detail["Score"] = score_total
-
                 if "Rounds" not in golfer_tournament_results:
                     golfer_tournament_results['Rounds'] = []
                 golfer_tournament_results['Rounds'].append(round_detail)
 
-            determine_score_from_rounds(golfer_tournament_results=golfer_tournament_results)
+                # Select the value by the current round
+                select.select_by_visible_text(round.text)
+
+            golfer_tournament_results['Score'] = determine_score_from_rounds(golfer_tournament_results["Rounds"])
 
             golfers.append(golfer_tournament_results)
 
@@ -494,11 +505,8 @@ def parse_tournaments(tournaments):
 
     return True
 
-# Query to find tournaments that started before the cutoff date
-tournaments = db.tournaments.find({
-    "Golfers": []
-})
-
-# Call the parsing method with the provided array
-parse_tournaments(tournaments)
+if __name__ == "__main__":
+    # Code that should only run when the script is executed directly
+    tournaments = db.tournaments.find({"Golfers": []})
+    parse_tournaments(tournaments)
 
