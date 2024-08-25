@@ -8,7 +8,7 @@ import json
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait, Select
 import os
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import pytz
 import sys
 
@@ -69,7 +69,9 @@ tournaments = [
 
 def determine_score_from_rounds(rounds: list):
     score_total = 0
+
     for r in rounds:
+        # print(r["Round"], r["Score"])
         score_total += r["Score"]
 
     if score_total > 0:
@@ -78,6 +80,14 @@ def determine_score_from_rounds(rounds: list):
         return "E"
     else:
         return str(score_total)
+
+def wait_for_dropdown_text_change(driver, select_element, original_text, timeout=10):
+    try:
+        WebDriverWait(driver, timeout).until(
+            lambda d: select_element.text != original_text
+        )
+    except TimeoutException:
+        print("Timeout waiting for the dropdown text to change.")
 
 def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
 
@@ -145,135 +155,28 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
         element_to_click.click()
 
         try:
-            # Wait for player detail element to be active so I can get hole by hole scoring
             player_detail = WebDriverWait(driver, 8).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, "div.Leaderboard__Player__Detail"))
             )
 
-            # Find the select button element
             select_button = player_detail.find_element(By.CSS_SELECTOR, "select.dropdown__select")
 
-            # Create an instance of the Select object
+            round_detail = parse_round_details(player_detail, select_button.text)
+            golfer_tournament_results['Rounds'].append(round_detail)
+
+            # Instantiate the select button
             select = Select(select_button)
 
-            # Iterate over each option in the dropdown
-            for round in select.options:
+            for option in select.options[1:]:
 
-                round_detail = {
-                    "Round": round.text,
-                    "Birdies": 0,
-                    "Eagles": 0,
-                    "Pars": 0,
-                    "Albatross": 0,
-                    "Bogeys": 0,
-                    "DoubleBogeys": 0,
-                    "WorseThanDoubleBogeys": 0,
-                    "Score": 0,
-                    "Holes": []
-                }
+                # Select the next round
+                select.select_by_visible_text(option.text)
 
-                # Query the page for the table displaying the golfer's scorecard
-                table = player_detail.find_element(By.CSS_SELECTOR, "table.Table")
+                # Wait until the dropdown text changes
+                # wait_for_dropdown_text_change(driver, select_button, original_text)
 
-                # Query the par and score for the golfer
-                par_scores = table.find_element(By.CSS_SELECTOR, "tbody.Table__TBODY")
-
-                # Find all score elements with specific score classes, excluding totals
-                score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score:not(.total)")
-
-                total_score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score.total")
-
-                # Extract the text from each element
-                scores = [elem.text for elem in score_elements]
-
-                # Determine the midpoint to split the array
-                midpoint = len(scores) // 2
-
-                # Split the scores array into two halves
-                par_score_scores = scores[:midpoint]
-                golfer_scores = scores[midpoint:]
-
-                # Extract integers less than or equal to six
-                par = total_score_elements[3].text
-                total_strokes = total_score_elements[7].text
-                # par_matches = re.findall(r'\b[1-6]\b', str(par))
-                # score_matches = re.findall(r'\b([1-9]|10|11)\b', str(score))
-
-                round_detail["Score"] = int(par) - int(total_strokes)
-
-                # Convert string arrays to integer arrays
-                hole_strokes = [int(match) for match in golfer_scores]
-                par_scores = [int(match) for match in par_score_scores]
-
-                if int(total_strokes) != sum(hole_strokes) or int(par) != sum(par_scores):
-                    print(round_detail["Round"])
-                    print(par_scores)
-                    print(hole_strokes)
-
-                # Calculate total score
-                round_detail["StrokesPlayed"] = int(total_strokes)
-
-                # Enter in total par for the course/round
-                round_detail["TotalPar"] = int(par)
-
-                hole = 1
-
-                for strokes, par in zip(hole_strokes, par_scores):
-                    score = strokes - par
-
-                    # Determine whether each score is albatross, birdie, par, bogey, double bogey, or worse
-
-                    score_types = {
-                        'albatross': score == -3,
-                        'eagle': score == -2,
-                        'birdie': score == -1,
-                        'par': score == 0,
-                        'bogey': score == 1,
-                        'double_bogey': score == 2,
-                        'worse_than_double_bogey': score > 2
-                    }
-
-                    # Add calculated information to the object
-                    hole_result = {
-                        'Strokes': strokes,
-                        'Par': par,
-                        'NetScore': score,
-                        "HoleNumber": hole,
-                        'Birdie': score_types['birdie'],
-                        'Bogey': score_types['bogey'],
-                        'Par': score_types['par'],
-                        'Eagle': score_types['eagle'],
-                        'Albatross': score_types['albatross'],
-                        'DoubleBogey': score_types['double_bogey'],
-                        'WorseThanDoubleBogey': score_types['worse_than_double_bogey']
-                    }
-
-                    round_detail["Holes"].append(hole_result)
-
-                    hole += 1
-
-                    # Increment counts based on score type
-                    if score_types['albatross']:
-                        round_detail['Albatross'] += 1
-                    elif score_types['eagle']:
-                        round_detail['Eagles'] += 1
-                    elif score_types['birdie']:
-                        round_detail['Birdies'] += 1
-                    elif score_types['par']:
-                        round_detail['Pars'] += 1
-                    elif score_types['bogey']:
-                        round_detail['Bogeys'] += 1
-                    elif score_types['double_bogey']:
-                        round_detail['DoubleBogeys'] += 1
-                    elif score_types['worse_than_double_bogey']:
-                        round_detail['WorseThanDoubleBogeys'] += 1
-
-                if "Rounds" not in golfer_tournament_results:
-                    golfer_tournament_results['Rounds'] = []
+                round_detail = parse_round_details(player_detail, option.text)
                 golfer_tournament_results['Rounds'].append(round_detail)
-
-                # Select the value by the current round
-                select.select_by_visible_text(round.text)
 
             golfer_tournament_results['Score'] = determine_score_from_rounds(golfer_tournament_results["Rounds"])
 
@@ -292,6 +195,89 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
         )
 
     return golfers
+
+def parse_round_details(player_detail, round_text):
+    round_detail = {
+        "Round": round_text,
+        "Birdies": 0,
+        "Eagles": 0,
+        "Pars": 0,
+        "Albatross": 0,
+        "Bogeys": 0,
+        "DoubleBogeys": 0,
+        "WorseThanDoubleBogeys": 0,
+        "Score": 0,
+        "Holes": []
+    }
+
+    table = player_detail.find_element(By.CSS_SELECTOR, "table.Table")
+    par_scores = table.find_element(By.CSS_SELECTOR, "tbody.Table__TBODY")
+    score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score:not(.total)")
+    total_score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score.total")
+
+    scores = [elem.text for elem in score_elements]
+    midpoint = len(scores) // 2
+    par_score_scores = scores[:midpoint]
+    golfer_scores = scores[midpoint:]
+
+    par = total_score_elements[3].text
+    total_strokes = total_score_elements[7].text
+    round_detail["Score"] = int(total_strokes) - int(par)
+
+    hole_strokes = [int(match) for match in golfer_scores]
+    par_scores = [int(match) for match in par_score_scores]
+
+    round_detail["StrokesPlayed"] = int(total_strokes)
+    round_detail["TotalPar"] = int(par)
+
+    hole = 1
+
+    for strokes, par in zip(hole_strokes, par_scores):
+        score = strokes - par
+
+        score_types = {
+            'albatross': score == -3,
+            'eagle': score == -2,
+            'birdie': score == -1,
+            'par': score == 0,
+            'bogey': score == 1,
+            'double_bogey': score == 2,
+            'worse_than_double_bogey': score > 2
+        }
+
+        hole_result = {
+            'Strokes': strokes,
+            'Par': par,
+            'NetScore': score,
+            "HoleNumber": hole,
+            'Birdie': score_types['birdie'],
+            'Bogey': score_types['bogey'],
+            'Par': score_types['par'],
+            'Eagle': score_types['eagle'],
+            'Albatross': score_types['albatross'],
+            'DoubleBogey': score_types['double_bogey'],
+            'WorseThanDoubleBogey': score_types['worse_than_double_bogey']
+        }
+
+        round_detail["Holes"].append(hole_result)
+        hole += 1
+
+        if score_types['albatross']:
+            round_detail['Albatross'] += 1
+        elif score_types['eagle']:
+            round_detail['Eagles'] += 1
+        elif score_types['birdie']:
+            round_detail['Birdies'] += 1
+        elif score_types['par']:
+            round_detail['Pars'] += 1
+        elif score_types['bogey']:
+            round_detail['Bogeys'] += 1
+        elif score_types['double_bogey']:
+            round_detail['DoubleBogeys'] += 1
+        elif score_types['worse_than_double_bogey']:
+            round_detail['WorseThanDoubleBogeys'] += 1
+
+    return round_detail
 
 import re
 from datetime import datetime
