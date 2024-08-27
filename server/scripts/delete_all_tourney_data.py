@@ -1,8 +1,6 @@
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
-import json
-import re
 
 load_dotenv()
 
@@ -23,6 +21,14 @@ for tournament in all_tournaments_with_golfers:
     
     # Clear the Golfers array in the tournament document
     db.tournaments.update_one({ "_id": tournament["_id"] }, { "$set": { "Golfers": [] }})
+
+    # Update all documents in the golfers collection
+    db.golfers.update_many(
+        # Match all documents
+        {},
+        # Set the TournamentDetails field to an empty array
+        {"$set": {"TournamentDetails": []}}
+    )
 
 # Delete all golfer tournament details
 db.golfertournamentdetails.delete_many({})

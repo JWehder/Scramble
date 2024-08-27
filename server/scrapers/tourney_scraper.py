@@ -71,7 +71,6 @@ def determine_score_from_rounds(rounds: list):
     score_total = 0
 
     for r in rounds:
-        # print(r["Round"], r["Score"])
         score_total += r["Score"]
 
     if score_total > 0:
@@ -81,6 +80,17 @@ def determine_score_from_rounds(rounds: list):
     else:
         return str(score_total)
 
+def determine_score_from_holes(holes: list):
+
+    score_total = 0
+
+    for hole in holes:
+        if hole["NetScore"] == None:
+            continue
+        score_total += hole["NetScore"]
+
+    return score_total
+
 def wait_for_dropdown_text_change(driver, select_element, original_text, timeout=10):
     try:
         WebDriverWait(driver, timeout).until(
@@ -89,7 +99,7 @@ def wait_for_dropdown_text_change(driver, select_element, original_text, timeout
     except TimeoutException:
         print("Timeout waiting for the dropdown text to change.")
 
-def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
+def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
 
     competitors_table = leaderboard
 
@@ -110,7 +120,9 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
         "TotalStrokes": None,
         "Earnings": None,
         "FedexPts": None,
-        "Rounds": []
+        "Rounds": [],
+        "WD": False,
+        "Cut": False
         }
 
         # Assuming table_rows[0] is the desired table row to click
@@ -135,17 +147,15 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
         remaining = element_to_click.find_elements(By.CSS_SELECTOR, "td.Table__TD")
 
         for key, element in zip(golfer_tournament_results.keys(), remaining[1:]):
-            if key == "Score" and element == "WD":
+            if key == "Score" and element.text == "WD":
                 golfer_tournament_results["WD"] = True
                 golfer_tournament_results["Cut"] = False
-            elif key == "Score" and element == "CUT":
+            elif key == "Score" and element.text == "CUT":
                 golfer_tournament_results["Cut"] = True
                 golfer_tournament_results["WD"] = False
             golfer_tournament_results[key] = element.text
 
         golfer_tournament_results['Earnings'] = ''.join(re.findall(r'(\d+)', golfer_tournament_results['Earnings']))
-
-        print(golfer_tournament_results["Name"])
 
         # Scroll to the element
         actions = ActionChains(driver)
@@ -161,11 +171,11 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
 
             select_button = player_detail.find_element(By.CSS_SELECTOR, "select.dropdown__select")
 
-            round_detail = parse_round_details(player_detail, select_button.text)
-            golfer_tournament_results['Rounds'].append(round_detail)
-
             # Instantiate the select button
             select = Select(select_button)
+
+            round_detail = parse_round_details(player_detail, select.options[0].text, golfer_tournament_results["WD"], par)
+            golfer_tournament_results['Rounds'].append(round_detail)
 
             for option in select.options[1:]:
 
@@ -175,10 +185,12 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
                 # Wait until the dropdown text changes
                 # wait_for_dropdown_text_change(driver, select_button, original_text)
 
-                round_detail = parse_round_details(player_detail, option.text)
+                round_detail = parse_round_details(player_detail, option.text, golfer_tournament_results["WD"], par)
                 golfer_tournament_results['Rounds'].append(round_detail)
 
             golfer_tournament_results['Score'] = determine_score_from_rounds(golfer_tournament_results["Rounds"])
+
+            print(golfer_tournament_results["Name"], golfer_tournament_results["Score"])
 
             golfers.append(golfer_tournament_results)
 
@@ -196,7 +208,7 @@ def parse_leaderboard(leaderboard, driver, specific_golfers=[]):
 
     return golfers
 
-def parse_round_details(player_detail, round_text):
+def parse_round_details(player_detail, round_text, wd_bool, par):
     round_detail = {
         "Round": round_text,
         "Birdies": 0,
@@ -211,7 +223,6 @@ def parse_round_details(player_detail, round_text):
     }
 
     table = player_detail.find_element(By.CSS_SELECTOR, "table.Table")
-    par_scores = table.find_element(By.CSS_SELECTOR, "tbody.Table__TBODY")
     score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score:not(.total)")
     total_score_elements = table.find_elements(By.CSS_SELECTOR, "span.Scorecard__Score.total")
 
@@ -220,34 +231,41 @@ def parse_round_details(player_detail, round_text):
     par_score_scores = scores[:midpoint]
     golfer_scores = scores[midpoint:]
 
-    par = total_score_elements[3].text
+    parsed_par = int(par)
     total_strokes = total_score_elements[7].text
-    round_detail["Score"] = int(total_strokes) - int(par)
 
-    hole_strokes = [int(match) for match in golfer_scores]
-    par_scores = [int(match) for match in par_score_scores]
+    if not wd_bool:
+        round_detail["Score"] = int(total_strokes) - int(parsed_par)
+
+    # Handle strokes and par scores, considering that some values might be "-"
+    hole_strokes = [int(match) if match != "-" else None for match in golfer_scores]
+    par_scores = [int(match) if match != '' else None for match in par_score_scores]
 
     round_detail["StrokesPlayed"] = int(total_strokes)
-    round_detail["TotalPar"] = int(par)
+    round_detail["TotalPar"] = int(parsed_par)
 
     hole = 1
 
-    for strokes, par in zip(hole_strokes, par_scores):
-        score = strokes - par
+    for strokes, par_score in zip(hole_strokes, par_scores):
+        if strokes is not None and par_score is not None:
+            score = strokes - par_score
+        else:
+            score = None  # No score difference available
 
         score_types = {
-            'albatross': score == -3,
-            'eagle': score == -2,
-            'birdie': score == -1,
-            'par': score == 0,
-            'bogey': score == 1,
-            'double_bogey': score == 2,
-            'worse_than_double_bogey': score > 2
+            'albatross': score == -3 if score is not None else False,
+            'eagle': score == -2 if score is not None else False,
+            'birdie': score == -1 if score is not None else False,
+            'par': score == 0 if score is not None else False,
+            'bogey': score == 1 if score is not None else False,
+            'double_bogey': score == 2 if score is not None else False,
+            'worse_than_double_bogey': score > 2 if score is not None else False,
+            'no_score': score == 'None'
         }
 
         hole_result = {
             'Strokes': strokes,
-            'Par': par,
+            'Par': par_score,
             'NetScore': score,
             "HoleNumber": hole,
             'Birdie': score_types['birdie'],
@@ -256,7 +274,8 @@ def parse_round_details(player_detail, round_text):
             'Eagle': score_types['eagle'],
             'Albatross': score_types['albatross'],
             'DoubleBogey': score_types['double_bogey'],
-            'WorseThanDoubleBogey': score_types['worse_than_double_bogey']
+            'WorseThanDoubleBogey': score_types['worse_than_double_bogey'],
+            'NoScore': score_types['no_score']
         }
 
         round_detail["Holes"].append(hole_result)
@@ -276,6 +295,9 @@ def parse_round_details(player_detail, round_text):
             round_detail['DoubleBogeys'] += 1
         elif score_types['worse_than_double_bogey']:
             round_detail['WorseThanDoubleBogeys'] += 1
+
+    if wd_bool:
+        round_detail["Score"] = determine_score_from_holes(round_detail["Holes"])
 
     return round_detail
 
@@ -465,7 +487,7 @@ def parse_tournaments(tournaments):
           item["Playoff"] = True
           item["PlayoffDetails"] = parse_playoff_leaderboard(responsive_tables[0])
 
-        item['Golfers'] = parse_leaderboard(responsive_tables[-1], driver)
+        item['Golfers'] = parse_leaderboard(item["Par"], item, responsive_tables[-1], driver)
 
         first_place_golfer = item['Golfers'][0]
 
@@ -492,7 +514,43 @@ def parse_tournaments(tournaments):
     return True
 
 if __name__ == "__main__":
-    # Code that should only run when the script is executed directly
-    tournaments = db.tournaments.find({"Golfers": []})
-    parse_tournaments(tournaments)
+
+    # Define the cutoff date
+    cutoff_date = datetime(2024, 8, 21)
+
+    # Query tournaments that ended before August 21
+    tournaments = db.tournaments.find({
+        "EndDate": {"$lt": cutoff_date},
+        "Golfers": []
+    })
+
+    options = Options()
+
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.headless = True
+
+    options.add_argument('--headless=new')
+
+    # Only pass options once when creating the WebDriver instance
+    wd = webdriver.Chrome(options=options)
+
+    driver = wd
+
+    for tournament in tournaments:
+        # Load page
+        driver.get(tournament['Links'][0])
+
+        competitors_table = driver.find_element(By.CSS_SELECTOR, "div.competitors")
+
+        responsive_tables = competitors_table.find_elements(By.CSS_SELECTOR, "div.ResponsiveTable")
+
+        print(tournament['Links'][0])
+
+        tournament_dict = dict(tournament)
+
+        tournament_dict["Golfers"] = parse_leaderboard(tournament_dict["Par"], responsive_tables[-1], driver)
+        
+        handle_golfer_data(tournament_dict, tournament["_id"])
+
 

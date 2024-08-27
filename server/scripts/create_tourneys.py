@@ -11,7 +11,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Now you can import models from flask_app
 from flask_app.models import Tournament, GolferTournamentDetails, Round, Hole
 from flask_app.config import db, client
-from scripts.create_players_with_player_pages import create_golfers_in_tournament
 
 MAX_RETRIES = 5
 
@@ -126,7 +125,6 @@ def handle_tournament_data(tournament_data: dict):
 
 def handle_golfer_data(tournament_data: dict, tournament_id: ObjectId):
     print("for golfers")
-    create_golfers_in_tournament(tournament_data["Links"][0])
 
     for golfer_data in tournament_data["Golfers"]:
         golfer_split_values = golfer_data["Name"].split(" ")
@@ -149,7 +147,7 @@ def handle_golfer_data(tournament_data: dict, tournament_id: ObjectId):
         golfer_details = GolferTournamentDetails(
             GolferId=golfer["_id"],
             Position=golfer_data.get("Position"),
-            Name=golfer["Name"],
+            Name=golfer_data.get("Name"),
             Score=golfer_data.get("Score"),
             R1=golfer_data.get("R1"),
             R2=golfer_data.get("R2"),

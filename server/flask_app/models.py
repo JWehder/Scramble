@@ -47,9 +47,9 @@ def convert_utc_to_local(utc_dt, user_tz):
 
 class Hole(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    Strokes: int
-    Par: bool
-    NetScore: int
+    Strokes: Optional[int]
+    Par: Optional[bool]
+    NetScore: Optional[int]
     HoleNumber: int
     Birdie: bool
     Bogey: bool
@@ -82,6 +82,8 @@ class Hole(BaseModel):
 
     @field_validator('Strokes')
     def strokes_must_be_positive(cls, v):
+        if v == None:
+            return v
         if v < 1:
             raise ValueError('Strokes must be at least 1')
         return v
@@ -109,7 +111,7 @@ class Round(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -832,7 +834,7 @@ class LeagueSettings(BaseModel):
         # Return the numbers that evenly divide the number of tournaments
         return [num for num in nums if num_of_tournaments % num == 0]
 
-    def save(self, session: Optional[ClientSession] = None, league_id: Optional[PyObjectId] = None) -> Optional[ObjectId]:
+    def save(self, league_id: Optional[PyObjectId] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -842,6 +844,10 @@ class LeagueSettings(BaseModel):
         if '_id' in league_settings_dict and league_settings_dict['_id'] is not None:
             # Update existing document
             result = db.leagueSettings.update_one({'_id': league_settings_dict['_id']}, {'$set': league_settings_dict})
+
+            # If league_id is provided, associate the new LeagueSettings with the League
+            if league_id is not None:
+                db.leagues.update_one({'_id': league_id}, {'$set': {'LeagueSettings': league_settings_dict}})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(league_settings_dict['_id']))
         else:
@@ -851,10 +857,6 @@ class LeagueSettings(BaseModel):
             # If league_id is provided, associate the new LeagueSettings with the League
             if league_id is not None:
                 db.leagues.update_one({'_id': league_id}, {'$set': {'LeagueSettings': league_settings_dict}})
-
-        # Update the associated league document with the updated settings
-        if league_id is not None:
-            db.leagues.update_one({'_id': league_id}, {'$set': {'LeagueSettings': league_settings_dict}})
 
         return self.id
 
