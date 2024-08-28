@@ -92,9 +92,10 @@ def create_test_weber_league():
         WaiverOrder=[],
         CurrentPeriod=None
     )
+
     league_id = league.save()
 
-    fantasy_league_season_id = league.create_initial_season(sorted_tournaments)
+    league.create_initial_season(sorted_tournaments)
 
     league.save()
 
@@ -102,7 +103,7 @@ def create_test_weber_league():
         SnakeDraft=True,
         StrokePlay=True,
         ScorePlay=False,
-        PointsPerScore=[],
+        PointsPerScore={},
         MinFreeAgentDraftRounds=1,
         ForceDrops=1,
         DropDeadline="Tuesday",
@@ -113,7 +114,7 @@ def create_test_weber_league():
         NumOfStarters=3,
         NumOfBenchGolfers=1,
         MaxDraftedPlayers=1,
-        PointsPerPlacing=[10, 8, 6, 5, 4, 3, 2, 1, 0],
+        PointsPerPlacing=[10, 8, 7, 6, 5, 4, 3, 2, 1],
         Tournaments= tournament_ids,
         MaxNumberOfGolferUses=None,
         DraftingFrequency=1,
@@ -125,9 +126,13 @@ def create_test_weber_league():
         DefaultPointsForNonPlacers= 0
     )
 
+    print(league_settings)
+
     league_settings.drafting_period_must_be_valid()
 
-    league_settings.save()
+    league_settings_id = league_settings.save()
+
+    print(league_settings_id)
 
     league.LeagueSettings = league_settings
 
@@ -137,10 +142,10 @@ def create_test_weber_league():
     league.create_initial_teams()
 
 
-# test_league = db.leagues.find_one({ "Name": "Weber" })
+test_league = db.leagues.find_one({ "Name": "Weber" })
 
-# if not test_league: 
-#     create_test_weber_league()
+if not test_league: 
+    create_test_weber_league()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):

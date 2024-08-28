@@ -503,20 +503,20 @@ class Period(BaseModel):
         league = db.leagues.find_one({"_id": self.LeagueId})
         league_settings = league["LeagueSettings"]
 
-        league_timezone = league_settings["TimeZone"]
+        league_timezone = league_settings.TimeZone
         
         utc_now = datetime.now(timezone.utc)
         local_now = convert_utc_to_local(utc_now, league_timezone)
         today_day_number = local_now.weekday()
         
-        waiver_day_number = get_day_number(league_settings.get("WaiverDeadline"))
+        waiver_day_number = get_day_number(league_settings.WaiverDeadline)
 
         if today_day_number <= waiver_day_number:
             raise ValueError("The waiver deadline has not passed yet.")
         
-        if league_settings["WaiverType"] == "FAAB":
+        if league_settings.WaiverType == "FAAB":
             self.determine_faab_winners()
-        elif league_settings["WaiverType"] == "Reverse Standings":
+        elif league_settings.WaiverType == "Reverse Standings":
             self.determine_reverse_standings_winners()
         else:
             raise ValueError("Invalid waiver type specified in league settings.")
@@ -527,14 +527,14 @@ class Period(BaseModel):
         league_settings = league["LeagueSettings"]
         team = db.teams.find_one({"OwnerId": user_id, "LeagueId": self.LeagueId})
 
-        league_timezone = league_settings["TimeZone"]
+        league_timezone = league_settings.TimeZone
         
         # Convert current UTC time to user's local time
         utc_now = datetime.now(timezone.utc)
         local_now = convert_utc_to_local(utc_now, league_timezone)
         today_day_number = get_day_number(local_now.weekday())
         
-        waiver_day_number = get_day_number(league_settings.get("WaiverDeadline"))
+        waiver_day_number = get_day_number(league_settings.WaiverDeadline)
 
         if today_day_number > waiver_day_number:
             raise ValueError("The waiver deadline has passed.")
@@ -548,13 +548,13 @@ class Period(BaseModel):
         if golfer_id not in self.WaiverPool:
             self.WaiverPool[golfer_id] = []
 
-        if league_settings["WaiverType"] == "FAAB":
+        if league_settings.WaiverType == "FAAB":
             existing_entry = next((entry for entry in self.WaiverPool[golfer_id] if user_id in entry), None)
             if existing_entry:
                 existing_entry[user_id] = bid
             else:
                 self.WaiverPool[golfer_id].append({user_id: bid})
-        elif league_settings["WaiverType"] == "Reverse Standings":
+        elif league_settings.WaiverType == "Reverse Standings":
             if user_id not in (entry.keys() for entry in self.WaiverPool[golfer_id]):
                 self.WaiverPool[golfer_id].append({user_id: team["WaiverNumber"]})
                 league = League(**league)
@@ -588,7 +588,7 @@ class Period(BaseModel):
         league_id = self.LeagueId
         league_settings = db.leaguessettings.find_one({"LeagueId": league_id})
 
-        if league_settings.get("HeadToHead"):
+        if league_settings.HeadToHead:
             return False
 
         team_results = []
@@ -607,7 +607,7 @@ class Period(BaseModel):
             for placing, team_result in enumerate(sorted_team_results, start=1):
                 points_from_placing = 0
 
-                points_per_placing_arr = league_settings.get("PointsPerPlacing")
+                points_per_placing_arr = league_settings.PointsPerPlacing
                 num_of_scoring_places = len(points_per_placing_arr)
 
                 if placing <= num_of_scoring_places:
@@ -625,6 +625,32 @@ class Period(BaseModel):
             self.update({"Standings": self.Standings})
         
         return True
+
+    @model_validator(mode='before')
+    def validate_dates(cls, values):
+        start_date = values.get('StartDate')
+        end_date = values.get('EndDate')
+        today = datetime.now()
+
+        # Check if the start date is before today's date
+        if start_date and start_date < today:
+            raise ValueError('Start date cannot be before today\'s date')
+
+        # Check if end date is after start date
+        if start_date and end_date and end_date <= start_date:
+            raise ValueError('End date must be after start date')
+
+        return values
+
+    @model_validator(mode='before')
+    def validate_dates(cls, values):
+        start_date = values.get('StartDate')
+        end_date = values.get('EndDate')
+
+        if start_date and end_date and end_date <= start_date:
+            raise ValueError('End date must be after start date')
+
+        return values
 
     @field_validator('TournamentId')
     def check_tournament_id_exists(cls, v):
@@ -644,7 +670,7 @@ class Period(BaseModel):
         league_id = team_results[0].LeagueId
         league_settings = db.leaguessettings.find_one({"LeagueId": league_id})
 
-        if league_settings.get("HeadToHead"):
+        if league_settings.HeadToHead:
             return False
 
         team_results = []
@@ -668,7 +694,7 @@ class Period(BaseModel):
                 # create a variable to hold the number of points the team is expected to get based off their current place
                 points_from_placing = 0
 
-                points_per_placing_arr = league_settings.get("PointsPerPlacing")
+                points_per_placing_arr = league_settings.PointsPerPlacing
 
                 # number of places that add to an overall teams score in the standings
                 num_of_scoring_places = len(points_per_placing_arr)
@@ -693,7 +719,7 @@ class Period(BaseModel):
 
 class ProSeason(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    League: str
+    LeagueName: str
     StartDate: datetime
     EndDate: datetime
     Competitions: List[PyObjectId] = []
@@ -807,7 +833,7 @@ class LeagueSettings(BaseModel):
     }, description="Points awarded per round performance")
     ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
     SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
-    SnakeDraft: bool = Field(default=True, ge=1, description="The order of picks reverses with each round.")
+    SnakeDraft: bool = Field(default=True, description="The order of picks reverses with each round.")
     StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
     TimeZone: str = "UTC"
     updated_at: Optional[datetime] = None
@@ -874,21 +900,30 @@ class LeagueSettings(BaseModel):
     def validate_number_of_teams(cls, values):
         number_of_teams = values.get('NumberOfTeams')
         head_to_head = values.get('HeadToHead')
+        print(head_to_head, number_of_teams)
 
         if head_to_head and number_of_teams % 2 != 0:
+            print("After validation")
             raise ValueError("The number of teams in your league must be even if you want to play a head-to-head league.")
 
         return values
 
     @field_validator('NumberOfTeams')
     def num_of_teams_constraint(cls, v):
+        print(v)
         if v > 16:
             raise ValueError("There cannot be more than 16 teams in a league.")
+        return v
 
-    @field_validator('MinFreeAgentDraftRounds')
-    def max_num_of_draft_rounds(cls, v):
-        if v >= cls['MaxGolfersPerTeam']:
-            raise ValueError('The amount of draft rounds that have been created are more than the max amount of players allowed per team')
+    @model_validator(mode='before')
+    def validate_draft_rounds(cls, values):
+        min_free_agent_draft_rounds = values.get('MinFreeAgentDraftRounds')
+        max_golfers_per_team = values.get('MaxGolfersPerTeam')
+
+        if max_golfers_per_team is not None and min_free_agent_draft_rounds >= max_golfers_per_team:
+            raise ValueError('The amount of draft rounds that have been created is more than the max amount of players allowed per team.')
+        
+        return values
 
     @field_validator('SecondsPerDraftPick')
     def time_to_draft_must_be_positive(cls, v):
@@ -931,7 +966,7 @@ class LeagueSettings(BaseModel):
 
     @field_validator('WaiverType')
     def define_waiver_fomat(cls, v):
-        if v not in ["FirstToLast", "Bidding"]:
+        if v not in ["Reverse Standings", "Bidding"]:
             raise ValueError("Waiver type must be either a bidding format or first to last.")
         return v
 
@@ -963,7 +998,7 @@ class Team(BaseModel):
     Golfers: Optional[Dict[PyObjectId, Dict[str, any]]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
     OwnerId: Optional[PyObjectId] = None
     LeagueId: PyObjectId
-    DraftPicks: Optional[Dict[PyObjectId, PyObjectId]]
+    DraftPicks: Optional[Dict[PyObjectId, PyObjectId]] = Field(default={}, description="Drafts are the first ID and the second is the draft pick.")
     Points: Optional[int] = Field(description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
     FAAB: Optional[int] = Field(default=0, description="How much total points you have to spend on players.")
     WaiverNumber: Optional[int] = 0
@@ -1008,7 +1043,7 @@ class Team(BaseModel):
         
         return True
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -1082,7 +1117,7 @@ class League(BaseModel):
     Name: str
     CommissionerId: PyObjectId
     Teams: List[PyObjectId] = []
-    LeagueSettings: Optional[LeagueSettings] = None
+    LeagueSettings: Optional[LeagueSettings]
     FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
     CurrentStandings: Optional[List[Team]]
     CurrentFantasyLeagueSeasonId: Optional[PyObjectId] = None
@@ -1125,7 +1160,7 @@ class League(BaseModel):
         return None
 
     def convert_to_datetime(self, day_of_week: str, time_str: str, timezone_str: str) -> datetime:
-        day_number = self.get_day_number(day_of_week)
+        day_number = get_day_number(day_of_week)
         time_parts = time_str.split(":")
         hour = int(time_parts[0])
         minute = int(time_parts[1])
@@ -1166,6 +1201,7 @@ class League(BaseModel):
             )
 
             first_season_id = first_season.save()
+            print(first_season_id)
 
             self.FantasyLeagueSeasons.append(first_season_id)
             self.CurrentFantasyLeagueSeasonId = first_season_id
@@ -1240,22 +1276,22 @@ class League(BaseModel):
         return lowest_golfer_id
 
     def enforce_drop_deadline(self):
-        if self.LeagueSettings.get("ForceDrops") > 0:
-            league_timezone = self.LeagueSettings.get("TimeZone")
+        if self.LeagueSettings.ForceDrops > 0:
+            league_timezone = self.LeagueSettings.TimeZone
             
             # Convert current UTC time to user's local time
             utc_now = datetime.now(timezone.utc)
             local_now = convert_utc_to_local(utc_now, league_timezone)
             today_day_number = get_day_number(local_now.weekday())
             
-            drop_day_number = get_day_number(self.LeagueSettings.get("DropDeadline"))
+            drop_day_number = get_day_number(self.LeagueSettings.DropDeadline)
 
             if today_day_number > drop_day_number:
                 period = self.get_most_recent_period()
                 for id in self.Teams:
                     # force drop players if the team owner has not to do so
                     # according to the league settings force drop rules
-                    while period.Drops[id] < self.LeagueSettings.get("ForceDrops"):
+                    while period.Drops[id] < self.LeagueSettings.ForceDrops:
                         # remove the last golfer from their team
                         self.remove_lowest_ogwr_golfer(id)
 
@@ -1296,13 +1332,15 @@ class League(BaseModel):
         return matchups
 
     def create_initial_teams(self) -> bool:
-        num_of_teams = self.LeagueSettings["NumOfTeams"]
+        league_settings = self.LeagueSettings
+        num_of_teams = league_settings.NumberOfTeams
         team_ids = []
+
         for i in range(num_of_teams):
             team = Team(
                 TeamName=f"Team {i+1}",
                 ProfilePicture="",
-                Golfers=[],
+                Golfers={},
                 OwnerId=None,
                 LeagueId=self.id,
                 DraftPicks={},
@@ -1337,13 +1375,13 @@ class League(BaseModel):
         league_settings = self.LeagueSettings
 
         # Determine draft frequency
-        draft_frequency = league_settings.get("DraftFrequency")
+        draft_frequency = league_settings.DraftingFrequency
         draft_periods = set(range(1, len(tournaments) + 1, draft_frequency))
 
         self.create_initial_period()
 
         # Create periods between consecutive tournaments
-        for i in range(len(tournaments) - 1):
+        for i in range(2, len(tournaments) - 1):
             current_tournament = tournaments[i]
             next_tournament = tournaments[i + 1]
 
@@ -1360,16 +1398,19 @@ class League(BaseModel):
                 draft = Draft(
                     LeagueId=self.id,
                     StartDate=current_tournament["EndDate"],
-                    Rounds=league_settings.get("DraftRounds", 1),
-                    PeriodId=period.id
+                    Rounds=league_settings.MinFreeAgentDraftRounds,
+                    PeriodId=period.id,
+                    Picks=[],
+                    DraftOrder=[]
                 )
                 draft.save()
                 period.DraftId = draft.id
 
-            period.save()
+            period_id = period.save()
+            print(period_id)
 
             # Create Team Results and generate matchups for head-to-head leagues
-            if league_settings.get("HeadToHead"):
+            if league_settings.HeadToHead:
                 matchups = self.generate_matchups(period)
 
                 for team1_id, team2_id in matchups:
@@ -1421,7 +1462,7 @@ class League(BaseModel):
         league_settings = self.LeagueSettings
 
         # Check if waiver type is "Reverse Standings"
-        if league_settings and league_settings.get("WaiverType") == "Reverse Standings":
+        if league_settings and league_settings.WaiverType == "Reverse Standings":
             # Get the most recent period
             most_recent_period = self.get_most_recent_period()
 
@@ -1443,32 +1484,35 @@ class League(BaseModel):
     def create_initial_period(self): 
         # Create the initial period for the league
         first_tournament = db.tournaments.find_one({}, sort=[("StartDate", 1)])
-        league_settings = db.leaguesettings.find_one({"_id": self.LeagueId})
+        league_settings = self.LeagueSettings
 
         if not first_tournament:
             raise ValueError("No tournaments found to initialize the period.")
 
         draft_start = self.convert_to_datetime(
-            league_settings["DraftStartDayOfWeek"],
-            league_settings["DraftStartTime"],
-            league_settings["TimeZone"]
+            league_settings.DraftStartDayOfWeek,
+            league_settings.DraftStartTime,
+            league_settings.TimeZone
         )
 
         # Create an initial period before the first tournament
         initial_period = Period(
-            LeagueId=self.LeagueId,
+            LeagueId=self.id,
             StartDate=datetime.utcnow(),
             EndDate=first_tournament["EndDate"],
-            PeriodNumber=0,
+            TournamentId=first_tournament["_id"],
+            PeriodNumber=1,
             FantasyLeagueSeasonId=self.CurrentFantasyLeagueSeasonId
         )
 
         # Create the first draft before the first tournament
         first_draft = Draft(
-            LeagueId=self.LeagueId,
+            LeagueId=self.id,
             StartDate=draft_start,
-            Rounds=league_settings.get("MinFreeAgentDraftRounds", 3),
-            PeriodId=initial_period.id
+            Rounds=league_settings.MinFreeAgentDraftRounds,
+            PeriodId=initial_period.id,
+            Picks=[],
+            DraftOrder=[]
         )
         first_draft.save()
         initial_period.DraftId = first_draft.id
@@ -1597,7 +1641,7 @@ class TeamResult(BaseModel):
         if league_settings is None:
             raise ValueError("League settings not found.")
         
-        points_per_score = league_settings.get('PointsPerScore', {})
+        points_per_score = league_settings.PointsPerScore
         
         for golfer_id in self.GolfersScores.items():
             golfer_details = db.golfertournamentdetails.find_one({"GolferId": golfer_id, "TournamentId": self.TournamentId})
@@ -1605,9 +1649,9 @@ class TeamResult(BaseModel):
             if golfer_details is None:
                 continue
             
-            if league_settings.get('StrokePlay'):
+            if league_settings.StrokePlay:
                 self.GolfersScores[golfer_id]['TotalScore'] = golfer_details.get('TotalScore', 0)
-            elif league_settings.get('ScorePlay'):
+            elif league_settings.ScorePlay:
                 for score_type in ['Birdies', 'Pars', 'Bogeys', 'DoubleBogeys', 'WorseThanDoubleBogeys']:
                     historical_num_of_score_type = self.GolfersScores[golfer_id].get(score_type, 0)
                     curr_num_of_score_type = golfer_details.get(score_type, 0)
@@ -1618,17 +1662,17 @@ class TeamResult(BaseModel):
 
 class Draft(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    LeagueId: str
+    LeagueId: PyObjectId
     StartDate: datetime
     EndDate: Optional[datetime] = None
     Rounds: int
     PeriodId: PyObjectId
-    Picks: List[PyObjectId]
-    DraftOrder: List[PyObjectId]
+    Picks: Optional[List[PyObjectId]]
+    DraftOrder: Optional[List[PyObjectId]]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -1703,7 +1747,7 @@ class Draft(BaseModel):
     @model_validator(mode='before')
     def end_date_must_be_after_start_date(cls, values):
         start_date = values.get('StartDate')
-        end_date = values.data.get('EndDate')
+        end_date = values.get('EndDate')
         if end_date and start_date and end_date <= start_date:
             raise ValueError('End date must be after start date')
         return values
@@ -1725,7 +1769,7 @@ class DraftPick(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
