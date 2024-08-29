@@ -1380,6 +1380,8 @@ class League(BaseModel):
 
         self.create_initial_period()
 
+        period_ids = []
+
         # Create periods between consecutive tournaments
         for i in range(2, len(tournaments) - 1):
             current_tournament = tournaments[i]
@@ -1407,6 +1409,7 @@ class League(BaseModel):
                 period.DraftId = draft.id
 
             period_id = period.save()
+            period_ids.append(period_id)
             print(period_id)
 
             # Create Team Results and generate matchups for head-to-head leagues
@@ -1438,8 +1441,11 @@ class League(BaseModel):
                     )
                     team1_result.save()
                     team2_result.save()
-
             self.save()
+        db.fantasyLeagueSeasons.update_one(
+            {"_id": self.CurrentFantasyLeagueSeasonId},  # Filter to find the document
+            {"$set": {"Periods": period_ids}}       # Update operation to set the new value
+        )
 
     def get_most_recent_season(self) -> FantasyLeagueSeason:
         current_date = datetime.utcnow()
