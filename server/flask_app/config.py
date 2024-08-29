@@ -4,6 +4,10 @@ from flask_cors import CORS
 from pymongo import MongoClient
 import os
 from flask_socketio import SocketIO
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 passcode = os.getenv("MONGO_PASSWORD")
 

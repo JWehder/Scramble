@@ -14,9 +14,13 @@ importlib-resources = "*"
 ipdb = "*"
 pydantic = "*"
 flask-socketio = "*"
+bcrypt = "*"
+gspread = "*"
+pandas = "*"
 python-dotenv = "*"
 pymongo = "*"
 selenium = "*"
+pytz = "*"
 
 [dev-packages]
 

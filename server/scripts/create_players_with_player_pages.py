@@ -6,19 +6,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 import re
-from pymongo import MongoClient
+import sys
 import os
-from dotenv import load_dotenv
+import requests
 
-load_dotenv()
-
-passcode = os.getenv("MONGO_PASSWORD")
-
-uri = f"mongodb+srv://jakewehder:{passcode}@cluster0.gbnbssg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
-client = MongoClient(uri)
-
-db = client.scramble
+# Adjust the paths for MacOS
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from flask_app.config import db
+from flask_app.models import Golfer
 
 golfers_collection = db.golfers
 
@@ -38,22 +33,26 @@ def convert_to_date(date_string):
 
     return birth_date
 
-options = Options()
+def convert_html_key_to_attribute(key):
+    words = re.findall('[A-Za-z]+', key)
+    return ''.join(word.capitalize() for word in words)
 
-options = webdriver.ChromeOptions()
-options.add_argument('--no-sandbox')
-options.headless = True
+def create_golfers_in_tournament(tournament_link: str) -> None:
 
-options.add_argument('--headless=new')
+  # Establish a connection
+  options = Options()
 
-# Only pass options once when creating the WebDriver instance
-wd = webdriver.Chrome(options=options)
+  options = webdriver.ChromeOptions()
+  options.add_argument('--no-sandbox')
+  options.headless = True
 
-driver = wd
+  options.add_argument('--headless=new')
 
-tournament_links = ["https://www.espn.com/golf/leaderboard?tournamentId=401580338", "https://www.espn.com/golf/leaderboard?tournamentId=401580333", "https://www.espn.com/golf/leaderboard?tournamentId=401580337", "https://www.espn.com/golf/leaderboard?tournamentId=401580346", "https://www.espn.com/golf/leaderboard?tournamentId=401580332", "https://www.espn.com/golf/leaderboard?tournamentId=401580344", "https://www.espn.com/golf/leaderboard?tournamentId=401580336", "https://www.espn.com/golf/leaderboard?tournamentId=401580345", "https://www.espn.com/golf/leaderboard?tournamentId=401580330", "https://www.espn.com/golf/leaderboard?tournamentId=401580342", "https://www.espn.com/golf/leaderboard?tournamentId=401580331", "https://www.espn.com/golf/leaderboard?tournamentId=401580335", "https://www.espn.com/golf/leaderboard?tournamentId=401580340", "https://www.espn.com/golf/leaderboard?tournamentId=401580329", "https://www.espn.com/golf/leaderboard?tournamentId=401580343", "https://www.espn.com/golf/leaderboard?tournamentId=401580341", "https://www.espn.com/golf/leaderboard?tournamentId=401580334"]
+  # Only pass options once when creating the WebDriver instance
+  wd = webdriver.Chrome(options=options)
 
-for tournament_link in tournament_links:
+  driver = wd
+
   # Load page
   driver.get(tournament_link)
 
@@ -62,60 +61,105 @@ for tournament_link in tournament_links:
   golfer_links = []
 
   for golfer in golfers:
-    golfer_links.append(golfer.get_attribute('href'))
+    golfer_link = {golfer.text: golfer.get_attribute('href')}
+    print(golfer_link)
+    golfer_links.append(golfer_link)
+  
+  dummy_golfer = Golfer(FirstName="Dummy", LastName="Golfer")
+  # Get all attribute names in lowercase
+  golfer_attributes = dummy_golfer.dict().keys()
 
-  for golfer_link in golfer_links:
+  for golfer in golfer_links:
+    golfer_link, player_name = None, None
+    for key, value in golfer.items():
+      golfer_link = value
+      player_name = key
     driver.get(golfer_link)
 
     # create a dict to hold all the info collected from the individual page
-    golfer_detail = {}
     player_header = driver.find_element(By.CSS_SELECTOR, "div.PlayerHeader__Container")
-    player_name = player_header.find_element(By.CSS_SELECTOR, "h1.PlayerHeader__Name").text.split('\n')
-    print(player_name)
-    first_name, last_name = [name[0] + name[1:].lower() for name in player_name]
-    # Query the golfer collection for the first and last name
-    query_golfer = golfers_collection.find_one({"FirstName": first_name, "LastName": last_name})
+
+    # Split player_name into first name and last name
+    name_parts = player_name.split()
+    first_name = name_parts[0]
+    last_name = ' '.join(name_parts[1:])
+
+    if "(a)" in last_name:
+      # Remove "(a)" and surrounding whitespace from the string
+      last_name = re.sub(r'\s*\([^)]*\)', '', last_name).strip()
+
+    # query the database for names case insensitively 
+    query_golfer = db.golfers.find_one({
+        "FirstName": {"$regex": f"^{first_name}$", "$options": "i"},
+        "LastName": {"$regex": f"^{last_name}$", "$options": "i"}
+    })
+
     # if we do not have the golfer in the database
     if query_golfer == None:
-        golfer_detail["FirstName"], golfer_detail["LastName"] = first_name, last_name
-        right_side_data = player_header.find_element(By.CSS_SELECTOR, "div.flex.brdr-clr-gray-07.pl4.bl.bl--dotted.n8.brdr-clr-gray-07")
-        keys = right_side_data.find_elements(By.CSS_SELECTOR, "div.ttu")
-        values = right_side_data.find_elements(By.CSS_SELECTOR, "div.fw-medium.clr-black")
-        golfer_detail["Country"] = player_header.find_element(By.CSS_SELECTOR, "ul.PlayerHeader__Team_Info").text
-        for key, value in zip(keys, values):
-          string_values = (re.findall('[A-Za-z]+', key.text))
-          new_string_value = ''.join([value[0] + value[1:].lower() for value in string_values])
-          golfer_detail[new_string_value] = value.text
-          if new_string_value == "Birthdate":
-            golfer_detail[new_string_value] = convert_to_date(value.text.split(' ')[0])
-            golfer_detail["Age"] = calculate_age(golfer_detail[new_string_value])
-        print(golfer_detail)
-        inserted_golfer = golfers_collection.insert_one(golfer_detail)
-        print(inserted_golfer)
+      player_header = driver.find_element(By.CSS_SELECTOR, "div.PlayerHeader__Container")
+      right_side_data = player_header.find_element(By.CSS_SELECTOR, "div.flex.brdr-clr-gray-07.pl4.bl.bl--dotted.n8.brdr-clr-gray-07")
+      keys = right_side_data.find_elements(By.CSS_SELECTOR, "div.ttu")
+      values = right_side_data.find_elements(By.CSS_SELECTOR, "div.fw-medium.clr-black")
+      
+      # Create Golfer instance
+      golfer_detail = Golfer(
+          FirstName=first_name,
+          LastName=last_name,
+          Country=player_header.find_element(By.CSS_SELECTOR, "ul.PlayerHeader__Team_Info").text,
+          GolferPageLink=golfer_link
+      )
+
+      # retrieve the country
+      country = player_header.find_element(By.CSS_SELECTOR, "img.Image.Logo").get_attribute("alt")
+
+      # get the flag of the country for the golfer
+      response = requests.get(f'https://restcountries.com/v3.1/name/{country}?fields=flag')
+
+      if response.status_code == 200:
+          json_data = response.json()
+          golfer_detail.Flag = json_data[0]["flag"]
+      else:
+          print("Error:", response.status_code)
+      
+      for key, value in zip(keys, values):
+        new_string_value = convert_html_key_to_attribute(key.text)
+        if new_string_value in golfer_attributes:
+          setattr(golfer_detail, new_string_value, value.text)
+        elif new_string_value == "Birthdate":
+          golfer_detail.Birthdate = convert_to_date(value.text.split(' ')[0])
+          golfer_detail.Age = calculate_age(golfer_detail.Birthdate)
+        else:
+          # Log or handle unrecognized attributes if necessary
+          print(f"Unrecognized attribute: {new_string_value} with value: {value.text}")
+
+      golfer_detail.save()
+      print(f"Inserted new golfer: {golfer_detail}")
+
     else:
+      # the golfer was most likely created elsewhere than the player page
+      # add the values that are available for the golfer on their ESPN player page
       if "Swing" in query_golfer and not query_golfer["Swing"]:
-        golfer_detail = {}
         player_header = driver.find_element(By.CSS_SELECTOR, "div.PlayerHeader__Container")
         right_side_data = player_header.find_element(By.CSS_SELECTOR, "div.flex.brdr-clr-gray-07.pl4.bl.bl--dotted.n8.brdr-clr-gray-07")
         keys = right_side_data.find_elements(By.CSS_SELECTOR, "div.ttu")
         values = right_side_data.find_elements(By.CSS_SELECTOR, "div.fw-medium.clr-black")
+        
+        golfer_detail = {}
         for key, value in zip(keys, values):
-          string_values = (re.findall('[A-Za-z]+', key.text))
-          new_string_value = ''.join([value[0] + value[1:].lower() for value in string_values])
-          golfer_detail[new_string_value] = value
-          if new_string_value == "Birthdate":
-            golfer_detail[new_string_value] = convert_to_date(value.split(' '))
-
-        golfers_collection.update_one(
-        {"_id": query_golfer["_id"]},  # Match the golfer by their ID
-        {"$set": golfer_detail}  # Update the golfer's details
+            string_values = re.findall('[A-Za-z]+', key.text)
+            new_string_value = ''.join([value[0] + value[1:].lower() for value in string_values])
+            if new_string_value == "Birthdate":
+                golfer_detail[new_string_value] = convert_to_date(value.text.split(' ')[0])
+            else:
+                golfer_detail[new_string_value] = value.text
+        
+        db.golfers.update_one(
+            {"_id": query_golfer["_id"]},  # Match the golfer by their ID
+            {"$set": golfer_detail}  # Update the golfer's details
         )
-        # Retrieve the updated golfer from the database
         updated_golfer = db.golfers.find_one({"_id": query_golfer["_id"]})
         print(updated_golfer)
       else:
         continue
 
-driver.quit()  
-
-client.close()
+  driver.quit()  
