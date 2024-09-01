@@ -1022,7 +1022,6 @@ class Team(BaseModel):
     Golfers: Dict[PyObjectId, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
     OwnerId: Optional[PyObjectId] = None
     LeagueId: PyObjectId
-    DraftPicks: Dict[PyObjectId, List[PyObjectId]] = Field(default={}, description="Drafts are the first ID and the second is the draft pick.")
     Points: int = Field(default=0, description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
     FAAB: int = Field(default=0, description="How much total points you have to spend on players.")
     WaiverNumber: Optional[int] = 0
@@ -1124,27 +1123,25 @@ class Team(BaseModel):
             self.id = result.inserted_id
         return self.id
 
-    def draft_player(self, draft_id: PyObjectId, golfer_id: PyObjectId):
-        
-        if draft_id in self.DraftPicks:
-            self.DraftPicks[draft_id].append(golfer_id)
-        else:
-            self.DraftPicks[draft_id] = [golfer_id]
-
-        self.add_to_golfer_usage(golfer_id)
-
-        self.save()
-
     def add_to_golfer_usage(self, golfer_id: PyObjectId):
         # find the leagueSettings
         league_settings = db.leagueSettings.find_one({
             "LeagueId": self.LeagueId 
         })
 
+        # Count the number of current golfers on the team
+        num_of_golfers = len([g for g in self.Golfers.keys() if self.Golfers[g].get('CurrentlyOnTeam', True)])
+
+        if num_of_golfers > league_settings["MaxGolfersPerTeam"]:
+            raise ValueError("You have reached the maximum allowable golfers per team.")
+
+        # Count the number of current starters
+        num_of_starters = len([g for g in self.Golfers.keys() if self.Golfers[g].get('IsStarter', True)])
+
         if golfer_id in self.Golfers:
             self.Golfers[golfer_id]['UsageCount'] += 1
         else:
-            if self.Golfers >= league_settings.NumOfStarters:
+            if num_of_starters >= league_settings['NumOfStarters']:
                 self.Golfers[golfer_id] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': False, 'IsBench': True }
             else:
                 self.Golfers[golfer_id] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': True, 'IsBench': True }
@@ -1586,7 +1583,7 @@ class League(BaseModel):
         if not first_tournament:
             raise ValueError("No tournaments found to initialize the period.")
 
-        draft_start = self.convert_to_datetime(
+        draft_start_date = self.convert_to_datetime(
             league_settings.DraftStartDayOfWeek,
             league_settings.DraftStartTime,
             league_settings.TimeZone
@@ -1602,23 +1599,30 @@ class League(BaseModel):
             FantasyLeagueSeasonId=self.CurrentFantasyLeagueSeasonId
         )
 
-        first_draft_id = self.create_initial_draft()
+        initial_period_id = initial_period.save()
 
-        initial_period.DraftId = first_draft.id
+        first_draft_id = self.create_initial_draft(draft_start_date, initial_period_id, league_settings.MaxGolfersPerTeam)
+
+        initial_period.DraftId = first_draft_id
+
         initial_period.save()
 
 
-def create_initial_draft(self):
-    # Create the first draft before the first tournament
-    first_draft = Draft(
-        LeagueId=self.id,
-        StartDate=draft_start,
-        Rounds=league_settings.MinFreeAgentDraftRounds,
-        PeriodId=initial_period.id,
-        Picks=[],
-        DraftOrder=[]
-    )
-    first_draft.save()
+    def create_initial_draft(self, draft_start_date, initial_period_id, max_golfers_per_team) -> PyObjectId:
+
+        # Create the first draft before the first tournament
+        first_draft = Draft(
+            LeagueId=self.id,
+            StartDate=draft_start_date,
+            Rounds=max_golfers_per_team,
+            PeriodId=initial_period_id,
+            Picks=[],
+            DraftOrder=[]
+        )
+
+        first_draft_id = first_draft.save()
+
+        return first_draft_id
 
 
     def start_new_period(self, last_tournament_end_date: datetime):
@@ -1853,11 +1857,12 @@ class Draft(BaseModel):
 
 class DraftPick(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    TeamId: str
-    GolferId: str
+    TeamId: PyObjectId
+    GolferId: PyObjectId
     RoundNumber: int
     PickNumber: int
-    LeagueId: int
+    LeagueId: PyObjectId
+    DraftId: PyObjectId
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -1870,49 +1875,52 @@ class DraftPick(BaseModel):
 
         if '_id' in draft_picks_dict and draft_picks_dict['_id'] is not None:
             # Update existing document
-            result = db.draftpicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict})
+            result = db.draftPicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(draft_picks_dict['_id']))
         else:
             # Insert new document
-            result = db.draftpicks.insert_one(draft_picks_dict)
+            result = db.draftPicks.insert_one(draft_picks_dict)
             self.id = result.inserted_id
+            
+            # Append the new draft pick to the DraftPicks array in the drafts collection
+            db.drafts.update_one(
+                {"_id": draft_picks_dict['DraftId']},
+                {"$push": {"DraftPicks": self.id}}
+            )
+        
         return self.id
-
-    def get_league_settings(self) -> LeagueSettings:
-        league_settings = db.league_settings.find_one({"LeagueId": self.LeagueId})
-        if not league_settings:
-            raise ValueError("League settings not found")
-        return LeagueSettings(**league_settings)
-
-    def validate_draft_pick(self):
-        league_settings = self.get_league_settings()
-        team_golfers_count = db.golfers.count_documents({"TeamId": self.TeamId})
-        if team_golfers_count >= league_settings.MaxGolfersPerTeam:
-            raise ValueError("Team already has the maximum number of golfers allowed")
-
-    def validate_pick_timing_and_order(self):
-        draft = db.drafts.find_one({"LeagueId": self.LeagueId})
-        if not draft:
-            raise ValueError("Draft not found")
-
-        current_time = datetime.now()
-        draft_start_time = draft['StartDate']
-        pick_duration = draft.get('TimeToDraft', 7200)
-        picks_per_round = len(draft['Picks']) / draft['Rounds']
-        expected_pick_time = draft_start_time + timedelta(seconds=(self.RoundNumber - 1) * picks_per_round * pick_duration + (self.PickNumber - 1) * pick_duration)
-
-        if current_time < draft_start_time or current_time > expected_pick_time + timedelta(seconds=pick_duration):
-            raise ValueError("Pick is not within the allowed time period")
-
-        if len(draft['Picks']) >= self.PickNumber + (self.RoundNumber - 1) * picks_per_round:
-            raise ValueError("Invalid pick order")
 
     @root_validator(pre=True)
     def run_validations(cls, values):
-        instance = cls(**values)
-        instance.validate_draft_pick()
-        instance.validate_pick_timing_and_order()
+        # Use the raw values dictionary for validation purposes
+        league_settings = db.leagueSettings.find_one({"LeagueId": values['LeagueId']})
+        if not league_settings:
+            raise ValueError("League settings not found")
+
+        team_golfers_count = db.golfers.count_documents({"TeamId": values['TeamId']})
+        if team_golfers_count >= league_settings['MaxGolfersPerTeam']:
+            raise ValueError("Team already has the maximum number of golfers allowed")
+
+        draft = db.drafts.find_one({"LeagueId": values['LeagueId']})
+        if not draft:
+            raise ValueError("Draft not found")
+
+        # current_time = datetime.now()
+        # draft_start_time = draft['StartDate']
+        # pick_duration = draft.get('TimeToDraft', 7200)
+        # picks_per_round = len(draft['Picks']) / draft['Rounds']
+        # expected_pick_time = draft_start_time + timedelta(
+        #     seconds=(values['RoundNumber'] - 1) * picks_per_round * pick_duration +
+        #             (values['PickNumber'] - 1) * pick_duration
+        # )
+
+        # if current_time < draft_start_time or current_time > expected_pick_time + timedelta(seconds=pick_duration):
+        #     raise ValueError("Pick is not within the allowed time period")
+
+        # if len(draft['Picks']) >= values['PickNumber'] + (values['RoundNumber'] - 1) * picks_per_round:
+        #     raise ValueError("Invalid pick order")
+
         return values
 
     @field_validator('RoundNumber', 'PickNumber')
