@@ -4,6 +4,7 @@ import os
 import sys
 from bson.objectid import ObjectId
 from collections import OrderedDict
+import re
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -47,7 +48,7 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 #     Picks: List[PyObjectId]
 #     DraftOrder: List[PyObjectId]
 
-item_number = 0
+item_number = 1
 
 test_league = db.leagues.find_one({ 
     "_id": ObjectId("66cfb58fcb1c3460e49138c2")
@@ -63,6 +64,10 @@ current_fantasy_league_season = db.fantasyLeagueSeasons.find_one({
 
 current_period = db.periods.find_one({
     "_id": current_fantasy_league_season["Periods"][item_number]
+})
+
+current_draft = db.drafts.find_one({
+    "_id": current_period["DraftId"]
 })
 
 sorted_tournaments = current_fantasy_league_season["Tournaments"]
@@ -117,10 +122,10 @@ def apply_points_to_team():
 
 def comb_thru_draft_values():
 
-    j_cell_counter, k_cell_counter = 2, 2
+    j_cell_counter, k_cell_counter = 13, 13
 
-    pick_counter = 1
-    round_number = 1
+    pick_counter = 3
+    round_number = 2
 
     while j_cell_counter < 20 and k_cell_counter < 20:
         team_name = spreadsheet.acell(f'J{j_cell_counter}').value
@@ -145,11 +150,9 @@ def comb_thru_draft_values():
             print(f"could not find {first_name} {last_name}")
             continue
 
-        # TeamId: str
-        # GolferId: str
-        # RoundNumber: int
-        # PickNumber: int
-        # LeagueId: int
+        team = Team(**find_team)
+        print(team)
+        team.add_to_golfer_usage(find_golfer["_id"])
 
         draft_pick = DraftPick(
             TeamId=find_team["_id"],
@@ -161,8 +164,6 @@ def comb_thru_draft_values():
         )
 
         draft_pick.save()
-
-        print(draft_pick)
 
         if pick_counter == len(test_league_teams):
             pick_counter = 1
@@ -214,7 +215,7 @@ def parse_thru_free_agent_rounds():
         # Store pick in the OrderedDict
         picks[(find_team["_id"], find_golfer["_id"])] = {
             'Team': find_team,
-            'RoundNumber': 1,
+            'RoundNumber': current_draft["Rounds"],
             'PickNumber': pick_counter,
             'IsFreeAgent': False  # Initially set as not a free-agent pick
         }
@@ -238,15 +239,17 @@ def parse_thru_free_agent_rounds():
     for (team_id, golfer_id), pick_info in picks.items():
         if not pick_info['IsFreeAgent']:
             team = Team(**pick_info['Team'])
+            print(team)
             team.add_to_golfer_usage(golfer_id)
             draft_pick = DraftPick(
                 TeamId=team_id,
                 GolferId=golfer_id,
-                RoundNumber=1,
+                RoundNumber=pick_info["RoundNumber"],
                 PickNumber=pick_number,
                 LeagueId=test_league["_id"],
                 DraftId=current_period["DraftId"]
             )
+            draft_pick.save()
 
             pick_number += 1
         else:
@@ -258,12 +261,17 @@ def parse_thru_free_agent_rounds():
 def compile_golfers_usage(spreadsheet):
     golfers_usage = {}
 
-    test_tourney_id = sorted_tournaments[0]
+    test_tourney_id = sorted_tournaments[1]
 
     a_cell_counter = 3
 
     while a_cell_counter < 29:
         team = spreadsheet.acell(f'A{a_cell_counter}').value
+
+        find_team = db.teams.find_one({
+            "TeamName": f"{team}'s team"
+        })
+
         golfers_usage[team] = []
         # class TeamResult(BaseModel):
         # TeamId: PyObjectId
@@ -282,13 +290,21 @@ def compile_golfers_usage(spreadsheet):
         while b_cell_counter < a_cell_counter:
             player = spreadsheet.acell(f'B{b_cell_counter}').value
 
-            golfer_tournament_details = db.golfertournamentdetails.find_one({ "Name": f"{player}", "TournamentId": test_tourney_id })
+            # Check if there's a golfer in parentheses
+            if '(' in player and ')' in player:
+                main_golfer, bench_golfer = re.match(r"(.+?)\s*\((.+?)\)", player).groups()
+                print(main_golfer.strip())
+                print(bench_golfer.strip())
 
-            if golfer_tournament_details:
-                golfers_usage[team].append({player: golfer_tournament_details["Score"]})
+                golfer_tournament_details_main = db.golfertournamentdetails.find_one({ "Name": f"{main_golfer.strip()}", "TournamentId": test_tourney_id })
+                golfer_tournament_details_bench = db.golfertournamentdetails.find_one({ "Name": f"{bench_golfer.strip()}", "TournamentId": test_tourney_id })
             else:
-                print(f"Player not found: {player}, {test_tourney_id}")
-                golfers_usage[team].append({player: 0})
+                golfer_tournament_details = db.golfertournamentdetails.find_one({ "Name": f"{player}", "TournamentId": test_tourney_id })
+                if golfer_tournament_details:
+                    golfers_usage[team].append({player: golfer_tournament_details["Score"]})
+                else:
+                    print(f"Player not found: {player}, {test_tourney_id}")
+                    golfers_usage[team].append({player: 0})
             
             b_cell_counter += 1
     
@@ -355,11 +371,14 @@ def compile_golfers_usage(spreadsheet):
     return cleaned_golfers_usage
 
 # Get golfers usage data
-# golfers_usage = compile_golfers_usage(spreadsheet)
-# print(golfers_usage)
+golfers_usage = compile_golfers_usage(spreadsheet)
+print(golfers_usage)
 
+# first week only:
 # comb_thru_draft_values()
-parse_thru_free_agent_rounds()
+
+# take the values from the free agent draft
+# parse_thru_free_agent_rounds()
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():

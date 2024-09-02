@@ -1019,7 +1019,7 @@ class Team(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamName: str
     ProfilePicture: Optional[str] = Field(description="Profile picture for team")
-    Golfers: Dict[PyObjectId, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
+    Golfers: Dict[str, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
     OwnerId: Optional[PyObjectId] = None
     LeagueId: PyObjectId
     Points: int = Field(default=0, description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
@@ -1123,7 +1123,9 @@ class Team(BaseModel):
             self.id = result.inserted_id
         return self.id
 
-    def add_to_golfer_usage(self, golfer_id: PyObjectId):
+    def add_to_golfer_usage(self, golfer_id: str):
+        golfer_id_str = str(golfer_id)
+
         # find the leagueSettings
         league_settings = db.leagueSettings.find_one({
             "LeagueId": self.LeagueId 
@@ -1138,13 +1140,15 @@ class Team(BaseModel):
         # Count the number of current starters
         num_of_starters = len([g for g in self.Golfers.keys() if self.Golfers[g].get('IsStarter', True)])
 
-        if golfer_id in self.Golfers:
-            self.Golfers[golfer_id]['UsageCount'] += 1
+        if golfer_id_str in self.Golfers:
+            self.Golfers[golfer_id_str]['UsageCount'] += 1
         else:
             if num_of_starters >= league_settings['NumOfStarters']:
-                self.Golfers[golfer_id] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': False, 'IsBench': True }
+                self.Golfers[golfer_id_str] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': False, 'IsBench': True }
             else:
-                self.Golfers[golfer_id] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': True, 'IsBench': True }
+                self.Golfers[golfer_id_str] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': True, 'IsBench': False }
+
+        print(self.Golfers)
 
         self.save()
 
@@ -1763,7 +1767,7 @@ class Draft(BaseModel):
     EndDate: Optional[datetime] = None
     Rounds: int
     PeriodId: PyObjectId
-    Picks: Optional[List[PyObjectId]]
+    DraftPicks: Optional[List[PyObjectId]]
     DraftOrder: Optional[List[PyObjectId]]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
