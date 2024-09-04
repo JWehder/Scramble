@@ -48,7 +48,7 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 #     Picks: List[PyObjectId]
 #     DraftOrder: List[PyObjectId]
 
-item_number = 1
+item_number = 0
 
 test_league = db.leagues.find_one({ 
     "_id": ObjectId("66cfb58fcb1c3460e49138c2")
@@ -79,24 +79,6 @@ worksheets = spreadsheet.worksheets()
 spreadsheet = worksheets[item_number]
 
 test_tourney_id = sorted_tournaments[item_number]
-
-# class Period(BaseModel):
-# id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-# StartDate: datetime
-# EndDate: datetime
-# PeriodNumber: int = Field(description="whatever number field this is in the list of periods total")
-# WaiverPool: Optional[List[Dict]] = []
-# FantasyLeagueSeasonId: PyObjectId
-# Standings: Optional[List[PyObjectId]] = []                                        
-# FreeAgentSignings: Optional[List[Dict[PyObjectId, List]]] = []
-# Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
-# Drops: Optional[Dict[PyObjectId, List]] = {}
-# TournamentId: PyObjectId
-# TeamResults: Optional[List[PyObjectId]] = []
-# LeagueId: PyObjectId
-# DraftId: Optional[PyObjectId] = None
-# created_at: Optional[datetime] = None
-# updated_at: Optional[datetime] = None
 
 def apply_points_to_team():
 
@@ -238,9 +220,8 @@ def parse_thru_free_agent_rounds():
     # Print out the draft picks
     for (team_id, golfer_id), pick_info in picks.items():
         if not pick_info['IsFreeAgent']:
-            team = Team(**pick_info['Team'])
-            print(team)
-            team.add_to_golfer_usage(golfer_id)
+            # team = Team(**pick_info['Team'])
+            # team.add_to_golfer_usage(golfer_id)
             draft_pick = DraftPick(
                 TeamId=team_id,
                 GolferId=golfer_id,
@@ -249,13 +230,45 @@ def parse_thru_free_agent_rounds():
                 LeagueId=test_league["_id"],
                 DraftId=current_period["DraftId"]
             )
-            draft_pick.save()
+            print(draft_pick)
+            # draft_pick.save()
 
             pick_number += 1
         else:
-            print(golfer_id)
+            print("Free agent: ", golfer_id)
+            find_team.sign_free_agent(golfer_id, current_period["_id"])
 
-    print(draft_pick)
+def insert_team_results():
+    # class Period(BaseModel):
+    # id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
+    # StartDate: datetime
+    # EndDate: datetime
+    # PeriodNumber: int = Field(description="whatever number field this is in the list of periods total")
+    # WaiverPool: Optional[List[Dict]] = []
+    # FantasyLeagueSeasonId: PyObjectId
+    # Standings: Optional[List[PyObjectId]] = []                                        
+    # FreeAgentSignings: Optional[List[Dict[str, List]]] = []
+    # Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
+    # Drops: Optional[Dict[PyObjectId, List]] = {}
+    # TournamentId: PyObjectId
+    # TeamResults: Optional[List[PyObjectId]] = []
+    # LeagueId: PyObjectId
+    # DraftId: Optional[PyObjectId] = None
+    # created_at: Optional[datetime] = None
+    # updated_at: Optional[datetime] = None
+
+
+    # class TeamResult(BaseModel):
+    # TeamId: PyObjectId
+    # LeagueId: PyObjectId
+    # TournamentId: PyObjectId
+    # PeriodId: PyObjectId
+    # TotalPoints: int = 0
+    # GolfersScores: Dict[PyObjectId, Dict[str, int]]
+    # Placing: Optional[int] = 0
+    # PointsFromPlacing: int = 0
+    # created_at: Optional[datetime] = None
+    # updated_at: Optional[datetime] = None
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
@@ -268,117 +281,101 @@ def compile_golfers_usage(spreadsheet):
     while a_cell_counter < 29:
         team = spreadsheet.acell(f'A{a_cell_counter}').value
 
-        find_team = db.teams.find_one({
-            "TeamName": f"{team}'s team"
-        })
+        team = team.strip()
+        find_team = db.teams.find_one({"TeamName": f"{team}'s team"})
+
+        print(find_team)
+
+        current_team = Team(**find_team)
+
+        current_golfers_ids = current_team.get_all_current_golfers_ids()
 
         golfers_usage[team] = []
-        # class TeamResult(BaseModel):
-        # TeamId: PyObjectId
-        # LeagueId: PyObjectId
-        # TournamentId: PyObjectId
-        # PeriodId: PyObjectId
-        # TotalPoints: int = 0
-        # GolfersScores: Dict[PyObjectId, Dict[str, int]]
-        # Placing: Optional[int] = 0
-        # PointsFromPlacing: int = 0
-        # created_at: Optional[datetime] = None
-        # updated_at: Optional[datetime] = None
 
         b_cell_counter = a_cell_counter
         a_cell_counter += 3
+
+        # return a bunch of golfer ids for current golfers
+
+        scraped_golfer_ids = []
+
         while b_cell_counter < a_cell_counter:
             player = spreadsheet.acell(f'B{b_cell_counter}').value
 
             # Check if there's a golfer in parentheses
             if '(' in player and ')' in player:
                 main_golfer, bench_golfer = re.match(r"(.+?)\s*\((.+?)\)", player).groups()
-                print(main_golfer.strip())
-                print(bench_golfer.strip())
 
                 golfer_tournament_details_main = db.golfertournamentdetails.find_one({ "Name": f"{main_golfer.strip()}", "TournamentId": test_tourney_id })
-                golfer_tournament_details_bench = db.golfertournamentdetails.find_one({ "Name": f"{bench_golfer.strip()}", "TournamentId": test_tourney_id })
+
+                main_golfer_id = golfer_tournament_details_main["GolferId"]
+
+                print("Main golfer id: ", main_golfer_id)
+
+                # current_team.add_to_golfer_usage(main_golfer_id)
+
+                scraped_golfer_ids.append(str(main_golfer_id))
+
+                bench_golfer_name = bench_golfer.strip()
+
+                split_name_values = bench_golfer_name.split(' ')
+                first_name, last_name = split_name_values[0], ' '.join(split_name_values[1:])
+
+                bench_golfer = db.golfers.find_one({ "FirstName": first_name, "LastName": last_name })
+
+                bench_golfer_id = bench_golfer["_id"]
+
+                print("Bench golfer id: ", bench_golfer_id)
+
+                # current_team.add_to_golfer_usage(bench_golfer_id, bench=True)
+
+                # add to list of scraped ids for cross checking on teams current golfers
+                scraped_golfer_ids.append(str(bench_golfer_id))
+                
             else:
                 golfer_tournament_details = db.golfertournamentdetails.find_one({ "Name": f"{player}", "TournamentId": test_tourney_id })
                 if golfer_tournament_details:
+                    golfer_id = golfer_tournament_details["GolferId"]
+                    scraped_golfer_ids.append(str(golfer_id))
                     golfers_usage[team].append({player: golfer_tournament_details["Score"]})
                 else:
                     print(f"Player not found: {player}, {test_tourney_id}")
                     golfers_usage[team].append({player: 0})
             
             b_cell_counter += 1
+
+        to_remove_golfers = set(current_golfers_ids)
     
-        c_cell_counter = 34
-        d_cell_counter = 34
-
-            # class Team(BaseModel):
-            #     _id: Optional[PyObjectId] = Field(alias='_id')
-            #     TeamName: str
-            #     ProfilePicture: Optional[str] = Field(description="Profile picture for team")
-            #     Golfers: Dict[PyObjectId, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
-            #     OwnerId: PyObjectId
-            #     LeagueId: PyObjectId
-            #     DraftPicks: List[PyObjectId]
-
-        # Loop through each worksheet in the spreadsheet
-        # for worksheet in spreadsheet.worksheets():
-        #     df = process_worksheet(worksheet)
-        #     cell_number = 3
-        #     while cell_number < 29:
-        #         val = worksheet.acell(f'A{cell_number}').value
-        #         cell_number += 3
-        #         print(val)
-        #     for index, row in df.iterrows():
-        #         team_name = row[0].strip('"')
-        #         golfers = row[1:]
-
-        #         for golfer in golfers:
-        #             if golfer:
-        #                 golfer = golfer.strip()
-        #                 if team_name not in golfers_usage:
-        #                     golfers_usage[team_name] = {}
-        #                 if golfer not in golfers_usage[team_name]:
-        #                     golfers_usage[team_name][golfer] = 0
-        #                 golfers_usage[team_name][golfer] += 1
+        # Iterate over the scraped golfers
+        for golfer_id in scraped_golfer_ids:
+            if golfer_id in current_golfers_ids:
+                to_remove_golfers.discard(golfer_id)  # Remove from 'to_remove' set
+            else:
+                print("add to the team:", golfer_id)
+                # new golfer, add to the team
+                current_team.add_to_golfer_usage(golfer_id)
+        
+        # Process removal of golfers who are no longer in the scraped list
+        for golfer_id in to_remove_golfers:
+            print("Remove golfer: ", golfer_id)
+            # current_team.remove_golfer(golfer_id)
         
         # Remove the newline characters from the keys
         cleaned_golfers_usage = {key.strip(): value for key, value in golfers_usage.items()}
 
         # processed_dict = {}
 
-        # for manager, players in cleaned_golfers_usage.items():
-        #     main_players = []
-        #     bench_players = []
-            
-        #     for player in players:
-        #         if '(' in player and ')' in player:
-        #             # Split the string into the main player and the bench player
-        #             main, bench = player.split('(')
-        #             main = main.strip()  # Clean up whitespace
-        #             bench = bench.replace(')', '').strip()  # Remove the closing parenthesis and clean up whitespace
-                    
-        #             # Add to respective lists
-        #             main_players.append(main)
-        #             bench_players.append(bench)
-        #         else:
-        #             main_players.append(player.strip())
-            
-        #     processed_dict[manager] = {
-        #         'main': main_players,
-        #         'bench': bench_players
-        #     }
-
     return cleaned_golfers_usage
 
 # Get golfers usage data
-golfers_usage = compile_golfers_usage(spreadsheet)
-print(golfers_usage)
+# golfers_usage = compile_golfers_usage(spreadsheet)
+# print(golfers_usage)
 
 # first week only:
 # comb_thru_draft_values()
 
 # take the values from the free agent draft
-# parse_thru_free_agent_rounds()
+parse_thru_free_agent_rounds()
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():
