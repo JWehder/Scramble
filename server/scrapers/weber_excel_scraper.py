@@ -91,10 +91,21 @@ def apply_points_to_team():
         team_name = spreadsheet.acell(f'C{c_cell_counter}').value
         team_points = spreadsheet.acell(f'D{d_cell_counter}').value
 
+        team = db.teams.find_one({
+            "TeamName": f"{team_name}'s team"
+        })
+
+        total_team_points = team["Points"] + int(team_points)
+
         db.teams.update_one(
             {"TeamName": f"{team_name}'s team"},
-            {"$set": {"Points": int(team_points)}}
+            {"$set": {"Points": int(total_team_points)}}
         )
+
+        db.teamResults.update_one({
+            {"PeriodId": current_period["_id"], "TeamId": team["_id"]},
+            {"$set": {"PointsFromPlacing": team_points}}
+        })
 
         print(f"{team_name}: {team_points}")
 
@@ -257,6 +268,52 @@ def insert_team_results():
     # created_at: Optional[datetime] = None
     # updated_at: Optional[datetime] = None
 
+    for team_id in test_league_teams:
+        team = db.teams.find_one({
+            "_id": team_id
+        })
+
+        team_instance = Team(**team)
+
+        current_golfers_ids = team_instance.get_all_current_golfers_ids()
+
+        golfer_scores = {}
+
+        curr_period = db.periods.find_one({
+            "_id": current_period["_id"]
+        })
+
+        for golfer_id in current_golfers_ids:
+
+            golfer = db.golfers.find_one({
+                "_id": golfer_id
+            })
+
+            golfer_full_name = golfer["FirstName"] + " " + golfer["LastName"]
+
+            golfer_details = db.golfertournamentdetails.find_one({
+                "Name": golfer_full_name,
+                "TournamentId": curr_period["TournamentId"]
+            })
+
+            if not golfer_details:
+                ValueError("No golfer details found for this golfer name and tournament combo. Please check your input and try again.")
+
+            score = golfer_details["Score"]
+
+            if golfer_details["Cut"]:
+                
+
+        team_result = TeamResult(
+            TeamId=team_id,
+            LeagueId=test_league['_id'],
+            TournamentId=test_tourney_id,
+            PeriodId=current_period,
+            TotalPoints=0,
+            GolfersScores: Dict[PyObjectId, Dict[str, int]]
+            Placing: Optional[int] = 0
+            PointsFromPlacing: int = 0
+        )
 
     # class TeamResult(BaseModel):
     # TeamId: PyObjectId

@@ -463,7 +463,7 @@ class Period(BaseModel):
     WaiverPool: Optional[List[Dict]] = []
     FantasyLeagueSeasonId: PyObjectId
     Standings: Optional[List[PyObjectId]] = []                                        
-    FreeAgentSignings: Optional[List[Dict[PyObjectId, List]]] = []
+    FreeAgentSignings: Optional[Dict[str, List]] = {}
     Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
     Drops: Optional[Dict[PyObjectId, List]] = {}
     TournamentId: PyObjectId
@@ -1123,7 +1123,33 @@ class Team(BaseModel):
             self.id = result.inserted_id
         return self.id
 
-    def add_to_golfer_usage(self, golfer_id: str):
+    def sign_free_agent(self, free_agent_id: str, period_id: PyObjectId):
+        # FreeAgentSignings: Optional[List[Dict[str, List]]] = []
+
+        current_period = db.periods.find_one({
+            "_id": period_id
+        })
+
+        if not current_period:
+            raise ValueError("Period does not exist. Please check the ID you entered and try again.")
+
+        # Check if the team's ID already exists in the FreeAgentSignings
+        if self.id in current_period["FreeAgentSignings"]:
+            # Add the new signing details to the existing list for this team
+            db.periods.update_one(
+                {"_id": current_period["_id"]},
+                {"$push": {f"FreeAgentSignings.{self.id}": free_agent_id}}
+            )
+        else:
+            # If the team ID does not exist, initialize it with a new list containing the new signing
+            db.periods.update_one(
+                {"_id": current_period["_id"]},
+                {"$set": {f"FreeAgentSignings.{self.id}": [free_agent_id]}}
+            )
+
+        self.add_to_golfer_usage(free_agent_id)
+
+    def add_to_golfer_usage(self, golfer_id: str, bench: bool = False):
         golfer_id_str = str(golfer_id)
 
         # find the leagueSettings
@@ -1142,21 +1168,27 @@ class Team(BaseModel):
 
         if golfer_id_str in self.Golfers:
             self.Golfers[golfer_id_str]['UsageCount'] += 1
+            if bench:
+                self.Golfers[golfer_id_str]['IsBench'] = True
+                self.Golfers[golfer_id_str]['IsStarter'] = False
         else:
-            if num_of_starters >= league_settings['NumOfStarters']:
+            if num_of_starters >= league_settings['NumOfStarters'] or bench:
                 self.Golfers[golfer_id_str] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': False, 'IsBench': True }
             else:
                 self.Golfers[golfer_id_str] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': True, 'IsBench': False }
 
-        print(self.Golfers)
-
         self.save()
 
-    def remove_golfer(self, golfer_id: PyObjectId):
+    def remove_golfer(self, golfer_id: str):
+        golfer_id = str(golfer_id)
+
         if golfer_id in self.Golfers:
             self.Golfers[golfer_id]['CurrentlyOnTeam'] = False
             self.Golfers[golfer_id]['IsStarter'] = False
             self.Golfers[golfer_id]['IsBench'] = False
+        else:
+            print(f"Golfer ID {golfer_id} not found on this team.")
+
         self.save()
 
     def get_golfer_usage(self, golfer_id: PyObjectId) -> int:
@@ -1171,7 +1203,9 @@ class Team(BaseModel):
             self.Golfers[golfer_id]['IsBench'] = False
         self.save()
 
-    def set_golfer_as_bench(self, golfer_id: PyObjectId):
+    def set_golfer_as_bench(self, golfer_id: str):
+        golfer_id = str(golfer_id)
+    
         if golfer_id in self.Golfers:
             self.Golfers[golfer_id]['IsStarter'] = False
             self.Golfers[golfer_id]['IsBench'] = True
@@ -1179,6 +1213,12 @@ class Team(BaseModel):
 
     def total_golfers(self) -> int:
         return sum(1 for golfer in self.Golfers.values() if golfer['CurrentlyOnTeam'])
+
+    def get_all_current_golfers_ids(self) -> int:
+        # Collect all golfer IDs that are currently on the team
+        golfer_ids = [golfer_id for golfer_id in self.Golfers.keys() if self.Golfers[golfer_id]['CurrentlyOnTeam']]
+        
+        return golfer_ids
 
     def get_all_golfers(self, db) -> list:
         golfer_ids = list(self.Golfers.keys())
@@ -1693,17 +1733,18 @@ class League(BaseModel):
 class TeamResult(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamId: PyObjectId
+    TeamName: str
     LeagueId: PyObjectId
     TournamentId: PyObjectId
     PeriodId: PyObjectId
-    TotalPoints: int = 0
-    GolfersScores: Dict[PyObjectId, Dict[str, int]]
+    TeamScore: int = 0
+    GolfersScores: Dict[str, Dict[str, int]]
     Placing: Optional[int] = 0
     PointsFromPlacing: int = 0
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
