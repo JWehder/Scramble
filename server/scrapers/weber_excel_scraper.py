@@ -8,7 +8,7 @@ import re
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flask_app.models import Draft, DraftPick, Team, League, FantasyLeagueSeason
+from flask_app.models import Draft, DraftPick, Team, League, FantasyLeagueSeason, TeamResult
 from flask_app.config import db
 
 # Initialize the gspread client with API key
@@ -218,6 +218,7 @@ def parse_thru_free_agent_rounds():
         k_cell_counter += 1
     
     # Determine free-agent pickups
+    # the spreadsheet lists free agent pickups
     if len(picks) > 9:
         # Mark the first N values as free-agent pickups
         num_free_agents = len(picks) - 9
@@ -249,83 +250,64 @@ def parse_thru_free_agent_rounds():
             print("Free agent: ", golfer_id)
             find_team.sign_free_agent(golfer_id, current_period["_id"])
 
-def insert_team_results():
-    # class Period(BaseModel):
-    # id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    # StartDate: datetime
-    # EndDate: datetime
-    # PeriodNumber: int = Field(description="whatever number field this is in the list of periods total")
-    # WaiverPool: Optional[List[Dict]] = []
-    # FantasyLeagueSeasonId: PyObjectId
-    # Standings: Optional[List[PyObjectId]] = []                                        
-    # FreeAgentSignings: Optional[List[Dict[str, List]]] = []
-    # Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
-    # Drops: Optional[Dict[PyObjectId, List]] = {}
-    # TournamentId: PyObjectId
-    # TeamResults: Optional[List[PyObjectId]] = []
-    # LeagueId: PyObjectId
-    # DraftId: Optional[PyObjectId] = None
-    # created_at: Optional[datetime] = None
-    # updated_at: Optional[datetime] = None
+def insert_team_results(team_id):
+    team = db.teams.find_one({
+        "_id": team_id
+    })
 
-    for team_id in test_league_teams:
-        team = db.teams.find_one({
-            "_id": team_id
+    team_instance = Team(**team)
+
+    current_golfers_ids = team_instance.get_all_current_golfers_ids()
+
+    golfer_scores = []
+
+    team_score = 0
+
+    curr_period = db.periods.find_one({
+        "_id": current_period["_id"]
+    })
+
+    for golfer_id in current_golfers_ids:
+
+        golfer_details = db.golfertournamentdetails.find_one({
+            "GolferId": ObjectId(golfer_id),
+            "TournamentId": curr_period["TournamentId"]
         })
 
-        team_instance = Team(**team)
+        if not golfer_details:
+            ValueError("No golfer details found for this golfer name and tournament combo. Please check your input and try again.")
 
-        current_golfers_ids = team_instance.get_all_current_golfers_ids()
+        golfer_scores.append(golfer_details["_id"])
 
-        golfer_scores = {}
+        print(team_instance.Golfers)
 
-        curr_period = db.periods.find_one({
-            "_id": current_period["_id"]
-        })
+        score = 0
 
-        for golfer_id in current_golfers_ids:
+        if team_instance.Golfers[golfer_id]["IsBench"]:
+            continue
 
-            golfer = db.golfers.find_one({
-                "_id": golfer_id
-            })
+        if golfer_details["Score"] == 'E':
+            score = 0
+        else:
+            score = int(golfer_details["Score"])
 
-            golfer_full_name = golfer["FirstName"] + " " + golfer["LastName"]
+        if golfer_details["Cut"] or golfer_details["WD"]:
+            cut_penalty = test_league["LeagueSettings"]["CutPenalty"]
+            score += cut_penalty
 
-            golfer_details = db.golfertournamentdetails.find_one({
-                "Name": golfer_full_name,
-                "TournamentId": curr_period["TournamentId"]
-            })
+        team_score += score
 
-            if not golfer_details:
-                ValueError("No golfer details found for this golfer name and tournament combo. Please check your input and try again.")
+    team_result = TeamResult(
+        TeamId=team_id,
+        TournamentId=test_tourney_id,
+        PeriodId=current_period['_id'],
+        TeamScore=team_score,
+        GolfersScores= golfer_scores,
+        Placing=0,
+        PointsFromPlacing=0
+    )
 
-            score = golfer_details["Score"]
-
-            if golfer_details["Cut"]:
-                
-
-        team_result = TeamResult(
-            TeamId=team_id,
-            LeagueId=test_league['_id'],
-            TournamentId=test_tourney_id,
-            PeriodId=current_period,
-            TotalPoints=0,
-            GolfersScores: Dict[PyObjectId, Dict[str, int]]
-            Placing: Optional[int] = 0
-            PointsFromPlacing: int = 0
-        )
-
-    # class TeamResult(BaseModel):
-    # TeamId: PyObjectId
-    # LeagueId: PyObjectId
-    # TournamentId: PyObjectId
-    # PeriodId: PyObjectId
-    # TotalPoints: int = 0
-    # GolfersScores: Dict[PyObjectId, Dict[str, int]]
-    # Placing: Optional[int] = 0
-    # PointsFromPlacing: int = 0
-    # created_at: Optional[datetime] = None
-    # updated_at: Optional[datetime] = None
+    team_result.save()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
@@ -406,6 +388,8 @@ def compile_golfers_usage(spreadsheet):
         # Iterate over the scraped golfers
         for golfer_id in scraped_golfer_ids:
             if golfer_id in current_golfers_ids:
+                # add another use for the particular golfer
+                current_team.add_to_golfer_usage()
                 to_remove_golfers.discard(golfer_id)  # Remove from 'to_remove' set
             else:
                 print("add to the team:", golfer_id)
@@ -414,8 +398,9 @@ def compile_golfers_usage(spreadsheet):
         
         # Process removal of golfers who are no longer in the scraped list
         for golfer_id in to_remove_golfers:
-            print("Remove golfer: ", golfer_id)
-            # current_team.remove_golfer(golfer_id)
+            # this golfer was dropped
+            print("This golfer was dropped: ", golfer_id)
+            current_team.remove_golfer(golfer_id)
         
         # Remove the newline characters from the keys
         cleaned_golfers_usage = {key.strip(): value for key, value in golfers_usage.items()}
@@ -428,11 +413,14 @@ def compile_golfers_usage(spreadsheet):
 # golfers_usage = compile_golfers_usage(spreadsheet)
 # print(golfers_usage)
 
+for team_id in test_league_teams:
+    insert_team_results(team_id)
+
 # first week only:
 # comb_thru_draft_values()
 
 # take the values from the free agent draft
-parse_thru_free_agent_rounds()
+# parse_thru_free_agent_rounds()
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():

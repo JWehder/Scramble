@@ -463,7 +463,7 @@ class Period(BaseModel):
     WaiverPool: Optional[List[Dict]] = []
     FantasyLeagueSeasonId: PyObjectId
     Standings: Optional[List[PyObjectId]] = []                                        
-    FreeAgentSignings: Optional[Dict[str, List]] = {}
+    FreeAgentSignings: Optional[Dict[str, List[PyObjectId]]] = {}
     Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
     Drops: Optional[Dict[PyObjectId, List]] = {}
     TournamentId: PyObjectId
@@ -602,7 +602,7 @@ class Period(BaseModel):
             if league_settings is None:
                 raise ValueError("League settings not found.")
 
-            sorted_team_results = sorted(team_results, key=lambda x: x.TotalPoints, reverse=True)
+            sorted_team_results = sorted(team_results, key=lambda x: x.TeamScore, reverse=True)
 
             for placing, team_result in enumerate(sorted_team_results, start=1):
                 points_from_placing = 0
@@ -740,6 +740,7 @@ class FantasyLeagueSeason(BaseModel):
     StartDate: datetime
     EndDate: datetime
     Periods: Optional[List[PyObjectId]] = []
+    CurrentPeriod: Optional[PyObjectId] = None
     Tournaments: List[PyObjectId] = []
     LeagueId: PyObjectId
     Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
@@ -747,6 +748,23 @@ class FantasyLeagueSeason(BaseModel):
     CurrentStandings: List[PyObjectId] = Field(default=[], description="Array of teams sorted by the number of points they have or wins and losses.")
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    def start_new_period(self):
+        # Create a new period starting from the end of the last tournament
+        current_period = db.periods.find_one({ "_id": self.CurrentPeriod })
+
+        next_period = db.periods.find_one({ "PeriodNumber": current_period["PeriodNumber"] + 1 })
+
+        self.CurrentPeriod = next_period.id
+        self.save()
+
+    def update_period_end_date(self, tournament_end_date: datetime):
+        # Update the end date of the current period when a tournament ends
+        if self.CurrentPeriod:
+            period = db.periods.find_one({"_id": self.CurrentPeriod})
+            if period:
+                period["EndDate"] = tournament_end_date
+                db.periods.update_one({"_id": self.CurrentPeriod}, {"$set": {"EndDate": tournament_end_date}})
 
     def update_standings(self):
         league = db.leagues.find_one({
@@ -830,7 +848,7 @@ class FantasyLeagueSeason(BaseModel):
 class LeagueSettings(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     created_at: Optional[datetime] = None
-    DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
+    CutPenalty: int = Field(default=0, description="Default points for players finishing outside the defined placements")
     DraftingFrequency: int = Field(default=0, description="The number of times the league drafts in between tournaments.")
     DraftStartDayOfWeek: Optional[str] = Field(default="Monday", description="Day of the week in which the draft starts before a tournament or season.")
     DraftStartTime: Optional[str] = Field(default="12:00", description="Time of day when the draft starts, in HH:MM format.")
@@ -1124,7 +1142,7 @@ class Team(BaseModel):
         return self.id
 
     def sign_free_agent(self, free_agent_id: str, period_id: PyObjectId):
-        # FreeAgentSignings: Optional[List[Dict[str, List]]] = []
+        # FreeAgentSignings: Optional[Dict[str, List]] = []
 
         current_period = db.periods.find_one({
             "_id": period_id
@@ -1242,7 +1260,6 @@ class League(BaseModel):
     FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
     CurrentFantasyLeagueSeasonId: Optional[PyObjectId] = None
     WaiverOrder: Optional[List[PyObjectId]] = []
-    CurrentPeriod: Optional[PyObjectId] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -1651,7 +1668,6 @@ class League(BaseModel):
 
         initial_period.save()
 
-
     def create_initial_draft(self, draft_start_date, initial_period_id, max_golfers_per_team) -> PyObjectId:
 
         # Create the first draft before the first tournament
@@ -1667,29 +1683,6 @@ class League(BaseModel):
         first_draft_id = first_draft.save()
 
         return first_draft_id
-
-
-    def start_new_period(self, last_tournament_end_date: datetime):
-        # Create a new period starting from the end of the last tournament
-        current_period_number = db.periods.count_documents({"LeagueId": self.id})
-
-        period = Period(
-            LeagueId=self.id,
-            StartDate=last_tournament_end_date,
-            EndDate=None,  # Will be set when the next tournament is known
-            PeriodNumber=current_period_number + 1
-        )
-        period.save()
-        self.CurrentPeriod = period.id
-        self.save()
-
-    def update_period_end_date(self, tournament_end_date: datetime):
-        # Update the end date of the current period when a tournament ends
-        if self.CurrentPeriod:
-            period = db.periods.find_one({"_id": self.CurrentPeriod})
-            if period:
-                period["EndDate"] = tournament_end_date
-                db.periods.update_one({"_id": self.CurrentPeriod}, {"$set": {"EndDate": tournament_end_date}})
 
     def handle_tournament_end(self, tournament_end_date: datetime):
         # Called when a tournament ends to update the current period and start a new one
@@ -1733,14 +1726,13 @@ class League(BaseModel):
 class TeamResult(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamId: PyObjectId
-    TeamName: str
-    LeagueId: PyObjectId
     TournamentId: PyObjectId
     PeriodId: PyObjectId
+    OpponentId: Optional[PyObjectId] = None
     TeamScore: int = 0
-    GolfersScores: Dict[str, Dict[str, int]]
+    GolfersScores: List[PyObjectId] = Field(default={}, description="Dictionary with a string for the golfer tourney details id as the key and ")
     Placing: Optional[int] = 0
-    PointsFromPlacing: int = 0
+    PointsFromPlacing: Optional[int] = 0
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -1753,13 +1745,24 @@ class TeamResult(BaseModel):
 
         if '_id' in team_result_dict and team_result_dict['_id'] is not None:
             # Update existing document
-            result = db.teamresults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict})
+            result = db.teamResults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(team_result_dict['_id']))
         else:
             # Insert new document
-            result = db.teamresults.insert_one(team_result_dict)
+            result = db.teamResults.insert_one(team_result_dict)
             self.id = result.inserted_id
+            
+            # Insert id into the associated Period
+            period_id = team_result_dict.get("PeriodId")
+            if period_id:
+                db.periods.update_one(
+                    {"_id": period_id},
+                    {"$push": {"TeamResults": self.id}}
+                )
+            else:
+                raise ValueError("PeriodId is missing or invalid in team_result_dict")
+
         return self.id
     
     class Config:
@@ -1768,10 +1771,14 @@ class TeamResult(BaseModel):
     
     @model_validator(mode = 'before')
     def placing_is_less_than_teams(cls, values):
-        league_id = values.get('LeagueId')
+        period_id = values.get('PeriodId')
+
+        period = db.periods.find_one({ "_id": period_id })
+        league_id = period["LeagueId"]
+
         placing = values.get('Placing')
 
-        num_of_teams_in_league = len(db.leagues.find_one({"_id": league_id }).Teams)
+        num_of_teams_in_league = len(db.leagues.find_one({"_id": league_id })["Teams"])
         if placing > num_of_teams_in_league:
             raise ValueError('The placing the team currently is in is not possible based on the amount of teams in the league')
         return values
