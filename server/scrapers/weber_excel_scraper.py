@@ -8,7 +8,7 @@ import re
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flask_app.models import Draft, DraftPick, Team, League, FantasyLeagueSeason, TeamResult
+from flask_app.models import Draft, DraftPick, Team, League, FantasyLeagueSeason, TeamResult, Period
 from flask_app.config import db
 
 # Initialize the gspread client with API key
@@ -25,28 +25,6 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 # Create TeamResults for each team in this particular week
 # Generate results from worksheet as well as their point totals
 # Figure out how to divide up drafts
-
-# TeamResults
-# id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-# TeamId: PyObjectId
-# LeagueId: PyObjectId
-# TournamentId: PyObjectId
-# PeriodId: PyObjectId
-# TotalPoints: int = 0
-# GolfersScores: Dict[PyObjectId, Dict[str, int]]
-# Placing: Optional[int] = 0
-# PointsFromPlacing: int = 0
-# created_at: Optional[datetime] = None
-# updated_at: Optional[datetime] = None
-
-# class Draft(BaseModel):
-#     _id: Optional[PyObjectId] = Field(alias='_id')
-#     LeagueId: str
-#     StartDate: datetime
-#     EndDate: Optional[datetime] = None
-#     Rounds: int
-#     Picks: List[PyObjectId]
-#     DraftOrder: List[PyObjectId]
 
 item_number = 0
 
@@ -338,6 +316,8 @@ def compile_golfers_usage(spreadsheet):
 
         scraped_golfer_ids = []
 
+        bench_golfer_id = None
+
         while b_cell_counter < a_cell_counter:
             player = spreadsheet.acell(f'B{b_cell_counter}').value
 
@@ -351,8 +331,6 @@ def compile_golfers_usage(spreadsheet):
 
                 print("Main golfer id: ", main_golfer_id)
 
-                # current_team.add_to_golfer_usage(main_golfer_id)
-
                 scraped_golfer_ids.append(str(main_golfer_id))
 
                 bench_golfer_name = bench_golfer.strip()
@@ -365,8 +343,6 @@ def compile_golfers_usage(spreadsheet):
                 bench_golfer_id = bench_golfer["_id"]
 
                 print("Bench golfer id: ", bench_golfer_id)
-
-                # current_team.add_to_golfer_usage(bench_golfer_id, bench=True)
 
                 # add to list of scraped ids for cross checking on teams current golfers
                 scraped_golfer_ids.append(str(bench_golfer_id))
@@ -388,13 +364,22 @@ def compile_golfers_usage(spreadsheet):
         # Iterate over the scraped golfers
         for golfer_id in scraped_golfer_ids:
             if golfer_id in current_golfers_ids:
-                # add another use for the particular golfer
-                current_team.add_to_golfer_usage()
-                to_remove_golfers.discard(golfer_id)  # Remove from 'to_remove' set
+                if bench_golfer_id == golfer_id:
+                    # add another use for the particular golfer and put them on the bench
+                    current_team.add_to_golfer_usage()
+                    current_team.add_to_golfer_usage(bench_golfer_id, bench=True)
+                else:
+                    # add another use for the particular golfer
+                    current_team.add_to_golfer_usage()
+                    to_remove_golfers.discard(golfer_id)  # Remove from 'to_remove' set
             else:
                 print("add to the team:", golfer_id)
-                # new golfer, add to the team
-                current_team.add_to_golfer_usage(golfer_id)
+                if bench_golfer_id == golfer_id:
+                    # new golfer, add to the team on the bench
+                    current_team.add_to_golfer_usage(golfer_id, bench=True)
+                else:
+                    # new golfer, add to the team on the bench
+                    current_team.add_to_golfer_usage(golfer_id)
         
         # Process removal of golfers who are no longer in the scraped list
         for golfer_id in to_remove_golfers:
@@ -413,14 +398,17 @@ def compile_golfers_usage(spreadsheet):
 # golfers_usage = compile_golfers_usage(spreadsheet)
 # print(golfers_usage)
 
-for team_id in test_league_teams:
-    insert_team_results(team_id)
-
 # first week only:
 # comb_thru_draft_values()
 
 # take the values from the free agent draft
 # parse_thru_free_agent_rounds()
+
+# for team_id in test_league_teams:
+#     insert_team_results(team_id)
+
+period = Period(**current_period)
+period.set_standings()
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():
