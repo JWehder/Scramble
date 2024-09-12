@@ -26,7 +26,7 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 # Generate results from worksheet as well as their point totals
 # Figure out how to divide up drafts
 
-item_number = 0
+item_number = 1
 
 test_league = db.leagues.find_one({ 
     "_id": ObjectId("66cfb58fcb1c3460e49138c2")
@@ -210,8 +210,6 @@ def parse_thru_free_agent_rounds():
     # Print out the draft picks
     for (team_id, golfer_id), pick_info in picks.items():
         if not pick_info['IsFreeAgent']:
-            # team = Team(**pick_info['Team'])
-            # team.add_to_golfer_usage(golfer_id)
             draft_pick = DraftPick(
                 TeamId=team_id,
                 GolferId=golfer_id,
@@ -221,12 +219,13 @@ def parse_thru_free_agent_rounds():
                 DraftId=current_period["DraftId"]
             )
             print(draft_pick)
-            # draft_pick.save()
+            draft_pick.save()
 
             pick_number += 1
         else:
             print("Free agent: ", golfer_id)
-            find_team.sign_free_agent(golfer_id, current_period["_id"])
+            team = Team(**find_team)
+            team.sign_free_agent(golfer_id, current_period["_id"])
 
 def insert_team_results(team_id):
     team = db.teams.find_one({
@@ -390,22 +389,21 @@ def compile_golfers_usage(spreadsheet):
         # Remove the newline characters from the keys
         cleaned_golfers_usage = {key.strip(): value for key, value in golfers_usage.items()}
 
-        # processed_dict = {}
-
+    # ensure data matches the outcomes from my excel file
     return cleaned_golfers_usage
-
-# Get golfers usage data
-# golfers_usage = compile_golfers_usage(spreadsheet)
-# print(golfers_usage)
 
 # first week only:
 # comb_thru_draft_values()
 
 # take the values from the free agent draft
-# parse_thru_free_agent_rounds()
+parse_thru_free_agent_rounds()
 
-# for team_id in test_league_teams:
-#     insert_team_results(team_id)
+# Get golfers usage data
+golfers_usage = compile_golfers_usage(spreadsheet)
+print(golfers_usage)
+
+for team_id in test_league_teams:
+    insert_team_results(team_id)
 
 period = Period(**current_period)
 period.set_standings()
