@@ -26,7 +26,7 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 # Generate results from worksheet as well as their point totals
 # Figure out how to divide up drafts
 
-item_number = 1
+item_number = 2
 
 test_league = db.leagues.find_one({ 
     "_id": ObjectId("66cfb58fcb1c3460e49138c2")
@@ -206,6 +206,8 @@ def parse_thru_free_agent_rounds():
             else:
                 break
 
+    draft_picks = []
+
     pick_number = 1
     # Print out the draft picks
     for (team_id, golfer_id), pick_info in picks.items():
@@ -219,13 +221,19 @@ def parse_thru_free_agent_rounds():
                 DraftId=current_period["DraftId"]
             )
             print(draft_pick)
-            draft_pick.save()
+            draft_picks.append(draft_pick)
 
             pick_number += 1
         else:
             print("Free agent: ", golfer_id)
             team = Team(**find_team)
             team.sign_free_agent(golfer_id, current_period["_id"])
+
+    for draft_pick in draft_picks:
+        if len(draft_picks) == 9:
+            draft_pick.save()
+        else:
+            print("There are not 9 draft picks")
 
 def insert_team_results(team_id):
     team = db.teams.find_one({
@@ -252,11 +260,9 @@ def insert_team_results(team_id):
         })
 
         if not golfer_details:
-            ValueError("No golfer details found for this golfer name and tournament combo. Please check your input and try again.")
+            continue
 
         golfer_scores.append(golfer_details["_id"])
-
-        print(team_instance.Golfers)
 
         score = 0
 
@@ -273,6 +279,7 @@ def insert_team_results(team_id):
             score += cut_penalty
 
         team_score += score
+        print(team_instance.TeamName, team_score)
 
     team_result = TeamResult(
         TeamId=team_id,
@@ -283,6 +290,8 @@ def insert_team_results(team_id):
         Placing=0,
         PointsFromPlacing=0
     )
+
+    print(team_result)
 
     team_result.save()
 
@@ -339,7 +348,7 @@ def compile_golfers_usage(spreadsheet):
 
                 bench_golfer = db.golfers.find_one({ "FirstName": first_name, "LastName": last_name })
 
-                bench_golfer_id = bench_golfer["_id"]
+                bench_golfer_id = str(bench_golfer["_id"])
 
                 print("Bench golfer id: ", bench_golfer_id)
 
@@ -359,32 +368,31 @@ def compile_golfers_usage(spreadsheet):
             b_cell_counter += 1
 
         to_remove_golfers = set(current_golfers_ids)
+
+        to_add_golfers = set()
     
         # Iterate over the scraped golfers
         for golfer_id in scraped_golfer_ids:
             if golfer_id in current_golfers_ids:
-                if bench_golfer_id == golfer_id:
-                    # add another use for the particular golfer and put them on the bench
-                    current_team.add_to_golfer_usage()
-                    current_team.add_to_golfer_usage(bench_golfer_id, bench=True)
-                else:
-                    # add another use for the particular golfer
-                    current_team.add_to_golfer_usage()
-                    to_remove_golfers.discard(golfer_id)  # Remove from 'to_remove' set
-            else:
-                print("add to the team:", golfer_id)
-                if bench_golfer_id == golfer_id:
-                    # new golfer, add to the team on the bench
-                    current_team.add_to_golfer_usage(golfer_id, bench=True)
-                else:
-                    # new golfer, add to the team on the bench
-                    current_team.add_to_golfer_usage(golfer_id)
-        
+                to_remove_golfers.discard(golfer_id)  # Remove from 'to_remove' set
+            to_add_golfers.add(golfer_id)
+
         # Process removal of golfers who are no longer in the scraped list
         for golfer_id in to_remove_golfers:
             # this golfer was dropped
             print("This golfer was dropped: ", golfer_id)
             current_team.remove_golfer(golfer_id)
+
+        # all golfers that need to be added to usage
+        # after accounting for removals
+        for golfer_id in to_add_golfers:
+            # add to golfer's usage
+            if golfer_id == bench_golfer_id:
+                print("Bench golfer: ", golfer_id)
+                current_team.add_to_golfer_usage(golfer_id, bench=True)
+            else:
+                print("Add to golfer usage: ", golfer_id)
+                current_team.add_to_golfer_usage(golfer_id)
         
         # Remove the newline characters from the keys
         cleaned_golfers_usage = {key.strip(): value for key, value in golfers_usage.items()}
@@ -396,17 +404,20 @@ def compile_golfers_usage(spreadsheet):
 # comb_thru_draft_values()
 
 # take the values from the free agent draft
-parse_thru_free_agent_rounds()
+# parse_thru_free_agent_rounds()
+
+# These two cannot be run at the same time ^ 
+# They will run into a Google API limit.
 
 # Get golfers usage data
-golfers_usage = compile_golfers_usage(spreadsheet)
-print(golfers_usage)
+# golfers_usage = compile_golfers_usage(spreadsheet)
+# print(golfers_usage)
 
 for team_id in test_league_teams:
     insert_team_results(team_id)
 
-period = Period(**current_period)
-period.set_standings()
+# period = Period(**current_period)
+# period.set_standings()
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():
