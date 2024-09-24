@@ -26,7 +26,7 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 # Generate results from worksheet as well as their point totals
 # Figure out how to divide up drafts
 
-item_number = 2
+item_number = 11
 
 test_league = db.leagues.find_one({ 
     "_id": ObjectId("66cfb58fcb1c3460e49138c2")
@@ -229,11 +229,13 @@ def parse_thru_free_agent_rounds():
             team = Team(**find_team)
             team.sign_free_agent(golfer_id, current_period["_id"])
 
-    for draft_pick in draft_picks:
-        if len(draft_picks) == 9:
+    if len(draft_picks) == 9:
+        for draft_pick in draft_picks:
+            print(draft_pick)
             draft_pick.save()
-        else:
-            print("There are not 9 draft picks")
+    else:
+        print("there are not 9 draft picks")
+
 
 def insert_team_results(team_id):
     team = db.teams.find_one({
@@ -274,13 +276,14 @@ def insert_team_results(team_id):
         else:
             score = int(golfer_details["Score"])
 
-        if golfer_details["Cut"] or golfer_details["WD"]:
+        if golfer_details["Cut"]:
             cut_penalty = test_league["LeagueSettings"]["CutPenalty"]
             score += cut_penalty
 
         team_score += score
         print(team_instance.TeamName, team_score)
 
+    print(current_golfers_ids)
     team_result = TeamResult(
         TeamId=team_id,
         TournamentId=test_tourney_id,
@@ -291,15 +294,13 @@ def insert_team_results(team_id):
         PointsFromPlacing=0
     )
 
-    print(team_result)
+    # print(team_result)
 
     team_result.save()
 
 # Compile golfers' uses for each team
 def compile_golfers_usage(spreadsheet):
     golfers_usage = {}
-
-    test_tourney_id = sorted_tournaments[1]
 
     a_cell_counter = 3
 
@@ -356,7 +357,7 @@ def compile_golfers_usage(spreadsheet):
                 scraped_golfer_ids.append(str(bench_golfer_id))
                 
             else:
-                golfer_tournament_details = db.golfertournamentdetails.find_one({ "Name": f"{player}", "TournamentId": test_tourney_id })
+                golfer_tournament_details = db.golfertournamentdetails.find_one({ "Name": f"{player}", "TournamentId": ObjectId(test_tourney_id) })
                 if golfer_tournament_details:
                     golfer_id = golfer_tournament_details["GolferId"]
                     scraped_golfer_ids.append(str(golfer_id))
@@ -400,24 +401,58 @@ def compile_golfers_usage(spreadsheet):
     # ensure data matches the outcomes from my excel file
     return cleaned_golfers_usage
 
+
+# Get the first three periods
+# all_periods = db.periods.find().limit(3)
+
+# # Iterate over each period
+# for period in all_periods:
+#     # Find the DraftId for the current period
+#     draft_id = period.get("DraftId")
+
+#     if draft_id:
+#         # Fetch only the IDs of all draft picks associated with the draft
+#         draft_pick_ids = list(db.draftPicks.find(
+#             {"DraftId": draft_id},
+#             {"_id": 1}  # Only select the _id field
+#         ))
+
+#         # Extract the IDs from the cursor result
+#         draft_pick_ids = [pick["_id"] for pick in draft_pick_ids]
+
+#         # Update the draft document by adding the draft pick IDs
+#         db.drafts.update_one(
+#             {"_id": draft_id},  # Find the draft by its _id
+#             {
+#                 "$set": {
+#                     "DraftPicks": draft_pick_ids  # Add the draft pick IDs array
+#                 }
+#             }
+#         )
+
 # first week only:
 # comb_thru_draft_values()
 
+# manually generate data for the weber league
+
+# Step 1:
 # take the values from the free agent draft
 # parse_thru_free_agent_rounds()
 
 # These two cannot be run at the same time ^ 
 # They will run into a Google API limit.
 
-# Get golfers usage data
+# Step 2: Get golfers usage data
 # golfers_usage = compile_golfers_usage(spreadsheet)
 # print(golfers_usage)
 
-for team_id in test_league_teams:
-    insert_team_results(team_id)
+# Step 3: Insert team results documents
+# for team_id in test_league_teams:
+#     insert_team_results(team_id)
 
-# period = Period(**current_period)
-# period.set_standings()
+# Step 4: update standings for the league
+period = Period(**current_period)
+period.set_standings()
 
 # Print the usage data
 # for team, golfers in golfers_usage.items():

@@ -736,6 +736,12 @@ class Period(BaseModel):
             # adjust the standings 
             self.Standings = [team_result.TeamId for team_result in sorted_team_results]
 
+            for team_id in self.Standings:
+                team = db.teams.find_one({
+                    "_id": team_id
+                })
+                print(team["TeamName"], team["Points"])
+
             self.save()
         
         return True
@@ -1310,9 +1316,11 @@ class Team(BaseModel):
 
         if golfer_id_str in self.Golfers:
             self.Golfers[golfer_id_str]['UsageCount'] += 1
+            self.Golfers[golfer_id_str]['CurrentlyOnTeam'] = True
             if bench:
-                self.Golfers[golfer_id_str]['IsBench'] = True
-                self.Golfers[golfer_id_str]['IsStarter'] = False
+                self.set_golfer_as_bench(golfer_id)
+            elif not bench:
+                self.set_golfer_as_starter(golfer_id)
         else:
             if num_of_starters >= league_settings['NumOfStarters'] or bench:
                 self.Golfers[golfer_id_str] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': False, 'IsBench': True }

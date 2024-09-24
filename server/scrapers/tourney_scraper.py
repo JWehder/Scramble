@@ -112,7 +112,7 @@ def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
         golfer_tournament_results = {
         "Position": None,
         "Name": None,
-        "Score": None,
+        "Score": 0,
         "R1": 0,
         "R2": 0,
         "R3": 0,
@@ -197,6 +197,7 @@ def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
         except NoSuchElementException:
             print("No select dropdown found for this player.")
             # Handle the case where there's no dropdown as needed
+            golfers.append(golfer_tournament_results)
 
         # Close the player detail by clicking the element again
         element_to_click.click()
