@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from flask_app.config import db
 from scripts.create_tourneys import handle_golfer_data
+from flask_app.models import Tournament
 
 def check_data_exists(parent_element: str, query_element: str) -> bool:
     try:
@@ -49,23 +50,6 @@ def save_tournament(tournament_name: str, tournament_details: object) -> None:
 
     except Exception as e:
         print(f"An error occurred: {e}")
-
-tournaments = [
-    {
-        "EndDate": "2024-07-21T00:00:00",
-        "StartDate": "2024-07-18T00:00:00",
-        "Name": "The Open",
-        "Venue": [
-            "Royal Troon Golf Course"
-        ],
-        "City": "Troon",
-        "State": "Scotland",
-        "Links": [
-            "https://www.espn.com/golf/leaderboard?tournamentId=401580360",
-            "https://www.espn.com/golf/player/_/id/1225/brian-harman"
-        ]
-    }
-]
 
 def determine_score_from_rounds(rounds: list):
     score_total = 0
@@ -155,7 +139,7 @@ def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
                 golfer_tournament_results["WD"] = False
             golfer_tournament_results[key] = element.text
 
-        golfer_tournament_results['Earnings'] = ''.join(re.findall(r'(\d+)', golfer_tournament_results['Earnings']))
+        golfer_tournament_results['Earnings'] = ''.join(re.findall(r'(\d+)', golfer_tournament_results['Earnings'])) if golfer_tournament_results['Earnings'] else ''
 
         # Scroll to the element
         actions = ActionChains(driver)
@@ -517,7 +501,7 @@ def parse_tournaments(tournaments):
 if __name__ == "__main__":
 
     # Define the cutoff date
-    cutoff_date = datetime(2024, 8, 21)
+    cutoff_date = datetime(2024, 9, 24)
 
     # Query tournaments that ended before August 21
     tournaments = db.tournaments.find({
@@ -542,13 +526,28 @@ if __name__ == "__main__":
         # Load page
         driver.get(tournament['Links'][0])
 
+        if not tournament["Purse"] or not tournament["PreviousWinner"] or not tournament["Par"] or not tournament["Yardage"]:
+            tourney_header_data = parse_tournament_header(driver)
+
+            # Update the missing fields with the values from tourney_header_data
+            tournament["Purse"] = tournament.get("Purse") or tourney_header_data.get("Purse")
+            tournament["PreviousWinner"] = tournament.get("PreviousWinner") or tourney_header_data.get("PreviousWinner")
+            tournament["Par"] = tournament.get("Par") or tourney_header_data.get("Par")
+            tournament["Yardage"] = tournament.get("Yardage") or tourney_header_data.get("Yardage")
+
+            # Correct update_one syntax
+            db.tournaments.update_one(
+                {"_id": tournament["_id"]},  # Filter by the tournament ID
+                {"$set": tournament}          # Update the tournament document with new values
+            )
+
         competitors_table = driver.find_element(By.CSS_SELECTOR, "div.competitors")
 
         responsive_tables = competitors_table.find_elements(By.CSS_SELECTOR, "div.ResponsiveTable")
 
-        print(tournament['Links'][0])
-
         tournament_dict = dict(tournament)
+
+        print(tournament_dict['Links'][0])
 
         tournament_dict["Golfers"] = parse_leaderboard(tournament_dict["Par"], responsive_tables[-1], driver)
         
