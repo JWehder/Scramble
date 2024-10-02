@@ -5,6 +5,7 @@ from bson import ObjectId
 from pymongo.client_session import ClientSession
 import random
 import pytz
+from itertools import groupby
 
 # Add this line to ensure the correct path
 import sys
@@ -672,7 +673,7 @@ class Period(BaseModel):
     def set_standings(self) -> bool:
         league_id = self.LeagueId
 
-        # find league settings in the db. Will be used for multiple things
+        # Find league settings in the db. Will be used for multiple things
         league_settings = db.leagueSettings.find_one({"LeagueId": league_id})
 
         # If the league is head-to-head, standings do not need to be set
@@ -681,48 +682,62 @@ class Period(BaseModel):
             return False
 
         team_results = []
-        
-        # accumulate all of the team's results into an array
+
+        # Accumulate all of the team's results into an array
         for team_result_id in self.TeamResults:
             team_result_doc = db.teamResults.find_one({"_id": team_result_id})
-            # ensure it is not None type
+            # Ensure it is not None type
             if team_result_doc:
                 team_results.append(TeamResult(**team_result_doc))
 
         current_time = datetime.now()
 
-        # ensure there are team results and the period is over 
+        # Ensure there are team results and the period is over 
         # before applying points to teams
         if team_results:
             if league_settings is None:
                 raise ValueError("League settings not found.")
 
-            # Sort teams by TeamScore (lower scores are better), and use the highest scoring golfer as a tiebreaker
-            sorted_team_results = sorted(
-                team_results, 
-                key=lambda x: (x.TeamScore, self.get_highest_golfer_score(x))
-            )
+            # Sort teams by TeamScore (lower scores are better)
+            team_results.sort(key=lambda x: x.TeamScore)
 
+            # Group by TeamScore (find tied teams)
+            grouped_by_score = groupby(team_results, key=lambda x: x.TeamScore)
+
+            sorted_team_results = []
+
+            for score, tied_teams in grouped_by_score:
+                tied_teams_list = list(tied_teams)
+
+                # If there's more than one team with the same TeamScore, apply tiebreaker
+                if len(tied_teams_list) > 1:
+                    # Sort tied teams by the highest golfer score (lower is better)
+                    sorted_tied_teams = sorted(
+                        tied_teams_list,
+                        key=lambda x: self.get_highest_golfer_score(x)  # Tiebreaker
+                    )
+                    sorted_team_results.extend(sorted_tied_teams)
+                else:
+                    # No tie, just append the team
+                    sorted_team_results.extend(tied_teams_list)
 
             period_over = current_time >= self.EndDate
 
-            # ensure the period is over before applying points to teams
+            # Ensure the period is over before applying points to teams
             if period_over:
-
                 for placing, team_result in enumerate(sorted_team_results, start=1):
                     points_from_placing = 0
 
                     points_per_placing_arr = league_settings["PointsPerPlacing"]
 
-                    # check the array for the number of places awarded points
+                    # Check the array for the number of places awarded points
                     num_of_scoring_places = len(points_per_placing_arr)
 
-                    # If this team is in the scoring threshold, we will award 
-                    # points.
+                    # If this team is in the scoring threshold, we will award points.
                     if placing <= num_of_scoring_places:
                         points_from_placing += points_per_placing_arr[placing - 1]
 
-                    # update the placing and points earned within teamResults
+                    # Update the placing and points earned within teamResults
                     db.teamResults.update_one(
                         {"_id": team_result.id},
                         {"$set": {
@@ -730,20 +745,19 @@ class Period(BaseModel):
                             "PointsFromPlacing": points_from_placing
                         }}
                     )
-                # add the points that the team accumulated from the place they came in
+
+                # Add the points that the team accumulated from the place they came in
                 self.contribute_placing_points_to_teams()
 
-            # adjust the standings 
+            # Adjust the standings 
             self.Standings = [team_result.TeamId for team_result in sorted_team_results]
 
             for team_id in self.Standings:
-                team = db.teams.find_one({
-                    "_id": team_id
-                })
+                team = db.teams.find_one({"_id": team_id})
                 print(team["TeamName"], team["Points"])
 
             self.save()
-        
+
         return True
 
     # Tiebreaker method to get the highest scoring golfer in a team
@@ -751,24 +765,29 @@ class Period(BaseModel):
         # Retrieve the golfer scores associated with the team
         golfer_scores = []
 
-        for golfer_id in team_result.GolfersScores:
+        for golfer_details_id in team_result.GolfersScores:
             golfer_details = db.golfertournamentdetails.find_one({
-                "GolferId": golfer_id,
-                "TournamentId": team_result.TournamentId
+                "_id": golfer_details_id
             })
             
-            if golfer_details:
+            if golfer_details and "Score" in golfer_details:
                 score = golfer_details["Score"]
 
+                # Handle "E" (even par)
                 if score == 'E':
                     score = 0
-                else: 
-                    score = int(score)
+                else:
+                    # Ensure score is a valid integer
+                    try:
+                        score = int(score)
+                    except ValueError:
+                        score = 1000  # Assign a high value if there's an error parsing the score
 
                 golfer_scores.append(score)
         
-        # Return the highest score (since lower is better, we return the min score)
-        return min(golfer_scores) if golfer_scores else float('inf')
+        # Return the lowest score (since lower is better), or a large value if no scores are found
+        print(min(golfer_scores))
+        return min(golfer_scores) if golfer_scores else 1000
 
     def contribute_placing_points_to_teams(self) -> bool:
 

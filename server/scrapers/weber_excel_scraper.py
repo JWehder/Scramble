@@ -26,7 +26,7 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 # Generate results from worksheet as well as their point totals
 # Figure out how to divide up drafts
 
-item_number = 11
+item_number = 6
 
 test_league = db.leagues.find_one({ 
     "_id": ObjectId("66cfb58fcb1c3460e49138c2")
@@ -401,34 +401,8 @@ def compile_golfers_usage(spreadsheet):
     # ensure data matches the outcomes from my excel file
     return cleaned_golfers_usage
 
-
-# Get the first three periods
-# all_periods = db.periods.find().limit(3)
-
-# # Iterate over each period
-# for period in all_periods:
-#     # Find the DraftId for the current period
-#     draft_id = period.get("DraftId")
-
-#     if draft_id:
-#         # Fetch only the IDs of all draft picks associated with the draft
-#         draft_pick_ids = list(db.draftPicks.find(
-#             {"DraftId": draft_id},
-#             {"_id": 1}  # Only select the _id field
-#         ))
-
-#         # Extract the IDs from the cursor result
-#         draft_pick_ids = [pick["_id"] for pick in draft_pick_ids]
-
-#         # Update the draft document by adding the draft pick IDs
-#         db.drafts.update_one(
-#             {"_id": draft_id},  # Find the draft by its _id
-#             {
-#                 "$set": {
-#                     "DraftPicks": draft_pick_ids  # Add the draft pick IDs array
-#                 }
-#             }
-#         )
+# each of these are done one at a time to dodge Google API limits
+# that means you must comment each out one at a time
 
 # first week only:
 # comb_thru_draft_values()
@@ -451,11 +425,5 @@ def compile_golfers_usage(spreadsheet):
 #     insert_team_results(team_id)
 
 # Step 4: update standings for the league
-period = Period(**current_period)
-period.set_standings()
-
-# Print the usage data
-# for team, golfers in golfers_usage.items():
-#     print(f"Team {team}:")
-#     for golfer, uses in golfers.items():
-#         print(f"  {golfer}: {uses} uses")
+# period = Period(**current_period)
+# period.set_standings()
