@@ -26,7 +26,7 @@ spreadsheet = gc.open("Weber Fantasy Golf Spreadsheet")
 # Generate results from worksheet as well as their point totals
 # Figure out how to divide up drafts
 
-item_number = 12
+item_number = 13
 
 test_league = db.leagues.find_one({ 
     "_id": ObjectId("66cfb58fcb1c3460e49138c2")
@@ -411,10 +411,11 @@ def compile_golfers_usage(spreadsheet):
 
 # Step 1:
 # take the values from the free agent draft
-parse_thru_free_agent_rounds()
+# parse_thru_free_agent_rounds()
 
 # These two cannot be run at the same time ^ 
 # They will run into a Google API limit.
+# need to make the github repo private before running this...
 
 # Step 2: Get golfers usage data
 # golfers_usage = compile_golfers_usage(spreadsheet)
