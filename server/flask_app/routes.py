@@ -6,6 +6,8 @@ from config import app
 from config import Flask
 from dotenv import load_dotenv
 
+from config import db
+
 # HTTP Constants 
 HTTP_SUCCESS = 200
 HTTP_CREATED = 201
@@ -51,7 +53,7 @@ def get_tournaments():
         200
     )
     response.headers.add("Access-Control-Allow-Origin", "*")
-    return response
+    return response 
 
 @app.route('/get_facebook_appId', methods=["GET"])
 def get_facebook_appId():
