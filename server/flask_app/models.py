@@ -5,6 +5,7 @@ from bson import ObjectId
 from pymongo.client_session import ClientSession
 import random
 import pytz
+from itertools import groupby
 
 # Add this line to ensure the correct path
 import sys
@@ -394,7 +395,7 @@ class User(BaseModel):
             self.save()
             return True
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -455,6 +456,91 @@ class User(BaseModel):
         """
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
+class TeamResult(BaseModel):
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
+    TeamId: PyObjectId
+    TournamentId: PyObjectId
+    PeriodId: PyObjectId
+    OpponentId: Optional[PyObjectId] = None
+    TeamScore: int = 0
+    GolfersScores: List[PyObjectId] = Field(default={}, description="Dictionary with a string for the golfer tourney details id as the key and ")
+    Placing: Optional[int] = 0
+    PointsFromPlacing: Optional[int] = 0
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def save(self) -> Optional[ObjectId]:
+        self.updated_at = datetime.utcnow()
+        if not self.created_at:
+            self.created_at = self.updated_at
+
+        team_result_dict = self.dict(by_alias=True, exclude_unset=True)
+
+        if '_id' in team_result_dict and team_result_dict['_id'] is not None:
+            # Update existing document
+            result = db.teamResults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict})
+            if result.matched_count == 0:
+                raise ValueError("No document found with _id: {}".format(team_result_dict['_id']))
+        else:
+            # Insert new document
+            result = db.teamResults.insert_one(team_result_dict)
+            self.id = result.inserted_id
+            
+            # Insert id into the associated Period
+            period_id = team_result_dict.get("PeriodId")
+            if period_id:
+                db.periods.update_one(
+                    {"_id": period_id},
+                    {"$push": {"TeamResults": self.id}}
+                )
+            else:
+                raise ValueError("PeriodId is missing or invalid in team_result_dict")
+
+        return self.id
+    
+    class Config:
+        populate_by_name = True
+        json_encoders = {PyObjectId: str}
+    
+    @model_validator(mode = 'before')
+    def placing_is_less_than_teams(cls, values):
+        period_id = values.get('PeriodId')
+
+        period = db.periods.find_one({ "_id": period_id })
+        league_id = period["LeagueId"]
+
+        placing = values.get('Placing')
+
+        num_of_teams_in_league = len(db.leagues.find_one({"_id": league_id })["Teams"])
+        if placing > num_of_teams_in_league:
+            raise ValueError('The placing the team currently is in is not possible based on the amount of teams in the league')
+        return values
+
+    def calculate_player_scores(self, db):
+        league_settings = db.leaguessettings.find_one({"LeagueId": self.LeagueId})
+        
+        if league_settings is None:
+            raise ValueError("League settings not found.")
+        
+        points_per_score = league_settings["PointsPerScore"]
+        
+        for golfer_id in self.GolfersScores.items():
+            golfer_details = db.golfertournamentdetails.find_one({"GolferId": golfer_id, "TournamentId": self.TournamentId})
+            
+            if golfer_details is None:
+                continue
+            
+            if league_settings["StrokePlay"]:
+                self.GolfersScores[golfer_id]['TotalScore'] = golfer_details.get('TotalScore', 0)
+            elif league_settings["ScorePlay"]:
+                for score_type in ['Birdies', 'Pars', 'Bogeys', 'DoubleBogeys', 'WorseThanDoubleBogeys']:
+                    historical_num_of_score_type = self.GolfersScores[golfer_id].get(score_type, 0)
+                    curr_num_of_score_type = golfer_details.get(score_type, 0)
+                    if historical_num_of_score_type != curr_num_of_score_type:
+                        difference_in_score_type_count = curr_num_of_score_type - historical_num_of_score_type
+                        self.TotalPoints += (points_per_score.get(score_type, 0) * difference_in_score_type_count)
+                        self.GolfersScores[golfer_id][score_type] = curr_num_of_score_type
+
 class Period(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     StartDate: datetime
@@ -463,7 +549,7 @@ class Period(BaseModel):
     WaiverPool: Optional[List[Dict]] = []
     FantasyLeagueSeasonId: PyObjectId
     Standings: Optional[List[PyObjectId]] = []                                        
-    FreeAgentSignings: Optional[List[Dict[PyObjectId, List]]] = []
+    FreeAgentSignings: Optional[Dict[str, List[PyObjectId]]] = {}
     Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
     Drops: Optional[Dict[PyObjectId, List]] = {}
     TournamentId: PyObjectId
@@ -503,20 +589,20 @@ class Period(BaseModel):
         league = db.leagues.find_one({"_id": self.LeagueId})
         league_settings = league["LeagueSettings"]
 
-        league_timezone = league_settings.TimeZone
+        league_timezone = league_settings["TimeZone"]
         
         utc_now = datetime.now(timezone.utc)
         local_now = convert_utc_to_local(utc_now, league_timezone)
         today_day_number = local_now.weekday()
         
-        waiver_day_number = get_day_number(league_settings.WaiverDeadline)
+        waiver_day_number = get_day_number(league_settings["WaiverDeadline"])
 
         if today_day_number <= waiver_day_number:
             raise ValueError("The waiver deadline has not passed yet.")
         
-        if league_settings.WaiverType == "FAAB":
+        if league_settings["WaiverType"] == "FAAB":
             self.determine_faab_winners()
-        elif league_settings.WaiverType == "Reverse Standings":
+        elif league_settings["WaiverType"] == "Reverse Standings":
             self.determine_reverse_standings_winners()
         else:
             raise ValueError("Invalid waiver type specified in league settings.")
@@ -527,14 +613,14 @@ class Period(BaseModel):
         league_settings = league["LeagueSettings"]
         team = db.teams.find_one({"OwnerId": user_id, "LeagueId": self.LeagueId})
 
-        league_timezone = league_settings.TimeZone
+        league_timezone = league_settings["TimeZone"]
         
         # Convert current UTC time to user's local time
         utc_now = datetime.now(timezone.utc)
         local_now = convert_utc_to_local(utc_now, league_timezone)
         today_day_number = get_day_number(local_now.weekday())
         
-        waiver_day_number = get_day_number(league_settings.WaiverDeadline)
+        waiver_day_number = get_day_number(league_settings["WaiverDeadline"])
 
         if today_day_number > waiver_day_number:
             raise ValueError("The waiver deadline has passed.")
@@ -548,13 +634,13 @@ class Period(BaseModel):
         if golfer_id not in self.WaiverPool:
             self.WaiverPool[golfer_id] = []
 
-        if league_settings.WaiverType == "FAAB":
+        if league_settings["WaiverType"] == "FAAB":
             existing_entry = next((entry for entry in self.WaiverPool[golfer_id] if user_id in entry), None)
             if existing_entry:
                 existing_entry[user_id] = bid
             else:
                 self.WaiverPool[golfer_id].append({user_id: bid})
-        elif league_settings.WaiverType == "Reverse Standings":
+        elif league_settings["WaiverType"] == "Reverse Standings":
             if user_id not in (entry.keys() for entry in self.WaiverPool[golfer_id]):
                 self.WaiverPool[golfer_id].append({user_id: team["WaiverNumber"]})
                 league = League(**league)
@@ -566,7 +652,7 @@ class Period(BaseModel):
         self.save()
         return True
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -586,71 +672,174 @@ class Period(BaseModel):
 
     def set_standings(self) -> bool:
         league_id = self.LeagueId
-        league_settings = db.leaguessettings.find_one({"LeagueId": league_id})
 
-        if league_settings.HeadToHead:
+        # Find league settings in the db. Will be used for multiple things
+        league_settings = db.leagueSettings.find_one({"LeagueId": league_id})
+
+        # If the league is head-to-head, standings do not need to be set
+        # because points per placing are irrelevant; standings are determined by wins and losses.
+        if league_settings["HeadToHead"]:
             return False
 
         team_results = []
-        
+
+        # Accumulate all of the team's results into an array
         for team_result_id in self.TeamResults:
-            team_result_doc = db.teamresults.find_one({"_id": team_result_id})
+            team_result_doc = db.teamResults.find_one({"_id": team_result_id})
+            # Ensure it is not None type
             if team_result_doc:
                 team_results.append(TeamResult(**team_result_doc))
 
+        current_time = datetime.now()
+
+        # Ensure there are team results and the period is over 
+        # before applying points to teams
         if team_results:
             if league_settings is None:
                 raise ValueError("League settings not found.")
 
-            sorted_team_results = sorted(team_results, key=lambda x: x.TotalPoints, reverse=True)
+            # Sort teams by TeamScore (lower scores are better)
+            team_results.sort(key=lambda x: x.TeamScore)
 
-            for placing, team_result in enumerate(sorted_team_results, start=1):
-                points_from_placing = 0
+            # Group by TeamScore (find tied teams)
+            grouped_by_score = groupby(team_results, key=lambda x: x.TeamScore)
 
-                points_per_placing_arr = league_settings.PointsPerPlacing
-                num_of_scoring_places = len(points_per_placing_arr)
+            sorted_team_results = []
 
-                if placing <= num_of_scoring_places:
-                    points_from_placing += points_per_placing_arr[placing - 1]
+            for score, tied_teams in grouped_by_score:
+                tied_teams_list = list(tied_teams)
 
-                db.teamresults.update_one(
-                    {"_id": team_result._id},
-                    {"$set": {
-                        "Placing": placing, 
-                        "PointsFromPlacing": points_from_placing
-                    }}
-                )
+                # If there's more than one team with the same TeamScore, apply tiebreaker
+                if len(tied_teams_list) > 1:
+                    # Sort tied teams by the highest golfer score (lower is better)
+                    sorted_tied_teams = sorted(
+                        tied_teams_list,
+                        key=lambda x: self.get_highest_golfer_score(x)  # Tiebreaker
+                    )
+                    sorted_team_results.extend(sorted_tied_teams)
+                else:
+                    # No tie, just append the team
+                    sorted_team_results.extend(tied_teams_list)
 
-            self.Standings = [team_result._id for team_result in sorted_team_results]
-            self.update({"Standings": self.Standings})
+            period_over = current_time >= self.EndDate
+
+            # Ensure the period is over before applying points to teams
+            if period_over:
+                for placing, team_result in enumerate(sorted_team_results, start=1):
+                    points_from_placing = 0
+
+                    points_per_placing_arr = league_settings["PointsPerPlacing"]
+
+                    # Check the array for the number of places awarded points
+                    num_of_scoring_places = len(points_per_placing_arr)
+
+                    # If this team is in the scoring threshold, we will award points.
+                    if placing <= num_of_scoring_places:
+                        points_from_placing += points_per_placing_arr[placing - 1]
+
+                    # Update the placing and points earned within teamResults
+                    db.teamResults.update_one(
+                        {"_id": team_result.id},
+                        {"$set": {
+                            "Placing": placing, 
+                            "PointsFromPlacing": points_from_placing
+                        }}
+                    )
+
+                # Add the points that the team accumulated from the place they came in
+                self.contribute_placing_points_to_teams()
+
+            # Adjust the standings 
+            self.Standings = [team_result.TeamId for team_result in sorted_team_results]
+
+            for team_id in self.Standings:
+                team = db.teams.find_one({"_id": team_id})
+                print(team["TeamName"], team["Points"])
+
+            self.save()
+
+        return True
+
+    # Tiebreaker method to get the highest scoring golfer in a team
+    def get_highest_golfer_score(self, team_result: TeamResult) -> int:
+        # Retrieve the golfer scores associated with the team
+        golfer_scores = []
+
+        for golfer_details_id in team_result.GolfersScores:
+            golfer_details = db.golfertournamentdetails.find_one({
+                "_id": golfer_details_id
+            })
+            
+            if golfer_details and "Score" in golfer_details:
+                score = golfer_details["Score"]
+
+                # Handle "E" (even par)
+                if score == 'E':
+                    score = 0
+                else:
+                    # Ensure score is a valid integer
+                    try:
+                        score = int(score)
+                    except ValueError:
+                        score = 1000  # Assign a high value if there's an error parsing the score
+
+                golfer_scores.append(score)
+        
+        # Return the lowest score (since lower is better), or a large value if no scores are found
+        print(min(golfer_scores))
+        return min(golfer_scores) if golfer_scores else 1000
+
+    def contribute_placing_points_to_teams(self) -> bool:
+
+        team_results = self.TeamResults
+
+        # iterate through each team result
+        for team_result_id in team_results:
+
+            # find the team result doc from the db
+            team_result_doc = db.teamResults.find_one({
+                "_id": team_result_id
+            })
+
+            # handle None type
+            if not team_result_doc:
+                raise ValueError("Team Result does not exist.")
+
+            # grab team from db to add points to
+            associated_team = db.teams.find_one({ 
+                "_id": team_result_doc["TeamId"]
+            })
+
+            # handle None type
+            if not associated_team:
+                raise ValueError("Team does not exist.")
+
+            # add up points and set to a variable
+            associated_team_points = associated_team["Points"] + team_result_doc["PointsFromPlacing"]
+
+            # update the team in the database
+            db.teams.update_one(
+                {"_id": associated_team["_id"]},
+                {"$set": {"Points": associated_team_points}}
+            )
         
         return True
 
-    @model_validator(mode='before')
-    def validate_dates(cls, values):
-        start_date = values.get('StartDate')
-        end_date = values.get('EndDate')
-        today = datetime.now()
+    # @model_validator(mode='before')
+    # def validate_dates(cls, values):
+    #     start_date = values.get('StartDate')
+    #     end_date = values.get('EndDate')
+    #     today = datetime.now()
 
-        # Check if the start date is before today's date
-        if start_date and start_date < today:
-            raise ValueError('Start date cannot be before today\'s date')
+    #     # Check if the start date is before today's date
+    #     if start_date and start_date < today:
+    #         raise ValueError('Start date cannot be before today\'s date')
 
-        # Check if end date is after start date
-        if start_date and end_date and end_date <= start_date:
-            raise ValueError('End date must be after start date')
+    #     # Check if end date is after start date
+    #     if start_date and end_date and end_date <= start_date:
+    #         raise ValueError('End date must be after start date')
 
-        return values
-
-    @model_validator(mode='before')
-    def validate_dates(cls, values):
-        start_date = values.get('StartDate')
-        end_date = values.get('EndDate')
-
-        if start_date and end_date and end_date <= start_date:
-            raise ValueError('End date must be after start date')
-
-        return values
+    #     return values
 
     @field_validator('TournamentId')
     def check_tournament_id_exists(cls, v):
@@ -665,57 +854,6 @@ class Period(BaseModel):
         if not (1 <= v <= tournament_count):
             raise ValueError(f'Period number must be between 1 and the number of tournaments available to play: {tournament_count}')
         return v
-
-    def set_standings(self) -> bool:
-        league_id = team_results[0].LeagueId
-        league_settings = db.leaguessettings.find_one({"LeagueId": league_id})
-
-        if league_settings.HeadToHead:
-            return False
-
-        team_results = []
-        
-        for team_result_id in self.TeamResults:
-            team_result_doc = db.teamresults.find_one({"_id": team_result_id})
-            if team_result_doc:
-                team_results.append(TeamResult(**team_result_doc))
-
-        # Determine the scoring type from the league settings
-        if team_results:
-
-            if league_settings is None:
-                raise ValueError("League settings not found.")
-
-            # Sort team results based on TotalPoints
-            sorted_team_results = sorted(team_results, key=lambda x: x.TotalPoints, reverse=True)
-
-            # Assign placing based on sorted results
-            for placing, team_result in enumerate(sorted_team_results, start=1):
-                # create a variable to hold the number of points the team is expected to get based off their current place
-                points_from_placing = 0
-
-                points_per_placing_arr = league_settings.PointsPerPlacing
-
-                # number of places that add to an overall teams score in the standings
-                num_of_scoring_places = len(points_per_placing_arr)
-
-                if placing > num_of_scoring_places:
-                    points_from_placing = 0
-                else:
-                    points_from_placing += points_per_placing_arr[placing - 1]
-
-                db.teamresults.update_one(
-                    {"_id": team_result._id},
-                    {"$set": {
-                        "Placing": placing, 
-                        "PointsFromPlacing": points_from_placing
-                        }}
-                )
-
-            # Update the standings
-            self.Standings = [team_result._id for team_result in sorted_team_results]
-        
-        return True 
 
 class ProSeason(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
@@ -750,13 +888,48 @@ class FantasyLeagueSeason(BaseModel):
     StartDate: datetime
     EndDate: datetime
     Periods: Optional[List[PyObjectId]] = []
+    CurrentPeriod: Optional[PyObjectId] = None
     Tournaments: List[PyObjectId] = []
     LeagueId: PyObjectId
     Active: bool = Field(default=False, description="determine whether the competition is league wide or just between two users")
+    Winner: PyObjectId = Field(default=None, description="Winner user ObjectId of the league")
+    CurrentStandings: List[PyObjectId] = Field(default=[], description="Array of teams sorted by the number of points they have or wins and losses.")
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def start_new_period(self):
+        # Create a new period starting from the end of the last tournament
+        current_period = db.periods.find_one({ "_id": self.CurrentPeriod })
+
+        next_period = db.periods.find_one({ "PeriodNumber": current_period["PeriodNumber"] + 1 })
+
+        self.CurrentPeriod = next_period.id
+        self.save()
+
+    def update_period_end_date(self, tournament_end_date: datetime):
+        # Update the end date of the current period when a tournament ends
+        if self.CurrentPeriod:
+            period = db.periods.find_one({"_id": self.CurrentPeriod})
+            if period:
+                period["EndDate"] = tournament_end_date
+                db.periods.update_one({"_id": self.CurrentPeriod}, {"$set": {"EndDate": tournament_end_date}})
+
+    def update_standings(self):
+        league = db.leagues.find_one({
+            "_id": self.LeagueId
+        })
+
+        standings = []
+        for team_id in league.Teams:
+            team = db.teams.find_one({ "_id": team_id })
+            if team:
+                standings.append((team_id, team['Points']))
+        # Sort teams by points
+        standings = standings.sort(key=lambda x: x[1], reverse=True)
+        self.CurrentStandings = [team_id for team_id, points in standings]
+        self.save()
+
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -773,6 +946,23 @@ class FantasyLeagueSeason(BaseModel):
             result = db.fantasyLeagueSeasons.insert_one(fantasy_league_season_dict)
             self.id = result.inserted_id
         return self.id
+
+    @field_validator('Tournaments')
+    def validate_tournament_start_dates(cls, tournament_ids_list):
+        current_date = datetime.now()
+
+        # Query the database for tournaments with the specified IDs
+        tournaments = db.tournaments.find({
+            "_id": {"$in": tournament_ids_list}
+        })
+
+        # Check if any tournament's start date is before today's date
+        for tournament in tournaments:
+            if "StartDate" in tournament and tournament["StartDate"] < current_date:
+                raise ValueError(f"Tournament {tournament['_id']} has a start date before today.")
+
+        return tournament_ids_list
+
     
     @model_validator(mode='before')
     def validate_and_convert_dates(cls, values):
@@ -806,7 +996,7 @@ class FantasyLeagueSeason(BaseModel):
 class LeagueSettings(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     created_at: Optional[datetime] = None
-    DefaultPointsForNonPlacers: Optional[int] = Field(default=0, description="Default points for players finishing outside the defined placements")
+    CutPenalty: int = Field(default=0, description="Default points for players finishing outside the defined placements")
     DraftingFrequency: int = Field(default=0, description="The number of times the league drafts in between tournaments.")
     DraftStartDayOfWeek: Optional[str] = Field(default="Monday", description="Day of the week in which the draft starts before a tournament or season.")
     DraftStartTime: Optional[str] = Field(default="12:00", description="Time of day when the draft starts, in HH:MM format.")
@@ -995,15 +1185,53 @@ class Team(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamName: str
     ProfilePicture: Optional[str] = Field(description="Profile picture for team")
-    Golfers: Optional[Dict[PyObjectId, Dict[str, any]]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
+    Golfers: Dict[str, Dict[str, any]] = Field(default_factory=dict, description="Dictionary of golfer IDs with usage count and team status")
     OwnerId: Optional[PyObjectId] = None
     LeagueId: PyObjectId
-    DraftPicks: Optional[Dict[PyObjectId, PyObjectId]] = Field(default={}, description="Drafts are the first ID and the second is the draft pick.")
-    Points: Optional[int] = Field(description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
-    FAAB: Optional[int] = Field(default=0, description="How much total points you have to spend on players.")
+    Points: int = Field(default=0, description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
+    FAAB: int = Field(default=0, description="How much total points you have to spend on players.")
     WaiverNumber: Optional[int] = 0
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    # Validation to ensure the length of TeamName and LeagueName is reasonable
+    @field_validator('TeamName')
+    def validate_name_length(cls, v):
+        if len(v) < 3 or len(v) > 50:  
+            # Example: setting reasonable length between 3 and 50 characters
+            raise ValueError('Name must be between 3 and 50 characters long.')
+        return v
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            ObjectId: str
+        }
+
+    def change_team_name(old_team_name: str, new_team_name: str, league_id: PyObjectId):
+        # Find the team document in the database
+        team = db.teams.find_one({
+            "TeamName": old_team_name,
+            "LeagueId": league_id
+        })
+
+        # Raise an error if the team is not found
+        if not team:
+            raise ValueError("Sorry, we could not find the team you are looking for.")
+
+        # Raise an error if the new name is not provided
+        if not new_team_name:
+            raise ValueError("Please enter a new team name.")
+
+        # Update the team name in the retrieved document
+        team["TeamName"] = new_team_name
+
+        # Create a new instance of Team for validation
+        new_team = Team(**team)
+
+        # Save the new instance to the database
+        new_team.save()
 
     def drop_player(self, team_id: PyObjectId, golfer_id: PyObjectId) -> bool:
         # Find the team
@@ -1061,24 +1289,76 @@ class Team(BaseModel):
             self.id = result.inserted_id
         return self.id
 
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {
-            ObjectId: str
-        }
+    # This is simply for free agent signings, uses will be tallied later when
+    # the tournament starts.
+    def sign_free_agent(self, free_agent_id: str, period_id: PyObjectId):
+        current_period = db.periods.find_one({
+            "_id": period_id
+        })
 
-    def add_to_golfer_usage(self, golfer_id: PyObjectId):
-        if golfer_id in self.Golfers:
-            self.Golfers[golfer_id]['UsageCount'] += 1
+        if not current_period:
+            raise ValueError("Period does not exist. Please check the ID you entered and try again.")
+
+        # Check if the team's ID already exists in the FreeAgentSignings
+        if self.id in current_period["FreeAgentSignings"]:
+            # Add the new signing details to the existing list for this team
+            db.periods.update_one(
+                {"_id": current_period["_id"]},
+                {"$push": {f"FreeAgentSignings.{self.id}": free_agent_id}}
+            )
         else:
-            self.Golfers[golfer_id] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': False, 'IsBench': True }
+            # If the team ID does not exist, initialize it with a new list containing the new signing
+            db.periods.update_one(
+                {"_id": current_period["_id"]},
+                {"$set": {f"FreeAgentSignings.{self.id}": [free_agent_id]}}
+            )
 
-    def remove_golfer(self, golfer_id: PyObjectId):
+    # Either add the golfer to the team or add another use for an existing 
+    # golfer.
+    # Also, bench golfers if explicitly told to.
+    def add_to_golfer_usage(self, golfer_id: str, bench: bool = False):
+        golfer_id_str = str(golfer_id)
+
+        # find the leagueSettings
+        league_settings = db.leagueSettings.find_one({
+            "LeagueId": self.LeagueId 
+        })
+
+        # Count the number of current golfers on the team
+        num_of_golfers = len([g for g in self.Golfers.keys() if self.Golfers[g].get('CurrentlyOnTeam', True)])
+
+        if num_of_golfers > league_settings["MaxGolfersPerTeam"]:
+            raise ValueError("You have reached the maximum allowable golfers per team.")
+
+        # Count the number of current starters
+        num_of_starters = len([g for g in self.Golfers.keys() if self.Golfers[g].get('IsStarter', True)])
+
+        if golfer_id_str in self.Golfers:
+            self.Golfers[golfer_id_str]['UsageCount'] += 1
+            self.Golfers[golfer_id_str]['CurrentlyOnTeam'] = True
+            if bench:
+                self.set_golfer_as_bench(golfer_id)
+            elif not bench:
+                self.set_golfer_as_starter(golfer_id)
+        else:
+            if num_of_starters >= league_settings['NumOfStarters'] or bench:
+                self.Golfers[golfer_id_str] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': False, 'IsBench': True }
+            else:
+                self.Golfers[golfer_id_str] = { 'UsageCount': 1, 'CurrentlyOnTeam': True, 'IsStarter': True, 'IsBench': False }
+
+        self.save()
+
+    def remove_golfer(self, golfer_id: str):
+        golfer_id = str(golfer_id)
+
         if golfer_id in self.Golfers:
             self.Golfers[golfer_id]['CurrentlyOnTeam'] = False
             self.Golfers[golfer_id]['IsStarter'] = False
             self.Golfers[golfer_id]['IsBench'] = False
+        else:
+            print(f"Golfer ID {golfer_id} not found on this team.")
+
+        self.save()
 
     def get_golfer_usage(self, golfer_id: PyObjectId) -> int:
         return self.Golfers.get(golfer_id, {}).get('UsageCount', 0)
@@ -1090,14 +1370,24 @@ class Team(BaseModel):
         if golfer_id in self.Golfers:
             self.Golfers[golfer_id]['IsStarter'] = True
             self.Golfers[golfer_id]['IsBench'] = False
+        self.save()
 
-    def set_golfer_as_bench(self, golfer_id: PyObjectId):
+    def set_golfer_as_bench(self, golfer_id: str):
+        golfer_id = str(golfer_id)
+    
         if golfer_id in self.Golfers:
             self.Golfers[golfer_id]['IsStarter'] = False
             self.Golfers[golfer_id]['IsBench'] = True
+        self.save()
 
     def total_golfers(self) -> int:
         return sum(1 for golfer in self.Golfers.values() if golfer['CurrentlyOnTeam'])
+
+    def get_all_current_golfers_ids(self) -> int:
+        # Collect all golfer IDs that are currently on the team
+        golfer_ids = [golfer_id for golfer_id in self.Golfers.keys() if self.Golfers[golfer_id]['CurrentlyOnTeam']]
+        
+        return golfer_ids
 
     def get_all_golfers(self, db) -> list:
         golfer_ids = list(self.Golfers.keys())
@@ -1119,12 +1409,18 @@ class League(BaseModel):
     Teams: List[PyObjectId] = []
     LeagueSettings: Optional[LeagueSettings]
     FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
-    CurrentStandings: Optional[List[Team]]
     CurrentFantasyLeagueSeasonId: Optional[PyObjectId] = None
     WaiverOrder: Optional[List[PyObjectId]] = []
-    CurrentPeriod: Optional[PyObjectId] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    # Validation to ensure the length of TeamName and LeagueName is reasonable
+    @field_validator('Name')
+    def validate_name_length(cls, v):
+        if len(v) < 3 or len(v) > 50:  
+            # Example: setting reasonable length between 3 and 50 characters
+            raise ValueError('Name must be between 3 and 50 characters long.')
+        return v
 
     def find_current_season(self) -> Optional[FantasyLeagueSeason]:
         if self.CurrentFantasyLeagueSeason:
@@ -1306,7 +1602,7 @@ class League(BaseModel):
         # Populate past opponents from previous periods
         previous_periods = db.periods.find({"LeagueId": self.id, "PeriodNumber": {"$lt": period.PeriodNumber}})
         for prev_period in previous_periods:
-            team_results = db.teamresults.find({"PeriodId": prev_period["_id"]})
+            team_results = db.teamResults.find({"PeriodId": prev_period["_id"]})
             for result in team_results:
                 team_id = result["TeamId"]
                 opponent_id = result["OpponentId"]
@@ -1333,7 +1629,7 @@ class League(BaseModel):
 
     def create_initial_teams(self) -> bool:
         league_settings = self.LeagueSettings
-        num_of_teams = league_settings.NumberOfTeams
+        num_of_teams = league_settings["NumberOfTeams"]
         team_ids = []
 
         for i in range(num_of_teams):
@@ -1362,10 +1658,7 @@ class League(BaseModel):
         if not season_id:
             raise ValueError("there is no current season ongoing for this league")
 
-        season_doc = db.fantasyLeagueSeasons.find_one({ 
-            "_id": season_id
-        })
-
+        season_doc = db.fantasyLeagueSeasons.find_one({"_id": season_id})
         tournament_ids = season_doc["Tournaments"]
         tournaments = list(db.tournaments.find({"_id": {"$in": tournament_ids}}).sort("StartDate"))
 
@@ -1375,32 +1668,40 @@ class League(BaseModel):
         league_settings = self.LeagueSettings
 
         # Determine draft frequency
-        draft_frequency = league_settings.DraftingFrequency
+        draft_frequency = league_settings["DraftingFrequency"]
         draft_periods = set(range(1, len(tournaments) + 1, draft_frequency))
 
-        self.create_initial_period()
+        self.create_initial_period(season_id)
 
         period_ids = []
 
-        # Create periods between consecutive tournaments
-        for i in range(2, len(tournaments) - 1):
+        # Create periods corresponding to tournaments
+        for i in range(len(tournaments)):
             current_tournament = tournaments[i]
-            next_tournament = tournaments[i + 1]
+            if i == 0:
+                # For the first period, set StartDate to some initial league or season start date
+                start_date = self.created_at  # Assuming this exists
+            else:
+                # Set StartDate as the EndDate of the previous tournament
+                previous_tournament = tournaments[i - 1]
+                start_date = previous_tournament["EndDate"]
 
+            # Create the period
             period = Period(
                 LeagueId=self.id,
-                StartDate=current_tournament["EndDate"],
-                EndDate=next_tournament["StartDate"],
+                StartDate=start_date,
+                EndDate=current_tournament["EndDate"],
                 PeriodNumber=i + 1,
                 TournamentId=current_tournament["_id"],
                 FantasyLeagueSeasonId=self.CurrentFantasyLeagueSeasonId
             )
 
+            # Handle draft assignment
             if (i + 1) in draft_periods:
                 draft = Draft(
                     LeagueId=self.id,
                     StartDate=current_tournament["EndDate"],
-                    Rounds=league_settings.MinFreeAgentDraftRounds,
+                    Rounds=league_settings["MinFreeAgentDraftRounds"],
                     PeriodId=period.id,
                     Picks=[],
                     DraftOrder=[]
@@ -1410,12 +1711,10 @@ class League(BaseModel):
 
             period_id = period.save()
             period_ids.append(period_id)
-            print(period_id)
 
             # Create Team Results and generate matchups for head-to-head leagues
-            if league_settings.HeadToHead:
+            if league_settings["HeadToHead"]:
                 matchups = self.generate_matchups(period)
-
                 for team1_id, team2_id in matchups:
                     team1_result = TeamResult(
                         TeamId=team1_id,
@@ -1441,10 +1740,13 @@ class League(BaseModel):
                     )
                     team1_result.save()
                     team2_result.save()
+
             self.save()
+
+        # Update the season with the period ids
         db.fantasyLeagueSeasons.update_one(
-            {"_id": self.CurrentFantasyLeagueSeasonId},  # Filter to find the document
-            {"$set": {"Periods": period_ids}}       # Update operation to set the new value
+            {"_id": self.CurrentFantasyLeagueSeasonId},
+            {"$set": {"Periods": period_ids}}
         )
 
     def get_most_recent_season(self) -> FantasyLeagueSeason:
@@ -1468,7 +1770,7 @@ class League(BaseModel):
         league_settings = self.LeagueSettings
 
         # Check if waiver type is "Reverse Standings"
-        if league_settings and league_settings.WaiverType == "Reverse Standings":
+        if league_settings and league_settings["WaiverType"] == "Reverse Standings":
             # Get the most recent period
             most_recent_period = self.get_most_recent_period()
 
@@ -1487,18 +1789,22 @@ class League(BaseModel):
 
         return False
 
-    def create_initial_period(self): 
+    def create_initial_period(self, season_id): 
         # Create the initial period for the league
-        first_tournament = db.tournaments.find_one({}, sort=[("StartDate", 1)])
+        season = db.fantasyLeagueSeasons.find_one({
+            "_id": season_id
+        })
+        first_tournament = season["Tournaments"][0]
+
         league_settings = self.LeagueSettings
 
         if not first_tournament:
             raise ValueError("No tournaments found to initialize the period.")
 
-        draft_start = self.convert_to_datetime(
-            league_settings.DraftStartDayOfWeek,
-            league_settings.DraftStartTime,
-            league_settings.TimeZone
+        draft_start_date = self.convert_to_datetime(
+            league_settings["DraftStartDayOfWeek"],
+            league_settings["DraftStartTime"],
+            league_settings["TimeZone"]
         )
 
         # Create an initial period before the first tournament
@@ -1511,55 +1817,33 @@ class League(BaseModel):
             FantasyLeagueSeasonId=self.CurrentFantasyLeagueSeasonId
         )
 
+        initial_period_id = initial_period.save()
+
+        first_draft_id = self.create_initial_draft(draft_start_date, initial_period_id, league_settings["MaxGolfersPerTeam"])
+
+        initial_period.DraftId = first_draft_id
+
+        initial_period.save()
+
+    def create_initial_draft(self, draft_start_date, initial_period_id, max_golfers_per_team) -> PyObjectId:
+
         # Create the first draft before the first tournament
         first_draft = Draft(
             LeagueId=self.id,
-            StartDate=draft_start,
-            Rounds=league_settings.MinFreeAgentDraftRounds,
-            PeriodId=initial_period.id,
+            StartDate=draft_start_date,
+            Rounds=max_golfers_per_team,
+            PeriodId=initial_period_id,
             Picks=[],
             DraftOrder=[]
         )
-        first_draft.save()
-        initial_period.DraftId = first_draft.id
-        initial_period.save()
 
-    def start_new_period(self, last_tournament_end_date: datetime):
-        # Create a new period starting from the end of the last tournament
-        current_period_number = db.periods.count_documents({"LeagueId": self.id})
+        first_draft_id = first_draft.save()
 
-        period = Period(
-            LeagueId=self.id,
-            StartDate=last_tournament_end_date,
-            EndDate=None,  # Will be set when the next tournament is known
-            PeriodNumber=current_period_number + 1
-        )
-        period.save()
-        self.CurrentPeriod = period.id
-        self.save()
-
-    def update_period_end_date(self, tournament_end_date: datetime):
-        # Update the end date of the current period when a tournament ends
-        if self.CurrentPeriod:
-            period = db.periods.find_one({"_id": self.CurrentPeriod})
-            if period:
-                period["EndDate"] = tournament_end_date
-                db.periods.update_one({"_id": self.CurrentPeriod}, {"$set": {"EndDate": tournament_end_date}})
+        return first_draft_id
 
     def handle_tournament_end(self, tournament_end_date: datetime):
         # Called when a tournament ends to update the current period and start a new one
         self.start_new_period(tournament_end_date)
-            
-    def update_standings(self):
-        standings = []
-        for team_id in self.Teams:
-            team = db.teams.find_one({ "_id": team_id })
-            if team:
-                standings.append((team_id, team['Points']))
-        # Sort teams by points
-        standings.sort(key=lambda x: x[1], reverse=True)
-        self.CurrentStandings = [team_id for team_id, points in standings]
-        self.save()
 
     def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
@@ -1596,76 +1880,6 @@ class League(BaseModel):
     class Config:
         populate_by_name = True
 
-class TeamResult(BaseModel):
-    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    TeamId: PyObjectId
-    LeagueId: PyObjectId
-    TournamentId: PyObjectId
-    PeriodId: PyObjectId
-    TotalPoints: int = 0
-    GolfersScores: Dict[PyObjectId, Dict[str, int]]
-    Placing: Optional[int] = 0
-    PointsFromPlacing: int = 0
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
-        self.updated_at = datetime.utcnow()
-        if not self.created_at:
-            self.created_at = self.updated_at
-
-        team_result_dict = self.dict(by_alias=True, exclude_unset=True)
-
-        if '_id' in team_result_dict and team_result_dict['_id'] is not None:
-            # Update existing document
-            result = db.teamresults.update_one({'_id': team_result_dict['_id']}, {'$set': team_result_dict})
-            if result.matched_count == 0:
-                raise ValueError("No document found with _id: {}".format(team_result_dict['_id']))
-        else:
-            # Insert new document
-            result = db.teamresults.insert_one(team_result_dict)
-            self.id = result.inserted_id
-        return self.id
-    
-    class Config:
-        populate_by_name = True
-        json_encoders = {PyObjectId: str}
-    
-    @model_validator(mode = 'before')
-    def placing_is_less_than_teams(cls, values):
-        league_id = values.get('LeagueId')
-        placing = values.get('Placing')
-
-        num_of_teams_in_league = len(db.leagues.find_one({"_id": league_id }).Teams)
-        if placing > num_of_teams_in_league:
-            raise ValueError('The placing the team currently is in is not possible based on the amount of teams in the league')
-        return values
-
-    def calculate_player_scores(self, db):
-        league_settings = db.leaguessettings.find_one({"LeagueId": self.LeagueId})
-        
-        if league_settings is None:
-            raise ValueError("League settings not found.")
-        
-        points_per_score = league_settings.PointsPerScore
-        
-        for golfer_id in self.GolfersScores.items():
-            golfer_details = db.golfertournamentdetails.find_one({"GolferId": golfer_id, "TournamentId": self.TournamentId})
-            
-            if golfer_details is None:
-                continue
-            
-            if league_settings.StrokePlay:
-                self.GolfersScores[golfer_id]['TotalScore'] = golfer_details.get('TotalScore', 0)
-            elif league_settings.ScorePlay:
-                for score_type in ['Birdies', 'Pars', 'Bogeys', 'DoubleBogeys', 'WorseThanDoubleBogeys']:
-                    historical_num_of_score_type = self.GolfersScores[golfer_id].get(score_type, 0)
-                    curr_num_of_score_type = golfer_details.get(score_type, 0)
-                    if historical_num_of_score_type != curr_num_of_score_type:
-                        difference_in_score_type_count = curr_num_of_score_type - historical_num_of_score_type
-                        self.TotalPoints += (points_per_score.get(score_type, 0) * difference_in_score_type_count)
-                        self.GolfersScores[golfer_id][score_type] = curr_num_of_score_type
-
 class Draft(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     LeagueId: PyObjectId
@@ -1673,7 +1887,7 @@ class Draft(BaseModel):
     EndDate: Optional[datetime] = None
     Rounds: int
     PeriodId: PyObjectId
-    Picks: Optional[List[PyObjectId]]
+    DraftPicks: Optional[List[PyObjectId]]
     DraftOrder: Optional[List[PyObjectId]]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -1767,11 +1981,12 @@ class Draft(BaseModel):
 
 class DraftPick(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    TeamId: str
-    GolferId: str
+    TeamId: PyObjectId
+    GolferId: PyObjectId
     RoundNumber: int
     PickNumber: int
-    LeagueId: int
+    LeagueId: PyObjectId
+    DraftId: PyObjectId
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -1784,49 +1999,52 @@ class DraftPick(BaseModel):
 
         if '_id' in draft_picks_dict and draft_picks_dict['_id'] is not None:
             # Update existing document
-            result = db.draftpicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict})
+            result = db.draftPicks.update_one({'_id': draft_picks_dict['_id']}, {'$set': draft_picks_dict})
             if result.matched_count == 0:
                 raise ValueError("No document found with _id: {}".format(draft_picks_dict['_id']))
         else:
             # Insert new document
-            result = db.draftpicks.insert_one(draft_picks_dict)
+            result = db.draftPicks.insert_one(draft_picks_dict)
             self.id = result.inserted_id
+            
+            # Append the new draft pick to the DraftPicks array in the drafts collection
+            db.drafts.update_one(
+                {"_id": draft_picks_dict['DraftId']},
+                {"$push": {"DraftPicks": self.id}}
+            )
+        
         return self.id
-
-    def get_league_settings(self) -> LeagueSettings:
-        league_settings = db.league_settings.find_one({"LeagueId": self.LeagueId})
-        if not league_settings:
-            raise ValueError("League settings not found")
-        return LeagueSettings(**league_settings)
-
-    def validate_draft_pick(self):
-        league_settings = self.get_league_settings()
-        team_golfers_count = db.golfers.count_documents({"TeamId": self.TeamId})
-        if team_golfers_count >= league_settings.MaxGolfersPerTeam:
-            raise ValueError("Team already has the maximum number of golfers allowed")
-
-    def validate_pick_timing_and_order(self):
-        draft = db.drafts.find_one({"LeagueId": self.LeagueId})
-        if not draft:
-            raise ValueError("Draft not found")
-
-        current_time = datetime.now()
-        draft_start_time = draft['StartDate']
-        pick_duration = draft.get('TimeToDraft', 7200)
-        picks_per_round = len(draft['Picks']) / draft['Rounds']
-        expected_pick_time = draft_start_time + timedelta(seconds=(self.RoundNumber - 1) * picks_per_round * pick_duration + (self.PickNumber - 1) * pick_duration)
-
-        if current_time < draft_start_time or current_time > expected_pick_time + timedelta(seconds=pick_duration):
-            raise ValueError("Pick is not within the allowed time period")
-
-        if len(draft['Picks']) >= self.PickNumber + (self.RoundNumber - 1) * picks_per_round:
-            raise ValueError("Invalid pick order")
 
     @root_validator(pre=True)
     def run_validations(cls, values):
-        instance = cls(**values)
-        instance.validate_draft_pick()
-        instance.validate_pick_timing_and_order()
+        # Use the raw values dictionary for validation purposes
+        league_settings = db.leagueSettings.find_one({"LeagueId": values['LeagueId']})
+        if not league_settings:
+            raise ValueError("League settings not found")
+
+        team_golfers_count = db.golfers.count_documents({"TeamId": values['TeamId']})
+        if team_golfers_count >= league_settings['MaxGolfersPerTeam']:
+            raise ValueError("Team already has the maximum number of golfers allowed")
+
+        draft = db.drafts.find_one({"LeagueId": values['LeagueId']})
+        if not draft:
+            raise ValueError("Draft not found")
+
+        # current_time = datetime.now()
+        # draft_start_time = draft['StartDate']
+        # pick_duration = draft.get('TimeToDraft', 7200)
+        # picks_per_round = len(draft['Picks']) / draft['Rounds']
+        # expected_pick_time = draft_start_time + timedelta(
+        #     seconds=(values['RoundNumber'] - 1) * picks_per_round * pick_duration +
+        #             (values['PickNumber'] - 1) * pick_duration
+        # )
+
+        # if current_time < draft_start_time or current_time > expected_pick_time + timedelta(seconds=pick_duration):
+        #     raise ValueError("Pick is not within the allowed time period")
+
+        # if len(draft['Picks']) >= values['PickNumber'] + (values['RoundNumber'] - 1) * picks_per_round:
+        #     raise ValueError("Invalid pick order")
+
         return values
 
     @field_validator('RoundNumber', 'PickNumber')

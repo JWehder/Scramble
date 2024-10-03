@@ -157,7 +157,9 @@ def handle_golfer_data(tournament_data: dict, tournament_id: ObjectId):
             Earnings=golfer_data.get("Earnings"),
             FedexPts=golfer_data.get("FedexPts"),
             TournamentId=tournament_id,
-            Rounds=[]
+            Rounds=[],
+            Cut=golfer_data.get("Cut"),
+            WD=golfer_data.get("WD")
         )
 
         golfer_details_id = golfer_details.save()
