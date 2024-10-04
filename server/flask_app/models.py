@@ -63,7 +63,7 @@ class Hole(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def save(self, session: Optional[ClientSession] = None) -> Optional[ObjectId]:
+    def save(self) -> Optional[ObjectId]:
         self.updated_at = datetime.utcnow()
         if not self.created_at:
             self.created_at = self.updated_at
@@ -364,97 +364,6 @@ class Golfer(BaseModel):
             ObjectId: str,
             datetime: lambda v: v.isoformat()
         }
-
-
-class User(BaseModel):
-    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    Username: str
-    Email: EmailStr
-    Password: str
-    Teams: List[str] = []
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        populate_by_name = True
-        json_encoders = {ObjectId: str}
-
-    @staticmethod
-    def hash_password(password: str) -> str:
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-        return hashed_password.decode('utf-8')
-
-    def choose_team(self, team_id: PyObjectId) -> bool:
-        team = db.teams.find_one({"_id": team_id})
-        if team["OwnerId"]:
-            raise ValueError("Team already has an owner.")
-        else:
-            db.teams.update_one({"_id": team_id}, {"$set": {"OwnerId": self.id}})
-            self.Teams.append(team_id)
-            self.save()
-            return True
-
-    def save(self) -> Optional[ObjectId]:
-        self.updated_at = datetime.utcnow()
-        if not self.created_at:
-            self.created_at = self.updated_at
-
-        # Hash the password before saving
-        if self.Password:
-            self.Password = self.hash_password(self.Password)
-        
-        # Convert the object to a dictionary with aliases and exclude unset fields
-        user_dict = self.dict(by_alias=True, exclude_unset=True)
-        
-        if '_id' in user_dict and user_dict['_id'] is not None:
-            # Update existing document
-            result = db.users.update_one({'_id': user_dict['_id']}, {'$set': user_dict})
-            if result.matched_count == 0:
-                raise ValueError("No document found with _id: {}".format(user_dict['_id']))
-        else:
-            # Insert new document
-            result = db.users.insert_one(user_dict)
-            self.id = result.inserted_id
-        return self.id
-
-    @field_validator('Username')
-    def validate_username_existence(cls, v):
-        # Query the collection to find if any document has a "User" field equal to the provided value
-        if db.users.find_one({"User": v}):
-            raise ValueError(f"Username '{v}' is already taken.")
-        return v
-
-    @field_validator('Username')
-    def validate_username_length(cls, v):
-        # Add logic to check for unique username in the database
-        if len(v) < 5:
-            raise ValueError('Username must have at least 8 characters.')
-        return v
-
-    @field_validator('Email')
-    def validate_email(cls, v):
-        # Add logic to check for unique email in the database
-        if db.users.find_one({"Email": v}):
-            raise ValueError('Email already exists')
-        return v
-
-    @field_validator('Password')
-    def validate_password(cls, v):
-        # Ensure the password has at least one uppercase letter, one lowercase letter, one digit, and one special character
-        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', v) or not len(v) >= 8:
-            raise ValueError('Password must contain at least one uppercase letter, one lowercase letter, one digit, one special character, and must be at least 8 characters.')
-        return cls.hash_password(v) 
-
-    def check_password(plain_password: str, hashed_password: str) -> bool:
-        """
-        Validate a password by comparing it with the stored hashed password.
-
-        :param plain_password: The plain text password entered by the user.
-        :param hashed_password: The hashed password stored in the database.
-        :return: True if the password matches, False otherwise.
-        """
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 class TeamResult(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')

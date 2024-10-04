@@ -1,12 +1,14 @@
-from flask import request, make_response, jsonify, requests
+from flask import request, make_response, jsonify, requests, abort
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from functools import wraps
 from config import app
 from config import Flask
 from dotenv import load_dotenv
+from bson.objectid import ObjectId
 
 from config import db
+from models import User
 
 # HTTP Constants 
 HTTP_SUCCESS = 200
@@ -18,6 +20,14 @@ HTTP_BAD_REQUEST = 400
 HTTP_CONFLICT = 409
 HTTP_SERVER_ERROR = 500
 HTTP_UNPROCESSABLE_ENTITY = 422
+
+users_collection = db.users
+leagues_collection = db.leagues
+teams_collection = db.teams
+tournaments_collection = db.tournaments
+golfers_collection = db.golfers
+fantasy_league_seasons_collection = db.fantasyLeagueSeasons
+golfer_tournament_details_collection = db.golfertournamentdetails
 
 @app.route('/start_draft', methods=['POST'])
 def start_draft():
@@ -45,15 +55,22 @@ def hello_world():
 
 @app.route('/tournaments', methods=['GET'])
 def get_tournaments():
-    import json
-    with open('../data/tournaments.json') as f:
-        data = json.load(f)
-    response = make_response(
-        data,
-        200
-    )
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    return response 
+    tournaments = list(tournaments_collection.find())
+    return jsonify([{"_id": str(tournament["_id"]), "name": tournament["name"]} for tournament in tournaments])
+
+@app.route('/tournaments/<tournament_id>', methods=['GET'])
+def get_tournament_by_id(tournament_id):
+    tournament = tournaments_collection.find_one({"_id": ObjectId(tournament_id)})
+    if tournament:
+        return jsonify({
+            "_id": str(tournament["_id"]),
+            "name": tournament["name"],
+            "start_date": tournament["start_date"],
+            "venue": tournament["venue"],
+            "purse": tournament.get("purse")
+        })
+    else:
+        return abort(404, description="Tournament not found")
 
 @app.route('/get_facebook_appId', methods=["GET"])
 def get_facebook_appId():
@@ -89,6 +106,65 @@ def logout():
 def login():
     if request.method == 'POST':
         pass
+
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.get_json()
+    user = {
+        "username": data.get("username"),
+        "email": data.get("email"),
+        "password": data.get("password")
+    }
+    result = users_collection.insert_one(user)
+    return jsonify({"_id": str(result.inserted_id), "message": "User created"}), 201
+
+
+@app.route('/users/<user_id>', methods=['GET'])
+def get_user(user_id):
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        return jsonify({"_id": str(user["_id"]), "username": user["username"], "email": user["email"]})
+    else:
+        return abort(404, description="User not found")
+
+
+@app.route('/users/<user_id>', methods=['PUT'])
+def update_user(user_id):
+    data = request.get_json()
+
+    # Fetch existing user document
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+
+    if user:
+        # Convert to User model instance
+        existing_user = User(**user)
+        
+        # Update only the provided fields (partial update)
+        for key, value in data.items():
+            setattr(existing_user, key, value)
+        
+        # Save the updated user
+        existing_user.save()
+
+        return jsonify({"message": "User updated successfully"}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+
+@app.route('/users/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    result = users_collection.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count > 0:
+        return jsonify({"message": "User deleted"})
+    else:
+        return abort(404, description="User not found")
+
+
+@app.route('/users/<user_id>/teams', methods=['GET'])
+def get_user_teams(user_id):
+    teams = list(teams_collection.find({"owner_id": ObjectId(user_id)}))
+    return jsonify([{"_id": str(team["_id"]), "team_name": team["team_name"]} for team in teams])
+
 
 @app.route("/get_client_id", methods=["GET"])
 def get_client_id():
