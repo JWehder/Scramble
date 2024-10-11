@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-drafts_bp = Blueprint('drafts', __name__)
+golfers_tournament_details_bp = Blueprint('golfers_tournament_details', __name__)
 
 from . import routes  # Import routes to register with the blueprint

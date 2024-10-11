@@ -1,48 +1,18 @@
-from typing import List, Optional, Tuple, Dict
-from pydantic import BaseModel, Field, EmailStr, root_validator, model_validator, field_validator
-from datetime import datetime, timedelta, timezone
+from typing import Optional
+from pydantic import BaseModel, Field, field_validator, root_validator
+from datetime import datetime
 from bson import ObjectId
-import random
-import pytz
+from datetime import timedelta
 
 # Add this line to ensure the correct path
 import sys
 import os
-sys.path.append(os.path.dirname(__file__))
 
+# Adjust the paths for MacOS to get the server directory
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from models import PyObjectId 
 from config import db
-
-import re
-
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v, info):
-        if not ObjectId.is_valid(v):
-            raise ValueError('Invalid objectid')
-        return ObjectId(v)
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, schema):
-        schema.update(type="string")
-        return schema
-
-def get_all_tournament_ids():
-    tournaments_collection = db.tournaments
-    tournament_ids = tournaments_collection.distinct('_id')
-    return [ObjectId(tid) for tid in tournament_ids]
-
-def get_day_number(day_name: str) -> int:
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    return days.index(day_name)
-
-def convert_utc_to_local(utc_dt, user_tz):
-    local_tz = pytz.timezone(user_tz)
-    local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
-    return local_dt
 
 class DraftPick(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
@@ -95,20 +65,20 @@ class DraftPick(BaseModel):
         if not draft:
             raise ValueError("Draft not found")
 
-        # current_time = datetime.now()
-        # draft_start_time = draft['StartDate']
-        # pick_duration = draft.get('TimeToDraft', 7200)
-        # picks_per_round = len(draft['Picks']) / draft['Rounds']
-        # expected_pick_time = draft_start_time + timedelta(
-        #     seconds=(values['RoundNumber'] - 1) * picks_per_round * pick_duration +
-        #             (values['PickNumber'] - 1) * pick_duration
-        # )
+        current_time = datetime.now()
+        draft_start_time = draft['StartDate']
+        pick_duration = draft.get('TimeToDraft', 7200)
+        picks_per_round = len(draft['Picks']) / draft['Rounds']
+        expected_pick_time = draft_start_time + timedelta(
+            seconds=(values['RoundNumber'] - 1) * picks_per_round * pick_duration +
+                    (values['PickNumber'] - 1) * pick_duration
+        )
 
-        # if current_time < draft_start_time or current_time > expected_pick_time + timedelta(seconds=pick_duration):
-        #     raise ValueError("Pick is not within the allowed time period")
+        if current_time < draft_start_time or current_time > expected_pick_time + timedelta(seconds=pick_duration):
+            raise ValueError("Pick is not within the allowed time period")
 
-        # if len(draft['Picks']) >= values['PickNumber'] + (values['RoundNumber'] - 1) * picks_per_round:
-        #     raise ValueError("Invalid pick order")
+        if len(draft['Picks']) >= values['PickNumber'] + (values['RoundNumber'] - 1) * picks_per_round:
+            raise ValueError("Invalid pick order")
 
         return values
 
@@ -117,4 +87,3 @@ class DraftPick(BaseModel):
         if v < 1:
             raise ValueError('Round number and pick number must be positive')
         return v
-

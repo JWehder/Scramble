@@ -59,6 +59,7 @@ const initialState = {
     updateError: null,
     logoutError: null,
     loginModal: false,
+    showLogin: true,
     status: "idle",
     playerModal: true,
     holesComparisonChart: false,
@@ -116,6 +117,9 @@ const userSlice = createSlice({
         },
         setHolesComparisonChart (state) {
           state.holesComparisonChart = !state.holesComparisonChart;
+        },
+        setShowLogin (state) {
+          state.showLogin = !state.showLogin
         }
     },
     extraReducers: builder => {

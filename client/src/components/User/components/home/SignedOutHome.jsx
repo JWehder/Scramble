@@ -14,7 +14,6 @@ import { redirect } from 'react-router-dom';
 export default function SignedOutHome() {
     const dispatch = useDispatch();
 
-    const [showLogin, setShowLogin] = useState(true);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [showCode, setShowCode] = useState(false);
 

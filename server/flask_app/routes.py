@@ -1,14 +1,15 @@
 from flask import request, make_response, jsonify, requests, abort
-from flask_restful import Resource
-from sqlalchemy.exc import IntegrityError
-from functools import wraps
-from config import app
-from config import Flask
 from dotenv import load_dotenv
 from bson.objectid import ObjectId
 
-from config import db
+from config import db, app
 from models import User
+
+from users import users_bp
+from rounds import rounds_bp
+from holes import holes_bp
+from golfers_tournament_details import golfers_tournament_details_bp
+from tournaments import tournaments_bp
 
 # HTTP Constants 
 HTTP_SUCCESS = 200
@@ -28,6 +29,13 @@ tournaments_collection = db.tournaments
 golfers_collection = db.golfers
 fantasy_league_seasons_collection = db.fantasyLeagueSeasons
 golfer_tournament_details_collection = db.golfertournamentdetails
+
+# Register blueprints
+app.register_blueprint(users_bp, url_prefix='/users')
+app.register_blueprint(rounds_bp, url_prefix='/rounds')
+app.register_blueprint(holes_bp, url_prefix='/holes')
+app.register_blueprint(golfers_tournament_details_bp, url_prefix='/golfers_tournament_details')
+app.register_blueprint(tournaments_bp, url_prefix='/tournaments')
 
 @app.route('/start_draft', methods=['POST'])
 def start_draft():
