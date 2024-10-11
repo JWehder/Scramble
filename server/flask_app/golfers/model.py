@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from models import PyObjectId 
 from config import db
-from golfers_tournament_details.golfers_tournament_details_model import GolferTournamentDetails
+from golfers_tournament_details.model import GolferTournamentDetails
 
 class Golfer(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')

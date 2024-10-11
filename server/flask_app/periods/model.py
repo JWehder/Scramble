@@ -138,7 +138,7 @@ class Period(BaseModel):
             # Update existing document
             result = db.periods.update_one({'_id': period_dict['_id']}, {'$set': period_dict})
             if result.matched_count == 0:
-                raise ValueError("No document found with _id: {}".format(v['_id']))
+                raise ValueError("No document found with _id: {}".format(period_dict['_id']))
         else:
             # Insert new document
             result = db.periods.insert_one(period_dict)

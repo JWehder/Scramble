@@ -17,6 +17,9 @@ from fantasy_league_seasons.model import FantasyLeagueSeason
 from leagues_settings.model import LeagueSettings
 from tournaments.model import Tournament
 from teams.model import Team
+from periods.model import Period
+from teams_results.model import TeamResult
+from drafts.model import Draft
 from models import PyObjectId, convert_utc_to_local, get_day_number
 from config import db
 

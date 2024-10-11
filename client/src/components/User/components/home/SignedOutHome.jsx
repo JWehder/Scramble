@@ -3,7 +3,7 @@ import ForgotPassword from "../auth/ForgotPassword";
 import EnterCode from "../auth/EnterCode";
 import Modal from "../../../Utils/components/Modal"
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoginModal } from "../../state/userSlice";
+import { setLoginModal, setShowLogin } from "../../state/userSlice";
 import Login from "../auth/Login";
 import SignUp from "../auth/SignUp";
 import HowToPlay from "./HowToPlay";
@@ -19,6 +19,7 @@ export default function SignedOutHome() {
 
     const open = useSelector((state) => state.users.loginModal);
     const signedIn = useSelector((state) => state.users.user);
+    const showLogin = useSelector((state) => state.users.showLogin)
 
     function onClose() {
         // set the forms to default
@@ -38,7 +39,7 @@ export default function SignedOutHome() {
             <HowToPlay />
             <GamesCarousel />
 
-            <Modal open={open} onClose={onClose} title={"Login or Sign up"}>
+            <Modal open={open} onClose={onClose}>
                 { showForgotPassword ?
                 showCode ?
                 <EnterCode />

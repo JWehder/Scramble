@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setLoginModal } from '../../User/state/userSlice';
+import { setLoginModal, setShowLogin } from '../../User/state/userSlice';
 import { motion } from "framer-motion";
 import HamburgerMenu from "./HamburgerMenu";
 import MobileNavButtons from "./MobileNavButtons";
@@ -8,7 +8,7 @@ import HeaderButtons from './HeaderButtons';
 import { useMediaQuery } from "@uidotdev/usehooks";
 import Button from './Button';
 
-export default function Header({ setShowLogin }) {
+export default function Header() {
     const dispatch = useDispatch();
 
     const [active, setActive] = useState(false);

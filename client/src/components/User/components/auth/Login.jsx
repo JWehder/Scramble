@@ -19,7 +19,7 @@ export default function Login({ showLogin, showForgotPassword }) {
     });
   
     return (
-        <div className="bg-light shadow-md rounded px-8 pt-6 pb-8 mb-4 font-PTSans text-middle">
+        <div className="bg-light shadow-md rounded-xl px-8 pt-6 pb-8 mb-4 font-PTSans text-middle">
           <h1 className="text-2xl font-medium text-center mb-4">Login</h1>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">

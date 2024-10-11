@@ -3,12 +3,11 @@ from . import users_bp  # Import the blueprint from __init__.py
 import sys
 import os
 from bson.objectid import ObjectId
-from werkzeug.security import generate_password_hash, check_password_hash
+from .model import User
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from models import User
 
 users_collection = db.users
 teams_collection = db.teams

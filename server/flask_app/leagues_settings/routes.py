@@ -3,7 +3,7 @@ from . import leagues_settings_bp  # Import the blueprint from __init__.py
 import sys
 import os
 from bson.objectid import ObjectId
-from model import LeagueSettings
+from .model import LeagueSettings
 from pydantic import ValidationError
 
 # Adjust the paths for MacOS to get the flask_app directory
@@ -46,7 +46,7 @@ def update_leagues_settings(leagues_settings_id):
                 {"$set": data}  # Only update the fields provided in 'data'
             )
 
-            
+
             # Return the validated, updated instance
             return jsonify(league_settings_instance.dict()), 200
         except ValidationError as e:

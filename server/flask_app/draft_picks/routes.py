@@ -1,6 +1,6 @@
 from flask import jsonify, abort
 from . import draft_picks_bp  # Import the blueprint from __init__.py
-from model import DraftPick
+from .model import DraftPick
 import sys
 import os
 from bson.objectid import ObjectId

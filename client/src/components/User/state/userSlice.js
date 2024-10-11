@@ -204,6 +204,6 @@ const userSlice = createSlice({
     }
 });
 
-export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart } = userSlice.actions;
+export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart, setShowLogin, showLogin } = userSlice.actions;
 
 export default userSlice.reducer;
