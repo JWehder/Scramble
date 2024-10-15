@@ -1,9 +1,17 @@
 import { useState } from "react";
+import { setShowLogin, signup } from "../../state/userSlice";
 import google_logo from "../../../../assets/web_light_rd_na.svg"
 import FacebookLoginButton from "./FacebookLoginButton";
 import Button from "../../../Utils/components/Button";
+import { useDispatch } from "react-redux";
 
-export default function SignUp({ showLogin }) {
+export default function SignUp() {
+  const dispatch = useDispatch();
+
+  const showLogin = () => {
+    dispatch(setShowLogin(true));
+  }
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,8 +19,18 @@ export default function SignUp({ showLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+
     // Handle signup logic here
-    console.log(username, email, password, confirmPassword);
+    dispatch(signup({
+      username,
+      email,
+      password
+    }))
+    dispatch(setShowLogin())
   };
 
   const handlePasswordToggle = (type) => {
@@ -23,15 +41,15 @@ export default function SignUp({ showLogin }) {
   };
 
   return (
-    <div className="bg-light shadow-md rounded px-8 pt-6 pb-8 mb-4 text-middle">
+    <div className="px-8 pt-6 pb-8 mb-4 text-light w-full h-full rounded-xl font-bold">
       <h1 className="text-2xl font-medium text-center mb-4">Sign Up</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-sm font-bold mb-2" htmlFor="username">
+          <label className="block text-sm mb-2" htmlFor="username">
             Username
           </label>
           <input
-            className="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full"
+            className="shadow appearance-none border w-full py-2 px-3 bg-light text-dark leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full"
             id="username"
             type="text"
             placeholder="Enter your username"
@@ -40,11 +58,11 @@ export default function SignUp({ showLogin }) {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-bold mb-2" htmlFor="email">
+          <label className="block text-sm mb-2" htmlFor="email">
             Email
           </label>
           <input
-            className="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full"
+            className="shadow appearance-none border w-full py-2 px-3 bg-light text-dark leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full"
             id="email"
             type="email"
             placeholder="Enter your email address"
@@ -53,11 +71,11 @@ export default function SignUp({ showLogin }) {
           />
         </div>
         <div className="mb-4 relative">
-          <label className="block text-sm font-bold mb-2" htmlFor="password">
+          <label className="block text-sm mb-2" htmlFor="password">
             Password
           </label>
           <input
-            className="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full pr-10"
+            className="shadow appearance-none border w-full py-2 px-3 bg-light text-darkleading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full pr-10 text-dark"
             id="password"
             type="password"
             placeholder="Enter your password"
@@ -86,7 +104,7 @@ export default function SignUp({ showLogin }) {
             Confirm Password
           </label>
           <input
-            className="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full pr-10"
+            className="shadow appearance-none border w-full py-2 px-3 bg-light leading-tight focus:outline-none focus:shadow-outline focus:ring-green-500 focus:border-green-500 rounded-full pr-10 text-dark"
             id="confirmPassword"
             type="password"
             placeholder="Confirm your password"
@@ -119,8 +137,8 @@ export default function SignUp({ showLogin }) {
             Continue
           </Button>
           <p 
+          className="inline-block align-baseline font-bold text-sm cursor-pointer"
           onClick={showLogin}
-          className="inline-block align-baseline font-bold text-sm hover:text-green-600 cursor-pointer"
           >
             Already have an account?{' '}
             <a>

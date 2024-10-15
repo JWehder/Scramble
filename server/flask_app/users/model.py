@@ -1,10 +1,11 @@
-from pydantic import BaseModel, Field, EmailStr, root_validator, model_validator, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List, Optional
 from bson.objectid import ObjectId
 from datetime import datetime
 import bcrypt
 import os
 import sys
+from email_validator import validate_email, EmailNotValidError
 
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -14,10 +15,11 @@ from config import db
 
 class User(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    username: str
-    email: EmailStr
-    password: str
-    teams: List[str] = []
+    Username: str
+    Email: EmailStr
+    Password: str
+    Teams: List[str] = []
+    VerificationCode: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -49,17 +51,36 @@ class User(BaseModel):
         return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
     def check_password(self, password: str) -> bool:
+        print(password, self.Password)
         """Check a plain text password against the stored hashed password"""
-        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
+        return bcrypt.checkpw(password.encode('utf-8'), self.Password.encode('utf-8'))
 
-    @field_validator('username')
+    @field_validator('Username')
     def validate_username_length(cls, v):
         """Ensure username is at least 5 characters long"""
         if len(v) < 5:
             raise ValueError('Username must be at least 5 characters long.')
         return v
 
-    @field_validator('password')
+    @field_validator('Email')
+    def validate_email_and_deliverability(cls, v):
+        """Ensure that the email is valid and deliverable"""
+        try:
+            # Check that the email address is valid. Turn on check_deliverability
+            emailinfo = validate_email(v, check_deliverability=False)
+
+            # After this point, use only the normalized form of the email address,
+            # especially before going to a database query.
+            email = emailinfo.normalized
+            return email
+
+        except EmailNotValidError as e:
+
+            # The exception message is human-readable explanation of why it's
+            # not a valid (or deliverable) email address.
+            return str(e)
+
+    @field_validator('Password')
     def validate_password_strength(cls, v):
         """Ensure password meets complexity requirements"""
         if len(v) < 8:

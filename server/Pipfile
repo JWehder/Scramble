@@ -21,6 +21,8 @@ python-dotenv = "*"
 pymongo = "*"
 selenium = "*"
 pytz = "*"
+email-validator = "*"
+flask-mailman = "*"
 
 [dev-packages]
 

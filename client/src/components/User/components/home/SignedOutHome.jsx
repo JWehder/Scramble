@@ -39,29 +39,31 @@ export default function SignedOutHome() {
             <HowToPlay />
             <GamesCarousel />
 
-            <Modal open={open} onClose={onClose}>
-                { showForgotPassword ?
-                showCode ?
-                <EnterCode />
-                :
-                <ForgotPassword 
-                showCode={() => setShowCode(true)} 
-                showLogin={() => {
-                    setShowLogin(true);
-                    setShowForgotPassword(false);
-                }}
-                />
-                :
-                showLogin ? 
-                    <Login 
-                    showLogin={() => setShowLogin(!showLogin)} 
-                    showForgotPassword={() => setShowForgotPassword(!showForgotPassword)}
+            <Modal open={open} onClose={onClose} bgColor={'bg-middle'}>
+                <div className="min-w-[600px]">
+                    { showForgotPassword ?
+                    showCode ?
+                    <EnterCode />
+                    :
+                    <ForgotPassword 
+                    showCode={() => setShowCode(true)} 
+                    showLogin={() => {
+                        setShowLogin(true);
+                        setShowForgotPassword(false);
+                    }}
                     />
                     :
-                    <SignUp showLogin={() => setShowLogin(!showLogin)} />
-                }
+                    showLogin ? 
+                        <Login 
+                        showLogin={() => setShowLogin(false)} 
+                        showForgotPassword={() => setShowForgotPassword(!showForgotPassword)}
+                        />
+                        :
+                        <SignUp showLogin={() => setShowLogin(true)} />
+                    }
+                </div>
+
             </ Modal>
-                            
         </div>
     )
 }

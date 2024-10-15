@@ -11,7 +11,7 @@ export default function EnterCode({ handleClick, resendCode }) {
   };
 
   return (
-    <div className="bg-light shadow-md text-middle rounded px-8 pt-6 pb-8 mb-4 font-PTSans">
+    <div className="text-middle rounded px-8 pt-6 pb-8 mb-4 font-PTSans w-full h-full">
       <h1 className="text-2xl text-center mb-4">Verify Code</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

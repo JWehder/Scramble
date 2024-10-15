@@ -1,32 +1,22 @@
-export default function Modal({ open, children, onClose, title, color, size }) {
-
-  const modalClasses = [
-    'overflow-auto relative shadow-lg rounded-xl mx-auto p-4',
-    size === 'sm' && 'max-w-lg',
-    size === 'md' && 'max-w-xl',
-    color === 'green' && 'bg-middle',
-    color === 'light' && 'bg-light',
-    color === 'dark-green' && 'bg-dark'
-  ]
-
-  if (!open) return null;
-
-  return (
-      <>
-        {open && (
-          <div className="fixed z-50 inset-0 bg-light bg-opacity-50 backdrop-blur-xs py-4 overflow-auto">
-            <div className={modalClasses.join(' ')}>
-              <div>
-                  <h3 className="text-lg font-PTSans leading-6 text-middle mb-1 text-center p-1">
-                      {title}
-                  </h3>
-
-                  <button
+export default function Modal({ open, onClose, bgColor, children }) {
+    return (
+        <div onClick={onClose} className={`
+            fixed inset-0 flex justify-center items-center transition-colors
+            ${open ? "visible bg-black/20" : "invisible"}
+        `}>
+            {/* modal */}
+            <div
+            onClick={(e) => e.stopPropagation()}
+            className={`
+            rounded-xl shadow p-6 transition-all ${bgColor}
+            ${open ? "scale-100 opacity-100" : "scale-125 opacity-0"}
+            `}
+            >
+                <button
                       type="button"
-                      className="absolute top-0 right-0 mt-4 mr-4 text-gray-400 hover:text-gray-500 focus:outline-none"
+                      className="absolute top-2 right-4 p-1 mt-4 mr-4 text-dark focus:outline-none hover:bg-light/20 bg-middle rounded-full h-10 w-10 justify-center items-center flex"
                       onClick={onClose}
                   >
-                      <span className="sr-only">Close modal</span>
                       <svg className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                       <path
                           fillRule="evenodd"
@@ -35,11 +25,9 @@ export default function Modal({ open, children, onClose, title, color, size }) {
                       />
                       </svg>
                   </button>
-              </div>
-              {children}
+                {children}
             </div>
-          </div>
-        )}
-      </>
-  );
+
+        </div>
+    )
 }

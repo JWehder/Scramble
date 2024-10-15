@@ -5,12 +5,18 @@ import axios from "axios";
 export const login = createAsyncThunk(
     "auth/login", 
     (userObj, thunkAPI) => {
-        return fetchWrapper.post("/login", userObj, thunkAPI);
+        return fetchWrapper.post("/api/auth/login", userObj, thunkAPI);
 });
 
-export const getUser = createAsyncThunk("auth/getUser", async(_, thunkAPI) => {
+export const verifyEmail = createAsyncThunk(
+  "auth/verify_email", 
+  (code, thunkAPI) => {
+      return fetchWrapper.post("/api/auth/verify_email", code, thunkAPI);
+});
+
+export const getUser = createAsyncThunk("/auth/getUser", async(_, thunkAPI) => {
     try {
-        const response = await axios.get('/me');
+        const response = await axios.get('/auth/me');
         return response.data;
     } catch (err) {
         // Handle the error
@@ -22,7 +28,7 @@ export const getUser = createAsyncThunk("auth/getUser", async(_, thunkAPI) => {
 export const signup = createAsyncThunk(
     "auth/signup", 
     (userObj, thunkAPI) => {
-    return fetchWrapper.post("/signup", userObj, thunkAPI);
+    return fetchWrapper.post("/auth/signup", userObj, thunkAPI);
 });
 
 export const updateUser = createAsyncThunk("/auth/updateUser", async(userObj, thunkAPI) => {
@@ -118,8 +124,8 @@ const userSlice = createSlice({
         setHolesComparisonChart (state) {
           state.holesComparisonChart = !state.holesComparisonChart;
         },
-        setShowLogin (state) {
-          state.showLogin = !state.showLogin
+        setShowLogin (state, action) {
+          state.showLogin = action.payload
         }
     },
     extraReducers: builder => {

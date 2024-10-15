@@ -22,7 +22,7 @@ HTTP_SERVER_ERROR = 500
 HTTP_UNPROCESSABLE_ENTITY = 422
 
 # Register blueprints
-app.register_blueprint(users_bp, url_prefix='/users')
+app.register_blueprint(users_bp, url_prefix='/auth')
 app.register_blueprint(rounds_bp, url_prefix='/rounds')
 app.register_blueprint(holes_bp, url_prefix='/holes')
 app.register_blueprint(golfers_tournament_details_bp, url_prefix='/golfers_tournament_details')
@@ -66,26 +66,6 @@ def get_facebook_appId():
     else:
         return jsonify({"error": "Unauthorized"}), HTTP_UNAUTHORIZED
 
-@app.route('/me', methods=['GET'])
-def auth():
-    if request.method == 'GET':
-        pass
-
-@app.route('/signup', methods=['POST'])
-def signup():
-    if request.method == 'POST':
-        pass
-
-@app.route('/logout', methods=['DELETE'])
-def logout():
-    if request.method == 'DELETE':
-        pass
-
-@app.route('/login', methods=['POST'])
-def login():
-    if request.method == 'POST':
-        pass
-
 @app.route("/get_client_id", methods=["GET"])
 def get_client_id():
     # Authentication: You might use a more secure method here
@@ -100,18 +80,6 @@ def get_client_id():
         return jsonify({"client_id": client_id}), HTTP_SUCCESS
     else:
         return jsonify({"error": "Unauthorized"}), HTTP_UNAUTHORIZED
-
-
-@app.route('/sets/<int:id>', methods=['GET', 'POST', 'DELETE'])
-def modify_sets(set_id):
-    if request.method == 'GET':
-        # retrieve the terms by the particular set that was selected
-        # _set = Set.query.filter_by(id=set_id).first()
-        pass
-    elif request.method == 'POST':
-        pass
-    elif request.method == 'DELETE':
-        pass
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
