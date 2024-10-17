@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function NotificationBanner({ message, variant }) {
+export default function NotificationBanner({ message, variant, onClose }) {
   const [isVisible, setIsVisible] = useState(true);
 
   // Determine the background color based on the variant
@@ -20,11 +20,14 @@ export default function NotificationBanner({ message, variant }) {
   if (!isVisible) return null;
 
   return (
-    <div className={`${getVariantStyle()} text-white px-4 py-3 rounded fixed top-4 left-1/2 transform -translate-x-1/2 w-11/12 md:w-1/3 shadow-lg`}>
+    <div className={`${getVariantStyle()} text-white px-2 py-2 rounded fixed left-1/2 top-2 transform -translate-x-1/2 w-11/12 md:w-1/3 shadow-lg`}>
       <div className="flex items-center justify-between">
-        <span className="text-sm">{message}</span>
+        <span className="text-sm px-0.5">{message}</span>
         <button
-          onClick={() => setIsVisible(false)}
+          onClick={() => {
+            setIsVisible(false);
+            onClose();
+        }}
           className="text-white hover:text-gray-200 focus:outline-none"
         >
           ✕

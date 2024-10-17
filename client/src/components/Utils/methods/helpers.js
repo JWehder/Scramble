@@ -15,8 +15,7 @@ const post = async(url, obj, thunkAPI) => {
         if (response.ok) {
             return data
         } else {
-            console.log(data.errors)
-            return thunkAPI.rejectWithValue(data.errors)
+            return thunkAPI.rejectWithValue(data)
         }
     } catch(err) {
         return thunkAPI.rejectWithValue("Error occurred. Please try again.")

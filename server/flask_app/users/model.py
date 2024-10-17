@@ -19,7 +19,7 @@ class User(BaseModel):
     Email: EmailStr
     Password: str
     Teams: List[str] = []
-    VerificationCode: str
+    VerificationCode: Optional[str] = 0
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -58,8 +58,8 @@ class User(BaseModel):
     @field_validator('Username')
     def validate_username_length(cls, v):
         """Ensure username is at least 5 characters long"""
-        if len(v) < 5:
-            raise ValueError('Username must be at least 5 characters long.')
+        if len(v) < 5 or len(v) > 50:
+            raise ValueError('Username length must be between 5 and 50 characters.')
         return v
 
     @field_validator('Email')
@@ -67,7 +67,7 @@ class User(BaseModel):
         """Ensure that the email is valid and deliverable"""
         try:
             # Check that the email address is valid. Turn on check_deliverability
-            emailinfo = validate_email(v, check_deliverability=False)
+            emailinfo = validate_email(v, check_deliverability=True)
 
             # After this point, use only the normalized form of the email address,
             # especially before going to a database query.
@@ -83,8 +83,8 @@ class User(BaseModel):
     @field_validator('Password')
     def validate_password_strength(cls, v):
         """Ensure password meets complexity requirements"""
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long.')
+        if len(v) < 8 or len(v) > 50:
+            raise ValueError('Password must be between 8 and 50 characters.')
         if not any(char.isupper() for char in v):
             raise ValueError('Password must contain at least one uppercase letter.')
         if not any(char.islower() for char in v):

@@ -26,16 +26,18 @@ export default function App({children}) {
             // Handle errors if necessary
             console.error('Error fetching client ID:', error);
         });
-  }, []); 
+  }, [clientId]); 
+
+  if (!clientId) return <div>Loading...</div>
 
   return (
-  <div className='w-full h-screen relative'>
-    <Header />
-    <GoogleOAuthProvider clientId={clientId}>
-      <div className='w-full bg-dark h-screen'>
-        <Outlet />
-      </div>
-    </GoogleOAuthProvider>
-  </div>
-) 
+    <div className='w-full h-screen relative'>
+      <Header />
+      <GoogleOAuthProvider clientId={clientId}>
+        <div className='w-full bg-dark h-screen'>
+          <Outlet />
+        </div>
+      </GoogleOAuthProvider>
+    </div>
+  ) 
 }

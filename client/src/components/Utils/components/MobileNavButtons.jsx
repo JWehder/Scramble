@@ -26,7 +26,7 @@ export default function MobileNavButtons({ handleLoginClick, handleSignUpClick, 
             <div className='overflow-hidden'>
                 <motion.div 
                 variants={mobileButtonVars} 
-                className="text-dark text-5xl py-2 space-y-2 cursor-pointer"
+                className="text-5xl py-2 space-y-2 cursor-pointer"
                 >
                     <p
                     onClick={handleLoginClick}
@@ -39,7 +39,7 @@ export default function MobileNavButtons({ handleLoginClick, handleSignUpClick, 
             <div className='overflow-hidden'>
                 <motion.div
                 variants={mobileButtonVars} 
-                className="text-dark text-5xl py-2 space-y-2 cursor-pointer"
+                className="text-5xl py-2 space-y-2 cursor-pointer"
                 >
                     <p
                     onClick={handleSignUpClick}
@@ -52,7 +52,7 @@ export default function MobileNavButtons({ handleLoginClick, handleSignUpClick, 
             <div className='overflow-hidden'>
                 <motion.div
                 variants={mobileButtonVars} 
-                className="text-dark text-5xl py-2 space-y-2 cursor-pointer"
+                className="text-5xl py-2 space-y-2 cursor-pointer"
                 >
                     <p
                     onClick={handleGetTheAppClick}

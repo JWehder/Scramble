@@ -1,4 +1,5 @@
-export default function Modal({ open, onClose, bgColor, children }) {
+export default function Modal({ open, onClose, bgColor, closeButtonColor, children }) {
+
     return (
         <div onClick={onClose} className={`
             fixed inset-0 flex justify-center items-center transition-colors
@@ -14,7 +15,9 @@ export default function Modal({ open, onClose, bgColor, children }) {
             >
                 <button
                       type="button"
-                      className="absolute top-2 right-4 p-1 mt-4 mr-4 text-dark focus:outline-none hover:bg-light/20 bg-middle rounded-full h-10 w-10 justify-center items-center flex"
+                      className={`absolute top-2 right-4 p-1 mt-4 mr-4 
+                      ${closeButtonColor ? `text-${closeButtonColor} hover: bg-${closeButtonColor}/20`: "text-light hover:bg-light/20"}
+                       focus:outline-none hover:bg-light/20 rounded-full h-10 w-10 justify-center items-center flex`}
                       onClick={onClose}
                   >
                       <svg className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">

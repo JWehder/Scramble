@@ -9,9 +9,10 @@ export default function VerifyEmail() {
 
     const [code, setCode] = useState('');
     const [timer, setTimer] = useState(60);
+    const [codeExpired, setCodeExpired] = useState(false);
 
     const showCodeExpired = () => {
-
+        setCodeExpired(true);
     };
   
     // Handle countdown timer effect
@@ -63,6 +64,7 @@ export default function VerifyEmail() {
               placeholder="Enter the code sent to your email"
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              disabled={codeExpired}
             />
           </div>
           <div className="flex items-center justify-between">
@@ -77,10 +79,10 @@ export default function VerifyEmail() {
           </div>
           <div className="mt-4">
             <p
-              onClick={showLogin}
+              onClick={}
               className="inline-block align-baseline font-bold text-sm text-light hover:text-middle cursor-pointer"
             >
-              Already verified?{' '}
+              Request a New Code{' '}
               <a>
                 Login
               </a>

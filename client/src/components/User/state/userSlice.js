@@ -16,7 +16,7 @@ export const verifyEmail = createAsyncThunk(
 
 export const getUser = createAsyncThunk("/auth/getUser", async(_, thunkAPI) => {
     try {
-        const response = await axios.get('/auth/me');
+        const response = await axios.get('/api/auth/me');
         return response.data;
     } catch (err) {
         // Handle the error
@@ -28,7 +28,7 @@ export const getUser = createAsyncThunk("/auth/getUser", async(_, thunkAPI) => {
 export const signup = createAsyncThunk(
     "auth/signup", 
     (userObj, thunkAPI) => {
-    return fetchWrapper.post("/auth/signup", userObj, thunkAPI);
+    return fetchWrapper.post("/api/auth/signup", userObj, thunkAPI);
 });
 
 export const updateUser = createAsyncThunk("/auth/updateUser", async(userObj, thunkAPI) => {
@@ -60,12 +60,13 @@ export const resetPassword = createAsyncThunk(
 
 const initialState = {
     user: false,
-    loginError: null,
-    signupError: null,
+    loginErrors: null,
+    signupErrors: {},
     updateError: null,
     logoutError: null,
     loginModal: false,
     showLogin: true,
+    showVerifyEmail: false,
     status: "idle",
     playerModal: true,
     holesComparisonChart: false,
@@ -119,28 +120,36 @@ const userSlice = createSlice({
             state.loginModal = action.payload;
         },
         setPlayerModal (state) {
-          state.playerModal = !(state.playerModal)
+          state.playerModal = !(state.playerModal);
         },
         setHolesComparisonChart (state) {
           state.holesComparisonChart = !state.holesComparisonChart;
         },
         setShowLogin (state, action) {
-          state.showLogin = action.payload
+          state.showLogin = action.payload;
+        },
+        clearLoginErrors (state) {
+          state.loginErrors = null;
+        },
+        clearSignupErrors (state) {
+          state.signupErrors = {};
+        },
+        closewVerifyEmail (state) {
+          state.showVerifyEmail = false;
         }
     },
     extraReducers: builder => {
         builder
         .addCase(login.pending, (state) => {
           state.status = "pending";
-          state.loginError = null;
+          state.loginErrors = null;
         })
         .addCase(login.fulfilled, (state, action) => {
           state.user = action.payload;
           state.status = "idle";
         })
         .addCase(login.rejected, (state, action) => {
-          console.log(action.payload);
-          state.loginError = action.payload;
+          state.loginErrors = action.payload;
         })
         .addCase(getUser.pending, (state) => {
           state.status = "loading";
@@ -156,13 +165,15 @@ const userSlice = createSlice({
         })
         .addCase(signup.pending, (state) => {
           state.status = "pending";
-          state.signupError = null;
+          state.signupErrors = null;
         })
         .addCase(signup.fulfilled, (state) => {
           state.status = "idle";
+          state.showVerifyEmail;
         })
         .addCase(signup.rejected, (state, action) => {
-          state.signupError = action.payload;
+          console.log(action.payload)
+          state.signupErrors = {...action.payload};
         })
         .addCase(updateUser.pending, (state) => {
           state.status = "pending";
@@ -178,7 +189,7 @@ const userSlice = createSlice({
         })
         .addCase(logout.pending, (state) => {
           state.status = "pending";
-          state.signupError = null;
+          state.signupErrors = null;
         })
         .addCase(logout.fulfilled, (state) => {
           state.user = null;
@@ -189,7 +200,7 @@ const userSlice = createSlice({
         })
         .addCase(forgotPassword.pending, (state) => {
           state.status = "pending";
-          state.loginError = null;
+          state.loginErrors = null;
         })
         .addCase(forgotPassword.fulfilled, (state) => {
           state.status = "idle";
@@ -199,7 +210,7 @@ const userSlice = createSlice({
         })
         .addCase(resetPassword.pending, (state) => {
           state.status = "pending";
-          state.loginError = null;
+          state.loginErrors = null;
         })
         .addCase(resetPassword.fulfilled, (state) => {
           state.status = "idle";
@@ -210,6 +221,6 @@ const userSlice = createSlice({
     }
 });
 
-export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart, setShowLogin, showLogin } = userSlice.actions;
+export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart, setShowLogin, showLogin, clearLoginErrors, clearSignupErrors, showVerifyEmail, closewVerifyEmail } = userSlice.actions;
 
 export default userSlice.reducer;

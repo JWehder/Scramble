@@ -34,7 +34,7 @@ export default function ForgotPassword({ showLogin, showCode }) {
             </Button>
             <p 
             onClick={showLogin}
-            className="inline-block align-baseline font-bold text-sm text-light hover:text-middle cursor-pointer"
+            className="inline-block align-baseline font-bold text-sm text-light cursor-pointer"
             >
               Remember Password?{' '}
               <a>

@@ -31,7 +31,7 @@ export default function EnterCode({ handleClick, resendCode }) {
           <Button type="Submit">
             Verify Code
           </Button>
-          <p onClick={resendCode} className="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-600 cursor-pointer">
+          <p onClick={resendCode} className="inline-block align-baseline font-bold text-sm text-green-400 cursor-pointer">
             Didn't receive code? <a>Resend</a>
           </p>
         </div>

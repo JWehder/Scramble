@@ -7,12 +7,13 @@ from .model import User
 from email_validator import validate_email, EmailNotValidError
 import random
 import string
+from pydantic import ValidationError
+import datetime
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
 from flask_mailman import EmailMessage
-
 
 users_collection = db.users
 teams_collection = db.teams
@@ -42,32 +43,50 @@ def auth():
                 "Username": user["Username"], 
                 "Email": user["Email"],
                 "Teams": user.get("Teams", [])
-            })
-    return abort(401, description="Unauthorized")
+            }), 200
+    return jsonify({"error": "Unauthorized access"}), 422
 
 @users_bp.route('/signup', methods=['POST'])
 def signup():
     """Creates a new user"""
     data = request.get_json()
-    new_user = User(
-        Username=data.get("username"),
-        Email=data.get("email"),
-        Password=data.get("password")  # Raw password, will be hashed below
-    )
+    try:
+        new_user = User(
+            Username=data.get("username"),
+            Email=data.get("email"),
+            Password=data.get("password"),
+            IsVerified=False,  # Account is not verified yet
+            VerificationExpiresAt=datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        )
+    except ValidationError as e:
+        formatted_errors = {}
+        for error in e.errors():
+            field = error['loc'][0]  # get field name
+            if field == "Username":
+                formatted_errors[field] = "Username's length must be between 5 and 50 characters."
+            if field == "Email":
+                formatted_errors[field] = ("Email is not valid. Please utilize this format: john.doe@example.com.")
+            if field == "Password":
+                formatted_errors[field] = "Password must be between 8 and 50 characters long, and must include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+        print(formatted_errors)
+        return jsonify(formatted_errors), 422  # Send this to the frontend
 
-    # Hash the user's password using the model's method
-    new_user.password = new_user.hash_password(new_user.password)
+    does_email_exist = users_collection.find_one({"Email": new_user.Email})
+    does_username_exist = users_collection.find_one({"Username": new_user.Username})
 
     # Check for existing email or username
-    if users_collection.find_one({"Email": new_user.Email}):
-        return jsonify({"error": "Email already exists"}), 409
-    if users_collection.find_one({"Username": new_user.Username}):
-        return jsonify({"error": "Username already exists"}), 409
+    if does_email_exist and not does_username_exist:
+        return jsonify({"Email": "Email already exists."}), 409
+    if not does_email_exist and does_username_exist:
+        return jsonify({"Username": "Username already exists."}), 409
+    elif does_username_exist and does_email_exist:
+        return jsonify({"Username": "Username already exists.", "Email": "Email already exists."}), 409
 
-    # Generate a random verification code
+    # Hash the user's password
+    new_user.password = new_user.hash_password(new_user.password)
+
+    # Generate a verification code and save the user
     verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-
-    # Store the verification code in the user's document for later verification
     new_user.VerificationCode = verification_code
     new_user.save()
 
@@ -77,7 +96,6 @@ def signup():
     <p>Your email verification code is <b>{verification_code}</b>.</p>
     <p>Please enter this code to verify your email address.</p>
     """
-    
     send_email(
         subject="Email Verification Code",
         recipient=new_user.Email,
@@ -86,28 +104,58 @@ def signup():
 
     return jsonify({"message": "User created. Check your email for the verification code."}), 201
 
+@users_bp.route('/request_new_code', methods=['POST'])
+def request_new_code():
+    data = request.get_json()
+    email = data.get("email")
+    
+    # Check if the email exists in the database
+    user = users_collection.find_one({"Email": email})
+    if not user:
+        return jsonify({"error": "Email not found."}), 404
+
+    # Generate a new verification code
+    new_verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    
+    # Update the user's verification code
+    users_collection.update_one({"Email": email}, {"$set": {"VerificationCode": new_verification_code}})
+
+    # Resend the email with the new verification code
+    email_body = f"""
+    <p>Hello {user['Username']},</p>
+    <p>Your new email verification code is <b>{new_verification_code}</b>.</p>
+    <p>Please enter this code to verify your email address.</p>
+    """
+    send_email(
+        subject="New Email Verification Code",
+        recipient=user['Email'],
+        body_html=email_body
+    )
+
+    return jsonify({"message": "New verification code sent to your email."}), 200
+
 @users_bp.route('/verify_email', methods=['POST'])
 def verify_email():
     data = request.get_json()
     email = data.get("email")
-    entered_code = data.get("verification_code")
+    code = data.get("code")
 
-    # Retrieve the user by email
+    # Find the user and check the code
     user = users_collection.find_one({"Email": email})
-    
     if not user:
-        return jsonify({"error": "User not found"}), 404
+        return jsonify({"error": "User not found."}), 404
 
-    # Check if the verification code matches
-    if user["verification_code"] == entered_code:
-        # Mark the user as verified
-        users_collection.update_one(
-            {"Email": email},
-            {"$set": {"is_verified": True, "verification_code": None}}
-        )
-        return jsonify({"message": "Email verified successfully"}), 200
+    if user['VerificationCode'] != code:
+        return jsonify({"error": "Invalid verification code."}), 400
 
-    return jsonify({"error": "Invalid verification code"}), 400
+    # Check if the code is expired
+    if user['VerificationExpiresAt'] < datetime.datetime.utcnow():
+        return jsonify({"error": "Verification code expired."}), 400
+
+    # Update the user's verification status
+    users_collection.update_one({"Email": email}, {"$set": {"IsVerified": True}})
+
+    return jsonify({"message": "Email successfully verified."}), 200                      
 
 @users_bp.route('/login', methods=['POST'])
 def login():
@@ -116,27 +164,28 @@ def login():
     username_or_email = data.get("usernameOrEmail")
     user_data = None
 
-    # Try to validate if it's a valid email
     try:
-        # If validation passes, treat it as an email
         emailinfo = validate_email(username_or_email, check_deliverability=False)
-
-        # use only the normalized form of the email address,
         email = emailinfo.normalized
-        user_data = users_collection.find_one({"Email": email})
+        user_data = users_collection.find_one({
+        "IsVerified": True,
+        "VerificationExpiresAt": {"$gt": datetime.datetime.utcnow()},
+        "Email": email
+        })
     except EmailNotValidError:
-        # If validation fails, treat it as a username
-        user_data = users_collection.find_one({"Username": username_or_email})
+        user_data = users_collection.find_one({
+        "IsVerified": True,
+        "VerificationExpiresAt": {"$gt": datetime.datetime.utcnow()},
+        "Email": email
+        })
 
-    if user_data:
-        print(user_data)
+    if user_data and user_data['']:
         user = User(**user_data)
-        # Check if the password matches using the model's method
         if user.check_password(data.get("password")):
-            session['user_id'] = str(user.id)  # Set the user_id in the session
-            return jsonify({"message": "Login successful"})
-    
-    return abort(401, description="Invalid credentials")
+            session['user_id'] = str(user.id)
+            return jsonify({"message": "Login successful"}), 200
+
+    return jsonify({"error": "Email, username, or password is incorrect. Please try again."}), 401
 
 @users_bp.route('/logout', methods=['DELETE'])
 def logout():
@@ -155,32 +204,31 @@ def get_user(user_id):
             "Username": user.Username,
             "Email": user.Email,
             "Teams": user.Teams
-        })
-    return abort(404, description="User not found")
+        }), 200
+
+    return jsonify({"error": "User not found"}), 404
 
 @users_bp.route('/users/<user_id>', methods=['PUT'])
 def update_user(user_id):
     """Updates an existing user"""
     data = request.get_json()
     user_data = users_collection.find_one({"_id": ObjectId(user_id)})
-    
+
     if user_data:
         user = User(**user_data)
-        
+
         # Update user's fields
         if 'Username' in data:
             user.Username = data['Username']
         if 'Email' in data:
             user.Email = data['Email']
         if 'Password' in data:
-            # Hash the new password before saving
             user.Password = user.hash_password(data['Password'])
-        
-        # Save the updated user using the model's `save` method
+
         user.save()
         return jsonify({"message": "User updated successfully"}), 200
-    
-    return abort(404, description="User not found")
+
+    return jsonify({"error": "User not found"}), 404
 
 @users_bp.route('/users/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
@@ -188,7 +236,7 @@ def delete_user(user_id):
     result = users_collection.delete_one({"_id": ObjectId(user_id)})
     if result.deleted_count > 0:
         return jsonify({"message": "User deleted"}), 200
-    return abort(404, description="User not found")
+    return jsonify({"error": "User not found"}), 404
 
 @users_bp.route('/users/<user_id>/teams', methods=['GET'])
 def get_user_teams(user_id):
