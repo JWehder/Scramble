@@ -67,6 +67,7 @@ const initialState = {
     loginModal: false,
     showLogin: true,
     showVerifyEmail: false,
+    verifiedBanner: false,
     status: "idle",
     playerModal: true,
     holesComparisonChart: false,
@@ -140,6 +141,22 @@ const userSlice = createSlice({
     },
     extraReducers: builder => {
         builder
+        .addCase(verifyEmail.pending, (state) => {
+          state.status = "pending";
+          state.loginErrors = null;
+        })
+        .addCase(verifyEmail.fulfilled, (state) => {
+          state.status = "idle";
+          if (state.showLogin) {
+            state.loginModal = false;
+          } else {
+            state.showLogin = true;
+            state.verifiedBanner = true;
+          }
+        })
+        .addCase(verifyEmail.rejected, (state, action) => {
+          state.resetPasswordError = action.payload;
+        })
         .addCase(login.pending, (state) => {
           state.status = "pending";
           state.loginErrors = null;
@@ -147,6 +164,13 @@ const userSlice = createSlice({
         .addCase(login.fulfilled, (state, action) => {
           state.user = action.payload;
           state.status = "idle";
+          state.showLogin = false;
+          if (!state.user.IsVerified) {
+            state.showLogin = false;
+            state.showVerifyEmail = true;
+          } else {
+            state.loginModal = false;
+          };
         })
         .addCase(login.rejected, (state, action) => {
           state.loginErrors = action.payload;

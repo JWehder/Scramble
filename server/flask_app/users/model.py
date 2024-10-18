@@ -6,12 +6,15 @@ import bcrypt
 import os
 import sys
 from email_validator import validate_email, EmailNotValidError
+import random
+import string
 
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models import PyObjectId 
 from config import db
+from helper_methods import send_email
 
 class User(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
@@ -20,6 +23,8 @@ class User(BaseModel):
     Password: str
     Teams: List[str] = []
     VerificationCode: Optional[str] = 0
+    IsVerified: bool
+    VerificationExpiresAt: datetime
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -44,6 +49,32 @@ class User(BaseModel):
             result = db.users.insert_one(user_data)
             self.id = result.inserted_id
         return self.id
+
+    def send_verification_email(self):
+        email = self.Email
+
+        # Check if the email exists in the database
+        user = db.users.find_one({"Email": email})
+        if not user:
+            return {"error": "Email not found."}
+
+        # Generate a new verification code
+        new_verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        
+        # Update the user's verification code
+        db.users.update_one({"Email": email}, {"$set": {"VerificationCode": new_verification_code}})
+
+        # Resend the email with the new verification code
+        email_body = f"""
+        <p>Hello {user['Username']},</p>
+        <p>Your new email verification code is <b>{new_verification_code}</b>.</p>
+        <p>Please enter this code to verify your email address.</p>
+        """
+        send_email(
+            subject="New Email Verification Code",
+            recipient=user['Email'],
+            body_html=email_body
+        )
 
     def hash_password(self, password: str) -> str:
         """Hash a plain text password"""

@@ -79,7 +79,6 @@ export default function VerifyEmail() {
           </div>
           <div className="mt-4">
             <p
-              onClick={}
               className="inline-block align-baseline font-bold text-sm text-light hover:text-middle cursor-pointer"
             >
               Request a New Code{' '}

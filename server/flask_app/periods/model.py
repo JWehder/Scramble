@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from leagues.model import League
 from teams_results.model import TeamResult
-from models import PyObjectId, convert_utc_to_local, get_day_number
+from helper_methods import PyObjectId, convert_utc_to_local, get_day_number
 from config import db
 
 class Period(BaseModel):

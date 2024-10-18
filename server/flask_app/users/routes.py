@@ -5,31 +5,15 @@ import os
 from bson.objectid import ObjectId
 from .model import User
 from email_validator import validate_email, EmailNotValidError
-import random
-import string
 from pydantic import ValidationError
 import datetime
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from flask_mailman import EmailMessage
 
 users_collection = db.users
 teams_collection = db.teams
-
-def send_email(subject, recipient, body_html):
-    """Send an email."""
-    msg = EmailMessage(
-        subject=subject,
-        to=[recipient],
-        body=body_html,
-    )
-    try:
-        msg.send()
-        print("Email sent successfully")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
 
 @users_bp.route('/me', methods=['GET'])
 def auth():
@@ -68,7 +52,6 @@ def signup():
                 formatted_errors[field] = ("Email is not valid. Please utilize this format: john.doe@example.com.")
             if field == "Password":
                 formatted_errors[field] = "Password must be between 8 and 50 characters long, and must include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
-        print(formatted_errors)
         return jsonify(formatted_errors), 422  # Send this to the frontend
 
     does_email_exist = users_collection.find_one({"Email": new_user.Email})
@@ -85,22 +68,7 @@ def signup():
     # Hash the user's password
     new_user.password = new_user.hash_password(new_user.password)
 
-    # Generate a verification code and save the user
-    verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    new_user.VerificationCode = verification_code
-    new_user.save()
-
-    # Send the verification email
-    email_body = f"""
-    <p>Hello {new_user.Username},</p>
-    <p>Your email verification code is <b>{verification_code}</b>.</p>
-    <p>Please enter this code to verify your email address.</p>
-    """
-    send_email(
-        subject="Email Verification Code",
-        recipient=new_user.Email,
-        body_html=email_body
-    )
+    new_user.send_verification_email()
 
     return jsonify({"message": "User created. Check your email for the verification code."}), 201
 
@@ -109,28 +77,10 @@ def request_new_code():
     data = request.get_json()
     email = data.get("email")
     
-    # Check if the email exists in the database
-    user = users_collection.find_one({"Email": email})
-    if not user:
-        return jsonify({"error": "Email not found."}), 404
+    user = users_collection.find_one({ "Email": email })
+    user = User(**user)
 
-    # Generate a new verification code
-    new_verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    
-    # Update the user's verification code
-    users_collection.update_one({"Email": email}, {"$set": {"VerificationCode": new_verification_code}})
-
-    # Resend the email with the new verification code
-    email_body = f"""
-    <p>Hello {user['Username']},</p>
-    <p>Your new email verification code is <b>{new_verification_code}</b>.</p>
-    <p>Please enter this code to verify your email address.</p>
-    """
-    send_email(
-        subject="New Email Verification Code",
-        recipient=user['Email'],
-        body_html=email_body
-    )
+    user.send_verification_email()
 
     return jsonify({"message": "New verification code sent to your email."}), 200
 
@@ -176,14 +126,19 @@ def login():
         user_data = users_collection.find_one({
         "IsVerified": True,
         "VerificationExpiresAt": {"$gt": datetime.datetime.utcnow()},
-        "Email": email
+        "Username": username_or_email
         })
 
-    if user_data and user_data['']:
+    if user_data and user_data['IsVerified']:
         user = User(**user_data)
         if user.check_password(data.get("password")):
             session['user_id'] = str(user.id)
             return jsonify({"message": "Login successful"}), 200
+    else:
+        user = User(**user_data)
+        user.send_verification_email()
+        return jsonify({"message": "Login successful when email is verified."}), 200
+
 
     return jsonify({"error": "Email, username, or password is incorrect. Please try again."}), 401
 

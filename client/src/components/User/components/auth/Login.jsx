@@ -5,6 +5,7 @@ import FacebookLoginButton from "./FacebookLoginButton";
 import Button from "../../../Utils/components/Button";
 import { useDispatch, useSelector } from 'react-redux';
 import { login, clearLoginErrors, setShowLogin } from "../../state/userSlice"
+import NotificationBanner from "../../../Utils/components/NotificationBanner";
 
 export default function Login({ showForgotPassword }) {
     const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -56,11 +57,12 @@ export default function Login({ showForgotPassword }) {
     return (
       <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-6 font-PTSans text-light w-full h-full">
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-center mb-6">Login</h1>
+        <NotificationBanner
+          message="Please sign in with your new credentials"
+          variant={'success'}
+        />
         <form onSubmit={handleLogin} className="space-y-4">
           {/* Username/Email Input */}
-          { loginErrors &&
-            <p className="text-red-500 font-bold text-md mt-1">Username, password, or email is incorrect. Please try again.</p>
-          }
           <div className="mb-4">
             <label className="block text-sm sm:text-md lg:text-lg font-bold mb-2" htmlFor="usernameOrEmail">
               Username or Email
@@ -104,6 +106,9 @@ export default function Login({ showForgotPassword }) {
             <p className="text-red-500 font-bold text-sm mt-1">
               {errors.password}
             </p>
+          }
+          { loginErrors &&
+            <p className="text-red-500 font-bold text-md mt-1">Username, password, or email is incorrect. Please try again.</p>
           }
   
           {/* Login Button */}

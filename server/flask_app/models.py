@@ -24,16 +24,4 @@ class PyObjectId(ObjectId):
         schema.update(type="string")
         return schema
 
-def get_all_tournament_ids():
-    tournaments_collection = db.tournaments
-    tournament_ids = tournaments_collection.distinct('_id')
-    return [ObjectId(tid) for tid in tournament_ids]
 
-def get_day_number(day_name: str) -> int:
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    return days.index(day_name)
-
-def convert_utc_to_local(utc_dt, user_tz):
-    local_tz = pytz.timezone(user_tz)
-    local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
-    return local_dt
