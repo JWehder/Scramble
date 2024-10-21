@@ -42,17 +42,14 @@ export default function VerifyEmail() {
             {
                 codeExpired ?
                 <NotificationBanner
-                    message="Please check your email for your unique code"
-                    variant="success"
-                />
-                :
-                <NotificationBanner
                 message="Your code has expired. Please request another"
                 variant="warning"
                 />
-            }
-            {
-                incorrect
+                :
+                <NotificationBanner
+                message="Please check your email for your unique code"
+                variant="success"
+                />
             }
             <label className="block text-sm font-bold mb-2" htmlFor="verification-code">
               Verification Code
@@ -80,6 +77,7 @@ export default function VerifyEmail() {
           <div className="mt-4">
             <p
               className="inline-block align-baseline font-bold text-sm text-light hover:text-middle cursor-pointer"
+              onClick={}
             >
               Request a New Code{' '}
               <a>

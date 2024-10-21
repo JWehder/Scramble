@@ -23,12 +23,13 @@ api = Api(app)
 
 mail = Mail()
 
-app.config["MAIL_SERVER"] = "smtp.zohomail.com"
+app.config["MAIL_SERVER"] = "smtp.zoho.com"
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USERNAME"] = os.getenv("EMAIL")
 app.config["MAIL_PASSWORD"] = os.getenv("EMAIL_PASSWORD")
-app.config["MAIL_USE_TLS"] = False
-app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USE_SSL"] = False
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("EMAIL")
 
 mail.init_app(app)
 

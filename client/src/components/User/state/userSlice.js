@@ -61,7 +61,7 @@ export const resetPassword = createAsyncThunk(
 const initialState = {
     user: false,
     loginErrors: null,
-    signupErrors: {},
+    signupErrors: null,
     updateError: null,
     logoutError: null,
     loginModal: false,
@@ -135,7 +135,7 @@ const userSlice = createSlice({
         clearSignupErrors (state) {
           state.signupErrors = {};
         },
-        closewVerifyEmail (state) {
+        closeVerifyEmail (state) {
           state.showVerifyEmail = false;
         }
     },
@@ -193,11 +193,16 @@ const userSlice = createSlice({
         })
         .addCase(signup.fulfilled, (state) => {
           state.status = "idle";
-          state.showVerifyEmail;
+          state.showVerifyEmail = true;
         })
         .addCase(signup.rejected, (state, action) => {
           console.log(action.payload)
-          state.signupErrors = {...action.payload};
+          if (typeof(action.payload) === Object) {
+            state.signupErrors = {...action.payload};
+          } else {
+            state.signupErrors = action.payload;
+          }
+          console.log(state.signupErrors)
         })
         .addCase(updateUser.pending, (state) => {
           state.status = "pending";
@@ -245,6 +250,6 @@ const userSlice = createSlice({
     }
 });
 
-export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart, setShowLogin, showLogin, clearLoginErrors, clearSignupErrors, showVerifyEmail, closewVerifyEmail } = userSlice.actions;
+export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart, setShowLogin, showLogin, clearLoginErrors, clearSignupErrors, showVerifyEmail, closeVerifyEmail, verifiedBanner } = userSlice.actions;
 
 export default userSlice.reducer;

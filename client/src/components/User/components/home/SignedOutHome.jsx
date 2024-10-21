@@ -3,7 +3,7 @@ import ForgotPassword from "../auth/ForgotPassword";
 import EnterCode from "../auth/EnterCode";
 import Modal from "../../../Utils/components/Modal"
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoginModal, setShowLogin, closewVerifyEmail } from "../../state/userSlice";
+import { setLoginModal, setShowLogin, closeVerifyEmail } from "../../state/userSlice";
 import Login from "../auth/Login";
 import SignUp from "../auth/SignUp";
 import HowToPlay from "./HowToPlay";
@@ -25,12 +25,11 @@ export default function SignedOutHome() {
     const showVerifyEmail = useSelector((state) => state.users.showVerifyEmail);
   
     function onClose() {
-      // Reset forms to default and close modal
-      dispatch(setShowLogin(true));  // Reset login view on close
-      closewVerifyEmail();  // Reset verification on close
-      setShowForgotPassword(false);
-      setShowCode(false);
-      dispatch(setLoginModal(false));  // Close the modal
+        dispatch(setShowLogin(true));    // Reset login view on close
+        dispatch(closeVerifyEmail());   // Reset verification state
+        setShowForgotPassword(false);
+        setShowCode(false);
+        dispatch(setLoginModal(false));  // Close the modal
     }
   
     // Redirect if signed in
@@ -45,30 +44,32 @@ export default function SignedOutHome() {
         <GamesCarousel />
   
         <Modal open={open} onClose={onClose} bgColor={'bg-dark'}>
-          <div className="w-[550px] min-w-[450px] max-w-[700px] min-h-[400px] max-h-[650px] flex items-center justify-center flex-grow flex-shrink">
-            {showForgotPassword ? (
-              showCode ? (
-                <EnterCode />
-              ) : (
-                <ForgotPassword 
-                  showCode={() => setShowCode(true)} 
-                  showLogin={() => {
-                    dispatch(setShowLogin(true));  // Use Redux to change showLogin state
-                    setShowForgotPassword(false);
-                  }}
-                />
-              )
-            ) : showLogin ? (
-              <Login
-                showLogin={() => dispatch(setShowLogin(false))}  // Use Redux to toggle showLogin
-                showForgotPassword={() => setShowForgotPassword(true)}
-              />
-            ) : showVerifyEmail ? (
-              <VerifyEmail />
-            ) : (
-              <SignUp />
-            )}
-          </div>
+            <div className="w-full h-full flex items-center justify-center">
+                <div className="w-[90%] max-w-[700px] min-h-[200px] sm:min-h-[300px] sm:w-[550px] md:w-[600px] lg:w-[650px] xl:w-[700px] p-4 bg-dark rounded-md transition-all duration-300 ease-in-out">
+                {showForgotPassword ? (
+                    showCode ? (
+                    <EnterCode />
+                    ) : (
+                    <ForgotPassword 
+                        showCode={() => setShowCode(true)} 
+                        showLogin={() => {
+                        dispatch(setShowLogin(true));  // Use Redux to change showLogin state
+                        setShowForgotPassword(false);
+                        }}
+                    />
+                    )
+                ) : showLogin ? (
+                    <Login
+                    showLogin={() => dispatch(setShowLogin(false))}  // Use Redux to toggle showLogin
+                    showForgotPassword={() => setShowForgotPassword(true)}
+                    />
+                ) : showVerifyEmail ? (
+                    <VerifyEmail />
+                ) : (
+                    <SignUp />
+                )}
+                </div>
+            </div>
         </Modal>
       </div>
     );

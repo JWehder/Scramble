@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function NotificationBanner({ message, variant, timeout, onClose }) {
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);  // Hide the banner after timeout
-    }, timeout);
-
-    return () => clearTimeout(timer);  // Cleanup timeout on component unmount
-  }, [timeout, onClose]);
+    const [isVisible, setIsVisible] = useState(true);
+  
+    useEffect(() => {
+      // Only set a timer if a timeout is provided
+      if (timeout) {
+        const timer = setTimeout(() => {
+          setIsVisible(false);  // Hide the banner after timeout
+          if (onClose) onClose();  // Call onClose callback if provided
+        }, timeout);
+  
+        return () => clearTimeout(timer);  // Cleanup timeout on component unmount
+      }
+    }, [timeout, onClose]);
 
   // Determine the background color based on the variant
   const getVariantStyle = () => {

@@ -11,10 +11,12 @@ export default function Login({ showForgotPassword }) {
     const [usernameOrEmail, setUsernameOrEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({}); // Initialize as an empty object
+    const [showPassword, setShowPassword] = useState(false);
 
     const dispatch = useDispatch();
 
     const loginErrors = useSelector((state) => state.users.loginErrors);
+    const verifiedBanner = useSelector((state) => state.users.verifiedBanner);
     
     const stopShowingLogin = () => {
       dispatch(setShowLogin(false))
@@ -57,13 +59,25 @@ export default function Login({ showForgotPassword }) {
     return (
       <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-6 font-PTSans text-light w-full h-full">
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-center mb-6">Login</h1>
-        <NotificationBanner
+        { loginErrors && typeof(loginErrors) !== Object &&
+          <NotificationBanner
+            message={loginErrors}
+            variant="error"
+            timeout={10000}
+          />
+        }
+        { verifiedBanner ?
+          <NotificationBanner
           message="Please sign in with your new credentials"
           variant={'success'}
+          timeout={10000}
         />
+        :
+        ""
+        }
         <form onSubmit={handleLogin} className="space-y-4">
           {/* Username/Email Input */}
-          <div className="mb-4">
+          <div className="mb-4 relative">
             <label className="block text-sm sm:text-md lg:text-lg font-bold mb-2" htmlFor="usernameOrEmail">
               Username or Email
             </label>
@@ -86,7 +100,7 @@ export default function Login({ showForgotPassword }) {
           }
   
           {/* Password Input */}
-          <div className="mb-6">
+          <div className="mb-6 relative">
             <label className="block text-sm sm:text-md lg:text-lg font-bold mb-2" htmlFor="password">
               Password
             </label>
@@ -101,6 +115,61 @@ export default function Login({ showForgotPassword }) {
                 errors.password = ""
               }}
             />
+            <button
+              className="absolute top-9 sm:top-9 md:top-9 lg:top-11 xl:top-11 right-3 text-dark hover:text-middle"
+              onClick={() => handlePasswordToggle()}
+              type="button" // prevents form submission
+            >
+              {showPassword ? (
+                // "Hide password" icon (eye with slash)
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="eye-icon"
+                  width="24"
+                  height="24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.015-3.233 3.497-5.873 6.646-6.725m3.073-.151A9.958 9.958 0 0112 5c4.478 0 8.268 2.943 9.542 7-.267.852-.665 1.656-1.167 2.392m-2.326 2.326A9.956 9.956 0 0112 19a9.958 9.958 0 01-6.646-2.725"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 3l18 18"
+                  />
+                </svg>
+              ) : (
+                // "Show password" icon (normal eye)
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="eye-icon"
+                  width="24"
+                  height="24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+              )}
+            </button>
           </div>
           { errors.password &&
             <p className="text-red-500 font-bold text-sm mt-1">
@@ -133,7 +202,7 @@ export default function Login({ showForgotPassword }) {
         {/* Other login options (Google/Facebook) */}
         <div className="mt-6 text-center flex flex-col sm:flex-row justify-center items-center w-full space-y-4 sm:space-y-0 sm:space-x-4">
           <button
-            className="flex justify-center items-center bg-light hover:brightness-110 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline w-full sm:w-auto"
+            className="flex justify-center items-center bg-light hover:brightness-110 border border-gray-300 text-gray-700 py-2 px-4 rounded-full focus:outline-none focus:shadow-outline sm:w-auto text-md sm:text-md md:w-auto font-PTSans"
             onClick={loginWithGoogle}
           >
             <img src={google_logo} alt="google logo" />

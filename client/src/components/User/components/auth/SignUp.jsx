@@ -4,6 +4,7 @@ import google_logo from "../../../../assets/web_light_rd_na.svg";
 import FacebookLoginButton from "./FacebookLoginButton";
 import Button from "../../../Utils/components/Button";
 import { useDispatch, useSelector } from "react-redux";
+import NotificationBanner from "../../../Utils/components/NotificationBanner";
 
 export default function SignUp() {
   const dispatch = useDispatch();
@@ -51,15 +52,18 @@ export default function SignUp() {
       // Dispatch signup action
       dispatch(signup({ username, email, password }));
     }
-
-    if (!signupErrors || errors) {
-      showVerifyEmail();
-    };
   };
 
   return (
     <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-6 font-PTSans text-light">
       <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-center mb-6">Sign Up</h1>
+      { signupErrors && typeof(signupErrors) !== Object &&
+        <NotificationBanner
+          message={signupErrors}
+          variant="error"
+          timeout={10000}
+        />
+      }
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Username Input */}
         <div className="mb-4 relative">
@@ -126,7 +130,7 @@ export default function SignUp() {
             }}
           />
           <button
-            className="absolute top-9 right-3 text-dark hover:text-middle"
+            className="absolute top-9 sm:top-9 md:top-9 lg:top-11 xl:top-11  right-3 text-dark hover:text-middle"
             onClick={() => handlePasswordToggle()}
             type="button" // prevents form submission
           >
@@ -205,7 +209,7 @@ export default function SignUp() {
             }}
           />
           <button
-            className="absolute top-9 right-3 text-dark hover:text-middle"
+            className="absolute top-9 sm:top-9 md:top-9 lg:top-11 xl:top-11  right-3 text-dark hover:text-middle"
             onClick={() => handleConfirmPasswordToggle()}
             type="button" // prevents form submission
           >

@@ -7,6 +7,8 @@ from .model import User
 from email_validator import validate_email, EmailNotValidError
 from pydantic import ValidationError
 import datetime
+import random
+import string
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -14,6 +16,11 @@ from config import db
 
 users_collection = db.users
 teams_collection = db.teams
+
+def generate_verification_code(length=6):
+    """Generates a random alphanumeric verification code"""
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(characters, k=length))
 
 @users_bp.route('/me', methods=['GET'])
 def auth():
@@ -64,9 +71,11 @@ def signup():
         return jsonify({"Username": "Username already exists."}), 409
     elif does_username_exist and does_email_exist:
         return jsonify({"Username": "Username already exists.", "Email": "Email already exists."}), 409
-
+    
     # Hash the user's password
-    new_user.password = new_user.hash_password(new_user.password)
+    new_user.Password = new_user.hash_password(new_user.Password)
+
+    new_user.save()
 
     new_user.send_verification_email()
 
