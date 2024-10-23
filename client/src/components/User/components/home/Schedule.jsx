@@ -1,4 +1,3 @@
-import Event from "./Event";
 import EventDate from "./EventDate";
 
 export default function Schedule() {
