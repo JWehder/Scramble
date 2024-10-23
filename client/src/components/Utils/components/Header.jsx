@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setLoginModal } from '../../User/state/userSlice';
+import { setLoginModal, setShowLogin } from '../../User/state/userSlice';
 import { motion } from "framer-motion";
 import HamburgerMenu from "./HamburgerMenu";
 import MobileNavButtons from "./MobileNavButtons";
@@ -8,7 +8,7 @@ import HeaderButtons from './HeaderButtons';
 import { useMediaQuery } from "@uidotdev/usehooks";
 import Button from './Button';
 
-export default function Header({ setShowLogin }) {
+export default function Header() {
     const dispatch = useDispatch();
 
     const [active, setActive] = useState(false);
@@ -86,16 +86,16 @@ export default function Header({ setShowLogin }) {
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        className= 'fixed w-full h-screen left-0 top-0 p-10 text-light bg-middle origin-top'
+                        className= 'fixed w-full h-screen left-0 top-0 p-10 text-light bg-dark origin-top'
                         >
                             <div className="flex h-full flex-col">
                                 <div className="flex justify-between items-center">
                                     <HamburgerMenu 
-                                        color="dark"
+                                        color="light"
                                         active={active} 
                                         setActive={() => setActive((pv) => !pv)}
                                     />
-                                    <h1 className="text-2xl lg:text-5xl md:text-5xl sm:text-2xl font-lobster text-center bg-dark text-transparent bg-clip-text">
+                                    <h1 className="text-2xl lg:text-5xl md:text-5xl sm:text-2xl font-lobster text-center bg-light text-transparent bg-clip-text">
                                         Scramble
                                     </h1>
                                 </div>

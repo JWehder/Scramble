@@ -15,6 +15,7 @@ export default {
       },
       backgroundImage: {
         'custom-gradient': 'linear-gradient(to right, #15803d, #86efac, #00ffbb)',
+        'grass-gradient': 'linear-gradient(to right, #115e59, #059669, #115e59)'
       },
       colors: {
         dark: '#115e59', // teal 800
