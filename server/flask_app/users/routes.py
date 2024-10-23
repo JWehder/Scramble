@@ -46,8 +46,9 @@ def signup():
             Username=data.get("username"),
             Email=data.get("email"),
             Password=data.get("password"),
+            Teams=[],
             IsVerified=False,  # Account is not verified yet
-            VerificationExpiresAt=datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            VerificationExpiresAt=datetime.datetime.utcnow() + datetime.timedelta(seconds=60)
         )
     except ValidationError as e:
         formatted_errors = {}
@@ -59,6 +60,7 @@ def signup():
                 formatted_errors[field] = ("Email is not valid. Please utilize this format: john.doe@example.com.")
             if field == "Password":
                 formatted_errors[field] = "Password must be between 8 and 50 characters long, and must include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+            print(error)
         return jsonify(formatted_errors), 422  # Send this to the frontend
 
     does_email_exist = users_collection.find_one({"Email": new_user.Email})
@@ -81,12 +83,15 @@ def signup():
 
     return jsonify({"message": "User created. Check your email for the verification code."}), 201
 
-@users_bp.route('/request_new_code', methods=['POST'])
+@users_bp.route('/send_new_verify_email_code', methods=['POST'])
 def request_new_code():
     data = request.get_json()
     email = data.get("email")
     
     user = users_collection.find_one({ "Email": email })
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
     user = User(**user)
 
     user.send_verification_email()

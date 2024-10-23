@@ -57,13 +57,6 @@ export default function SignUp() {
   return (
     <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-6 font-PTSans text-light">
       <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-center mb-6">Sign Up</h1>
-      { signupErrors && typeof(signupErrors) !== Object &&
-        <NotificationBanner
-          message={signupErrors}
-          variant="error"
-          timeout={10000}
-        />
-      }
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Username Input */}
         <div className="mb-4 relative">

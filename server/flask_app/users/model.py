@@ -53,27 +53,47 @@ class User(BaseModel):
     def send_verification_email(self):
         email = self.Email
 
-        # Check if the email exists in the database
+        # Check if the temporary user id exists in the database
         user = db.users.find_one({"Email": email})
         if not user:
+            print(f"User with email {email} not found.")
             return {"error": "Email not found."}
+        else:
+            print(f"User found: {user}")
+
+        # Print user document before update
+        print(f"User document before update: {user}")
 
         # Generate a new verification code
         new_verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         
-        # Update the user's verification code
-        db.users.update_one({"Email": email}, {"$set": {"VerificationCode": new_verification_code}})
+        # Update the user's verification code (case-insensitive match for email)
+        db.users.update_one(
+            {"Email": email},  # assuming case-sensitivity is not the issue
+            {"$set": {
+                "VerificationCode": new_verification_code
+            }}
+        )
 
-        # Resend the email with the new verification code
-        email_body = f"""
-        <p>Hello {user['Username']},</p>
+        subject = "Email Verification Code"
+        body = f"""
+        <p>Hello {self.Username},</p>
         <p>Your new email verification code is <b>{new_verification_code}</b>.</p>
         <p>Please enter this code to verify your email address.</p>
+        <p>If you didn't sign up for this account, you can safely ignore this email.</p>
+        <p>Thank you!</p>
         """
-        send_email(
-            subject="New Email Verification Code",
-            recipient=user['Email'],
-            body_html=email_body
+
+        # Use your email sending function here
+        send_email(subject, email, body)
+
+        # Once the email has been sent, give the user 60 seconds to 
+        # send back the verification code.
+        db.users.update_one(
+            {"Email": email},  # assuming case-sensitivity is not the issue
+            {"$set": {
+                "VerificationExpiresAt": datetime.datetime.utcnow() + datetime.timedelta(seconds=60)
+            }}
         )
 
     def hash_password(self, password: str) -> str:
@@ -114,7 +134,7 @@ class User(BaseModel):
     @field_validator('Password')
     def validate_password_strength(cls, v):
         """Ensure password meets complexity requirements"""
-        if len(v) < 8 or len(v) > 50:
+        if len(v) < 8 or len(v) > 65:
             raise ValueError('Password must be between 8 and 50 characters.')
         if not any(char.isupper() for char in v):
             raise ValueError('Password must contain at least one uppercase letter.')

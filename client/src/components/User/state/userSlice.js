@@ -10,8 +10,14 @@ export const login = createAsyncThunk(
 
 export const verifyEmail = createAsyncThunk(
   "auth/verify_email", 
-  (code, thunkAPI) => {
-      return fetchWrapper.post("/api/auth/verify_email", code, thunkAPI);
+  (codeAndEmail, thunkAPI) => {
+      return fetchWrapper.post("/api/auth/verify_email", codeAndEmail, thunkAPI);
+});
+
+export const resendCode = createAsyncThunk(
+  "auth/send_new_verify_email_code", 
+  (email, thunkAPI) => {
+  return fetchWrapper.post("/api/auth/send_new_verify_email_code", {"email": email}, thunkAPI);
 });
 
 export const getUser = createAsyncThunk("/auth/getUser", async(_, thunkAPI) => {
@@ -63,7 +69,10 @@ const initialState = {
     loginErrors: null,
     signupErrors: null,
     updateError: null,
+    resendCodeError: null,
+    verifyEmailError: null,
     logoutError: null,
+    resendCodeStatus: "idle",
     loginModal: false,
     showLogin: true,
     showVerifyEmail: false,
@@ -137,6 +146,12 @@ const userSlice = createSlice({
         },
         closeVerifyEmail (state) {
           state.showVerifyEmail = false;
+        },
+        clearResendCodeError (state) {
+          state.resendCodeError = null;
+        },
+        clearVerifyEmailError (state) {
+          state.verifyEmailError = null;
         }
     },
     extraReducers: builder => {
@@ -147,15 +162,29 @@ const userSlice = createSlice({
         })
         .addCase(verifyEmail.fulfilled, (state) => {
           state.status = "idle";
+          state.showVerifyEmail = false;
           if (state.showLogin) {
+            console.log("it's saying showLogin is showing")
+            console.log(state.showLogin);
             state.loginModal = false;
           } else {
+            console.log("it is supposed to be working correctly.")
             state.showLogin = true;
             state.verifiedBanner = true;
           }
         })
         .addCase(verifyEmail.rejected, (state, action) => {
-          state.resetPasswordError = action.payload;
+          state.verifyEmailError = action.payload.error;
+        })
+        .addCase(resendCode.pending, (state) => {
+          state.resendCodeStatus = "pending";
+        })
+        .addCase(resendCode.fulfilled, (state) => {
+          state.resendCodeStatus = "idle";
+        })
+        .addCase(resendCode.rejected, (state, action) => {
+          state.resendCodeStatus = "rejected";
+          state.resendCodeError = action.payload.error;
         })
         .addCase(login.pending, (state) => {
           state.status = "pending";
@@ -250,6 +279,6 @@ const userSlice = createSlice({
     }
 });
 
-export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart, setShowLogin, showLogin, clearLoginErrors, clearSignupErrors, showVerifyEmail, closeVerifyEmail, verifiedBanner } = userSlice.actions;
+export const { setSavedChanges, setLoginModal, setPlayerModal, holesComparisonChart, setHolesComparisonChart, setShowLogin, showLogin, clearLoginErrors, clearSignupErrors, showVerifyEmail, closeVerifyEmail, verifiedBanner, clearResendCodeError, clearVerifyEmailError } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -15,19 +15,19 @@ export default function NotificationBanner({ message, variant, timeout, onClose 
       }
     }, [timeout, onClose]);
 
-  // Determine the background color based on the variant
-  const getVariantStyle = () => {
-    switch (variant) {
-      case 'success':
-        return 'bg-green-500';
-      case 'error':
-        return 'bg-red-500';
-      case 'warning':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-blue-500';
-    }
-  };
+    // Determine the background color based on the variant
+    const getVariantStyle = () => {
+      switch (variant) {
+        case 'success':
+          return 'bg-green-300';  
+        case 'error':
+          return 'bg-red-300'; 
+        case 'warning':
+          return 'bg-yellow-300'; 
+        default:
+          return 'bg-blue-300'; 
+      }
+    };
 
   if (!isVisible) return null;
 
@@ -38,8 +38,10 @@ export default function NotificationBanner({ message, variant, timeout, onClose 
         <button
           onClick={() => {
             setIsVisible(false);
-            onClose();
-        }}
+            if (onClose) {
+              onClose();
+            }
+          }}
           className="text-white hover:text-gray-200 focus:outline-none"
         >
           ✕

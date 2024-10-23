@@ -9,13 +9,17 @@ sys.path.append(os.path.dirname(__file__))
 
 from config import db
 
-def send_email(subject, recipient, body_html):
+def send_email(subject: str, recipient: str, body_html: str):
     """Send an email."""
     msg = EmailMessage(
         subject=subject,
         to=[recipient],
         body=body_html,
     )
+
+    # Set the content type to 'html' so that the email is rendered as HTML
+    msg.content_subtype = 'html'
+
     try:
         msg.send()
         print("Email sent successfully")
