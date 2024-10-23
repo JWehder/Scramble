@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ForgotPassword from "../auth/ForgotPassword";
 import EnterCode from "../auth/EnterCode";
 import Modal from "../../../Utils/components/Modal"
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoginModal, setShowLogin, closeVerifyEmail } from "../../state/userSlice";
+import { useNavigate } from 'react-router-dom'; 
 import Login from "../auth/Login";
 import SignUp from "../auth/SignUp";
 import HowToPlay from "./HowToPlay";
@@ -14,6 +15,7 @@ import VerifyEmail from "../auth/VerifyEmail";
 
 export default function SignedOutHome() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
   
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [showCode, setShowCode] = useState(false);
@@ -30,12 +32,12 @@ export default function SignedOutHome() {
         setShowForgotPassword(false);
         setShowCode(false);
         dispatch(setLoginModal(false));  // Close the modal
-    }
-  
-    // Redirect if signed in
-    if (signedIn) {
-      redirect("/leagues");
-    }
+    };
+
+    useEffect(() => {
+        console.log("should be moving to leagues")
+        navigate("/leagues");
+    }, [signedIn]);
   
     return (
       <div className="flex-grow">

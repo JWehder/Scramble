@@ -28,7 +28,7 @@ def auth():
     user_id = session.get('user_id')
     if user_id:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
-        if user:
+        if user and user["IsVerified"]:
             return jsonify({
                 "_id": str(user["_id"]), 
                 "Username": user["Username"], 
@@ -119,7 +119,15 @@ def verify_email():
     # Update the user's verification status
     users_collection.update_one({"Email": email}, {"$set": {"IsVerified": True}})
 
-    return jsonify({"message": "Email successfully verified."}), 200                      
+    if session.get("user_id"):
+        return jsonify({
+            "message": "Email successfully verified.",
+            "User": session.get("user_id")
+        }), 200                  
+    else:
+        return jsonify({
+            "message": "Email successfully verified.",
+        }), 200                  
 
 @users_bp.route('/login', methods=['POST'])
 def login():
@@ -132,14 +140,10 @@ def login():
         emailinfo = validate_email(username_or_email, check_deliverability=False)
         email = emailinfo.normalized
         user_data = users_collection.find_one({
-        "IsVerified": True,
-        "VerificationExpiresAt": {"$gt": datetime.datetime.utcnow()},
         "Email": email
         })
     except EmailNotValidError:
         user_data = users_collection.find_one({
-        "IsVerified": True,
-        "VerificationExpiresAt": {"$gt": datetime.datetime.utcnow()},
         "Username": username_or_email
         })
 
@@ -147,12 +151,18 @@ def login():
         user = User(**user_data)
         if user.check_password(data.get("password")):
             session['user_id'] = str(user.id)
-            return jsonify({"message": "Login successful"}), 200
+            return jsonify({
+                "message": "Login successful",
+                "IsVerified": True
+            }), 200
     else:
         user = User(**user_data)
         user.send_verification_email()
-        return jsonify({"message": "Login successful when email is verified."}), 200
-
+        session['user_id'] = str(user.id)
+        return jsonify({
+                "message": "Login successful after email verification.",
+                "IsVerified": False
+            }), 200
 
     return jsonify({"error": "Email, username, or password is incorrect. Please try again."}), 401
 

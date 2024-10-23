@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List, Optional
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 import bcrypt
 import os
 import sys
@@ -61,9 +61,6 @@ class User(BaseModel):
         else:
             print(f"User found: {user}")
 
-        # Print user document before update
-        print(f"User document before update: {user}")
-
         # Generate a new verification code
         new_verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         
@@ -92,7 +89,7 @@ class User(BaseModel):
         db.users.update_one(
             {"Email": email},  # assuming case-sensitivity is not the issue
             {"$set": {
-                "VerificationExpiresAt": datetime.datetime.utcnow() + datetime.timedelta(seconds=60)
+                "VerificationExpiresAt": datetime.utcnow() + timedelta(seconds=60)
             }}
         )
 

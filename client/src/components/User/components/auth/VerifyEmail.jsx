@@ -124,9 +124,10 @@ export default function VerifyEmail() {
           }
 
           <div className="flex items-center justify-between">
-            <Button variant="secondary" type="submit">
+            { !codeExpired && <Button variant="secondary" type="submit">
               Submit Code
             </Button>
+            }
             {timer > 0 ? (
               <p className="text-sm text-light">Time remaining: {timer}s</p>
             ) : (

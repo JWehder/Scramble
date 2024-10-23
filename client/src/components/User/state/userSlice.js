@@ -80,6 +80,7 @@ const initialState = {
     status: "idle",
     playerModal: true,
     holesComparisonChart: false,
+    tempUser: false,
     leagues: [
         {
         "name": "Jake's League",
@@ -126,8 +127,14 @@ const userSlice = createSlice({
         setSavedChanges (state, action) {
             state.savedChanges = action.payload;
         },
-        setLoginModal (state, action) {
+        setLoginModal(state, action) {
+          if (!action.payload) {
+            // Reset the entire state when closing the modal
+            return { ...initialState };
+          } else {
+            // Only update the loginModal value
             state.loginModal = action.payload;
+          }
         },
         setPlayerModal (state) {
           state.playerModal = !(state.playerModal);
@@ -160,18 +167,24 @@ const userSlice = createSlice({
           state.status = "pending";
           state.loginErrors = null;
         })
-        .addCase(verifyEmail.fulfilled, (state) => {
+        .addCase(verifyEmail.fulfilled, (state, action) => {
           state.status = "idle";
           state.showVerifyEmail = false;
           if (state.showLogin) {
-            console.log("it's saying showLogin is showing")
-            console.log(state.showLogin);
             state.loginModal = false;
+            state.showLogin = true;
           } else {
             console.log("it is supposed to be working correctly.")
             state.showLogin = true;
             state.verifiedBanner = true;
           }
+
+          // if the user verified their email after login
+          // set up the user state and allow them in via signedInHome
+          if (action.payload.User) {
+            console.log("hit me");
+            state.user = true;
+          };
         })
         .addCase(verifyEmail.rejected, (state, action) => {
           state.verifyEmailError = action.payload.error;
@@ -191,11 +204,9 @@ const userSlice = createSlice({
           state.loginErrors = null;
         })
         .addCase(login.fulfilled, (state, action) => {
-          state.user = action.payload;
           state.status = "idle";
           state.showLogin = false;
-          if (!state.user.IsVerified) {
-            state.showLogin = false;
+          if (!action.payload.IsVerified) {
             state.showVerifyEmail = true;
           } else {
             state.loginModal = false;

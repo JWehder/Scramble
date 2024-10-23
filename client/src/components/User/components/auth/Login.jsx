@@ -27,7 +27,7 @@ export default function Login({ showForgotPassword }) {
     });
 
     if (loginErrors) {
-      dispatch(clearLoginErrors);
+      dispatch(clearLoginErrors());
     }
   
     const handleLogin = (e) => {
@@ -107,7 +107,7 @@ export default function Login({ showForgotPassword }) {
             <input
               className={`shadow appearance-none bg-light border w-full py-2 px-3 text-dark leading-tight focus:outline-none focus:shadow-outline rounded-full ${errors.password ? 'border-red-500' : 'border'}`}
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => {
@@ -117,7 +117,7 @@ export default function Login({ showForgotPassword }) {
             />
             <button
               className="absolute top-9 sm:top-9 md:top-9 lg:top-11 xl:top-11 right-3 text-dark hover:text-middle"
-              onClick={() => handlePasswordToggle()}
+              onClick={() => setShowPassword(!showPassword)}
               type="button" // prevents form submission
             >
               {showPassword ? (
