@@ -58,7 +58,7 @@ const router = createBrowserRouter([
 ])
 
 
-console.log('sever ready at port', 4000);
+console.log('server ready at port', 4000);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

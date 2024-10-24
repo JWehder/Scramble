@@ -485,18 +485,20 @@ class League(BaseModel):
         return self.id
 
     def get_available_players(self) -> List[PyObjectId]:
+        # Collect all unavailable players
         unavailable_players = set()
         for team in self.Teams:
             for golfer_id, golfer_info in team.Golfers.items():
                 if golfer_info['CurrentlyOnTeam']:
                     unavailable_players.add(golfer_id)
-        # Retrieve all golfers
-        all_golfers = list(db.golfers.find({}))
 
-        # If you only need the IDs
-        all_golfer_ids = [golfer['_id'] for golfer in all_golfers]
-        available_players = [golfer_id for golfer_id in all_golfer_ids if golfer_id not in unavailable_players]
-        return available_players
+        # Use MongoDB's $nin operator to exclude unavailable players directly in the query
+        available_players = db.golfers.find({
+            '_id': {'$nin': list(unavailable_players)}
+        }, {'_id': 1})  # Only fetch the IDs if that's all you need
+
+        # Convert to list of IDs
+        return [golfer['_id'] for golfer in available_players]
 
     class Config:
         populate_by_name = True

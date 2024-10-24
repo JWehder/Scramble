@@ -10,7 +10,6 @@ import SignUp from "../auth/SignUp";
 import HowToPlay from "./HowToPlay";
 import GamesCarousel from "./GamesCarousel";
 import Title from "./Title";
-import { redirect } from 'react-router-dom';
 import VerifyEmail from "../auth/VerifyEmail";
 
 export default function SignedOutHome() {
