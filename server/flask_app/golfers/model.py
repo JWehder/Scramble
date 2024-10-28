@@ -10,9 +10,9 @@ import os
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from models import PyObjectId 
+from models import PyObjectId
+from . import GolferTournamentDetails
 from config import db
-from golfers_tournament_details.model import GolferTournamentDetails
 
 class Golfer(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')

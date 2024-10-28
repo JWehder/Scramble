@@ -1,5 +1,5 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator, Dict
+from typing import List, Optional, Dict
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, timezone
 from bson import ObjectId
 from itertools import groupby
@@ -11,9 +11,9 @@ import os
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from leagues.model import League
-from teams_results.model import TeamResult
-from helper_methods import PyObjectId, convert_utc_to_local, get_day_number
+from helper_methods import convert_utc_to_local, get_day_number
+from . import TeamResult, League
+from models import PyObjectId
 from config import db
 
 class Period(BaseModel):
@@ -28,7 +28,7 @@ class Period(BaseModel):
     Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
     Drops: Optional[Dict[PyObjectId, List]] = {}
     TournamentId: PyObjectId
-    TeamResults: Optional[List[PyObjectId]] = []
+    TeamResults: Optional[List[PyObjectId]] = Field(default_factory=list)  # Unique per instance
     LeagueId: PyObjectId
     DraftId: Optional[PyObjectId] = None
     created_at: Optional[datetime] = None
@@ -234,7 +234,7 @@ class Period(BaseModel):
             self.save()
 
         return True
-
+    
     # Tiebreaker method to get the highest scoring golfer in a team
     def get_highest_golfer_score(self, team_result: TeamResult) -> int:
         # Retrieve the golfer scores associated with the team

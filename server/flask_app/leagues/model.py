@@ -13,14 +13,9 @@ import os
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from fantasy_league_seasons.model import FantasyLeagueSeason
-from leagues_settings.model import LeagueSettings
-from tournaments.model import Tournament
-from teams.model import Team
-from periods.model import Period
-from teams_results.model import TeamResult
-from drafts.model import Draft
-from models import PyObjectId, convert_utc_to_local, get_day_number
+from . import FantasyLeagueSeason, LeagueSettings, Tournament, Team, Period, TeamResult, Draft
+from models import PyObjectId
+from helper_methods import convert_utc_to_local, get_day_number
 from config import db
 
 class League(BaseModel):

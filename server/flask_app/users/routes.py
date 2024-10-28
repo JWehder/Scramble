@@ -1,9 +1,8 @@
-from flask import request, jsonify, abort, session
+from flask import request, jsonify, session
 from . import users_bp  # Import the blueprint from __init__.py
 import sys
 import os
 from bson.objectid import ObjectId
-from .model import User
 from email_validator import validate_email, EmailNotValidError
 from pydantic import ValidationError
 import datetime
@@ -13,6 +12,7 @@ import string
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
+from . import User
 
 users_collection = db.users
 teams_collection = db.teams

@@ -11,8 +11,7 @@ import os
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from leagues.model import League
-from models import PyObjectId 
+from models import League, PyObjectId
 from config import db
 
 class Draft(BaseModel):

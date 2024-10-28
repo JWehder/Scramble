@@ -9,6 +9,7 @@ from rounds import rounds_bp
 from holes import holes_bp
 from golfers_tournament_details import golfers_tournament_details_bp
 from tournaments import tournaments_bp
+from golfers import golfers_bp
 
 # HTTP Constants 
 HTTP_SUCCESS = 200
@@ -27,6 +28,7 @@ app.register_blueprint(rounds_bp, url_prefix='/rounds')
 app.register_blueprint(holes_bp, url_prefix='/holes')
 app.register_blueprint(golfers_tournament_details_bp, url_prefix='/golfers_tournament_details')
 app.register_blueprint(tournaments_bp, url_prefix='/tournaments')
+app.register_blueprint(golfers_bp, url_prefix='/golfers')
 
 @app.route('/start_draft', methods=['POST'])
 def start_draft():

@@ -1,5 +1,5 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator, Dict
+from typing import List, Optional, Dict
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from bson import ObjectId
 

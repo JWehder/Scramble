@@ -2,13 +2,13 @@ import Avatar  from "../../Utils/components/Avatar";
 import React from "react";
 
 interface PlayerDataProps {
-    rank: number;
+    rank: string;
     name: string;
-    age: number;
+    age?: number;
     even?: boolean;
 }
 
-export default function PlayerData({ rank, name, age, even }: PlayerDataProps){
+export default function PlayerData({ rank, name, age, even }: PlayerDataProps) {
 
     const brightness = even ? 'brightness-125' : '';
 
