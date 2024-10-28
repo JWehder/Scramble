@@ -1,15 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import { App } from './App.jsx'
 import './index.css'
 import store from './store.jsx';
 import { Provider } from "react-redux";
-import { BrowserRouter, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import SignedOutHome from './components/User/components/home/SignedOutHome.jsx'
-import SignedInHome from './components/User/components/home/SignedInHome.jsx';
+import { SignedInHome } from './components/User/components/home/SignedInHome.jsx';
 import Dashboard from './components/User/components/home/Dashboard.jsx';
 import LeagueDashboard from './components/User/components/home/LeagueDashboard.jsx';
 import ErrorPage from './components/Utils/components/ErrorPage.jsx';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // import { ApolloServer } from '@apollo/server';
 // import { startStandaloneServer } from '@apollo/server/standalone';
@@ -27,7 +28,7 @@ import ErrorPage from './components/Utils/components/ErrorPage.jsx';
 const router = createBrowserRouter([
   {
     path:"/",
-    element:<App />,
+    element:<App children={undefined} />,
     errorElement: <ErrorPage />, 
     children: [
       {
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/leagues",
-        element: <SignedInHome />,
+        element: <SignedInHome children={undefined} />,
         children: [
           {
           path: "/leagues",
@@ -57,13 +58,16 @@ const router = createBrowserRouter([
   }
 ])
 
-
 console.log('server ready at port', 4000);
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+const queryClient = new QueryClient();
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Provider store={store}>
-      <RouterProvider router={router} />
-    </Provider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>
+        <RouterProvider router={router} />
+      </Provider>
+    </QueryClientProvider>
   </React.StrictMode>,
 )

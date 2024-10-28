@@ -1,4 +1,4 @@
-import PlayerData from "./PlayerData";
+import PlayerData from "../../../Golfers/components/PlayerData";
 import Tourney from "./Tourney";
 import TableHeaders from "./TableHeaders";
 

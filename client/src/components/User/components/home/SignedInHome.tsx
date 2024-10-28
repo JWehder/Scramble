@@ -4,12 +4,18 @@ import Modal from "../../../Utils/components/Modal";
 import { setPlayerModal } from "../../state/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
 import PlayerPage from "../player/PlayerPage";
+import { RootState } from "../../../../store"
+import React from "react";
 
-export default function SignedInHome() {
+interface SignedInHomeProps {
+    children: React.ReactNode; // This defines the `children` prop
+}
+
+export const SignedInHome: React.FC<SignedInHomeProps> = ({ children }) => {
 
     const dispatch = useDispatch();
 
-    const open = useSelector((state) => state.users.playerModal)
+    const open = useSelector((state: RootState ) => state.users.playerModal)
 
     function onClose() {
         dispatch(setPlayerModal())
@@ -24,9 +30,8 @@ export default function SignedInHome() {
             <Modal 
             open={open} 
             onClose={onClose} 
-            title=""
-            color="dark-green"
-            size='md'
+            bgColor="dark-green"
+            closeButtonColor={'light'}
             >
                 <PlayerPage />
             </Modal>

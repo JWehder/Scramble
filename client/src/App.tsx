@@ -4,11 +4,17 @@ import axios from 'axios';
 import Header from './components/Utils/components/Header';
 import { useSelector } from 'react-redux';
 import { Outlet } from "react-router-dom";
+import React from 'react';
+import { RootState } from './store';
 
-export default function App({children}) {
+interface AppProps {
+  children: React.ReactNode;
+}
+
+export const App: React.FC<AppProps> = ({ children }) => {
   const [clientId, setClientId] = useState();
 
-  const signedIn = useSelector((state) => state.users.user);
+  const signedIn = useSelector((state: RootState) => state.users.user);
 
   useEffect(() => {
     fetch('/api/tournaments')

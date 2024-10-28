@@ -3,7 +3,7 @@ import Standings from './Standings';
 import Roster from './Roster';
 import { useState } from 'react';
 import Leaderboard from './Leaderboard';
-import Golfers from './Golfers';
+import Golfers from '../../../Golfers/components/Golfers';
 import SquigglyUnderline from "../../../Utils/components/SquigglyLine"
 import Schedule from './Schedule';
 import { useSelector } from 'react-redux';

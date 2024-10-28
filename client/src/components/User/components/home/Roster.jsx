@@ -1,4 +1,4 @@
-import PlayerData from "./PlayerData";
+import PlayerData from "../../../Golfers/components/PlayerData";
 import Headers from "./TableHeaders";
 import DashboardTitle from "./DashboardTitle";
 import Button from "../../../Utils/components/Button";

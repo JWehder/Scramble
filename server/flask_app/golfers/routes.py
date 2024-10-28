@@ -8,7 +8,7 @@ from .model import Golfer
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from teams.model import Team
+from teams.model import Team, League
 
 golfers_collection = db.golfers
 teams_collection = db.teams
@@ -34,3 +34,24 @@ def get_golfer(golfer_id):
             golfer
         })
     return abort(404, description="Golfer not found")
+
+@golfers_bp.route('/golfers/available_golfers/leagues/<league_id>', methods=['GET'])
+def get_available_golfers(league_id):
+    """Fetches a golfer by ID"""
+
+    league = db.leagues.find_one({
+        "_id": league_id
+    })
+
+    if not league:
+        return jsonify({"error": "Sorry, we do not recognize that league."}), 404
+    
+    league = League(**league)
+
+    available_players = league.get_available_golfers()
+
+    if available_players:
+        return jsonify({
+            available_players
+        }), 200
+    return jsonify({"error": "Available golfers not found. Please try again."}), 404

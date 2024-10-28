@@ -39,12 +39,12 @@ export const signup = createAsyncThunk(
 
 export const updateUser = createAsyncThunk("/auth/updateUser", async(userObj, thunkAPI) => {
         const { id, ...rest } = userObj;
-        return fetchWrapper.patch(`/users/${id}`, rest, thunkAPI);
+        return fetchWrapper.patch(`/api/auth/users/${id}`, rest, thunkAPI);
 });
 
 export const logout = createAsyncThunk("/auth/logout", async( thunkAPI) => {
     try {
-        const response = await axios.delete(`/logout`);
+        const response = await axios.delete(`/api/auth/logout`);
         return response.data;
     } catch (err) {
         const error = err.response.data.errors;
