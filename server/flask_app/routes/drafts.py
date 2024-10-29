@@ -1,13 +1,13 @@
 from flask import jsonify, abort
-from . import drafts_bp  # Import the blueprint from __init__.py
+from ..drafts import drafts_bp  # Import the blueprint from __init__.py
 import sys
 import os
 from bson.objectid import ObjectId
+from ..models import Draft
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from . import Draft
 
 drafts_collection = db.holes
 

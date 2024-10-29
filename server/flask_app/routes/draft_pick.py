@@ -1,13 +1,14 @@
 from flask import jsonify, abort
-from . import draft_picks_bp  # Import the blueprint from __init__.py
+from flask import Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
+from ..models import DraftPick
 
+draft_picks_bp = Blueprint('draft_picks', __name__) 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from . import DraftPick
 
 draft_picks_collection = db.draftPicks
 

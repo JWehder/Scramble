@@ -13,7 +13,7 @@ import os
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from . import FantasyLeagueSeason, LeagueSettings, Tournament, Team, Period, TeamResult, Draft
+from ..leagues import FantasyLeagueSeason, LeagueSettings, Tournament, Team, Period, TeamResult, Draft
 from models import PyObjectId
 from helper_methods import convert_utc_to_local, get_day_number
 from config import db
