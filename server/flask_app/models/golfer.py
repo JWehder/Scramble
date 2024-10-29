@@ -2,6 +2,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, model_validator, field_validator
 from datetime import datetime
 from bson import ObjectId
+from golfer_tournament_details import GolferTournamentDetails
 
 # Add this line to ensure the correct path
 import sys
@@ -11,7 +12,6 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models import PyObjectId
-from ..golfers import GolferTournamentDetails
 from config import db
 
 class Golfer(BaseModel):

@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple, Any
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from bson import ObjectId
@@ -12,18 +12,20 @@ import os
 
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from ..leagues import FantasyLeagueSeason, LeagueSettings, Tournament, Team, Period, TeamResult, Draft
 from models import PyObjectId
 from helper_methods import convert_utc_to_local, get_day_number
 from config import db
+
+FantasyLeagueSeason = Any  # Temporary alias to avoid circular dependency
+Tournament = Any  # Temporary alias to avoid circular dependency
+Period = Any  # Temporary alias to avoid circular dependency
 
 class League(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Name: str
     CommissionerId: PyObjectId
     Teams: List[PyObjectId] = []
-    LeagueSettings: Optional[LeagueSettings]
+    LeagueSettings: Optional["LeagueSettings"]
     FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
     CurrentFantasyLeagueSeasonId: Optional[PyObjectId] = None
     WaiverOrder: Optional[List[PyObjectId]] = []
@@ -38,7 +40,10 @@ class League(BaseModel):
             raise ValueError('Name must be between 3 and 50 characters long.')
         return v
 
-    def find_current_season(self) -> Optional[FantasyLeagueSeason]:
+    def find_current_season(self) -> Optional["FantasyLeagueSeason"]:
+
+        from models import FantasyLeagueSeason
+
         if self.CurrentFantasyLeagueSeason:
             current_season = db.fantasyLeagueSeasons.find_one({"_id": self.CurrentFantasyLeagueSeason})
             if current_season:
@@ -87,8 +92,11 @@ class League(BaseModel):
         draft_start = now + timedelta(days=days_ahead)
         draft_start = draft_start.replace(hour=hour, minute=minute, second=0, microsecond=0)
         return draft_start
+    
+    def create_initial_season(self, tournaments: List["Tournament"]) -> PyObjectId:
 
-    def create_initial_season(self, tournaments: List[Tournament]) -> PyObjectId:
+        from models import FantasyLeagueSeason
+
         if not self.FantasyLeagueSeasons or len(self.FantasyLeagueSeasons) < 1:
             if not tournaments:
                 raise ValueError("No tournaments specified for the initial season.")
@@ -122,6 +130,8 @@ class League(BaseModel):
             return first_season_id
 
     def transition_to_next_season(self, tournaments: List[PyObjectId]) -> PyObjectId:
+        from models import FantasyLeagueSeason
+        
         current_season = self.find_current_season()
         if not current_season:
             raise ValueError("Current season not found.")
@@ -207,7 +217,7 @@ class League(BaseModel):
                         # remove the last golfer from their team
                         self.remove_lowest_ogwr_golfer(id)
 
-    def generate_matchups(self, period: Period) -> List[Tuple[PyObjectId, PyObjectId]]:
+    def generate_matchups(self, period: "Period") -> List[Tuple[PyObjectId, PyObjectId]]:
         teams = self.Teams[:]
         random.shuffle(teams)
         matchups = []
@@ -244,6 +254,8 @@ class League(BaseModel):
         return matchups
 
     def create_initial_teams(self) -> bool:
+        from models import Team
+
         league_settings = self.LeagueSettings
         num_of_teams = league_settings["NumberOfTeams"]
         team_ids = []
@@ -269,6 +281,8 @@ class League(BaseModel):
         return True
 
     def create_periods_between_tournaments(self):
+        from models import Period, TeamResult, Draft
+
         # Fetch all selected tournaments for this season and league
         season_id = self.CurrentFantasyLeagueSeasonId
         if not season_id:
@@ -366,6 +380,8 @@ class League(BaseModel):
         )
 
     def get_most_recent_season(self) -> FantasyLeagueSeason:
+        from models import FantasyLeagueSeason
+
         current_date = datetime.utcnow()
         season = db.fantasyLeagueSeasons.find_one(
             {"LeagueId": self.id, "StartDate": {"$gt": current_date}},
@@ -379,7 +395,7 @@ class League(BaseModel):
             {"LeagueId": self.id, "EndDate": {"$lt": current_date}},
             sort=[("EndDate", -1)]
         )
-        return Period(**period) if period else None
+        return period
 
     def determine_waiver_order(self) -> bool:
         # Retrieve league settings
@@ -406,6 +422,8 @@ class League(BaseModel):
         return False
 
     def create_initial_period(self, season_id): 
+        from models import Period
+
         # Create the initial period for the league
         season = db.fantasyLeagueSeasons.find_one({
             "_id": season_id
@@ -442,6 +460,7 @@ class League(BaseModel):
         initial_period.save()
 
     def create_initial_draft(self, draft_start_date, initial_period_id, max_golfers_per_team) -> PyObjectId:
+        from models import Draft
 
         # Create the first draft before the first tournament
         first_draft = Draft(

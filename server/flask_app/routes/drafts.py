@@ -1,15 +1,17 @@
-from flask import jsonify, abort
-from ..drafts import drafts_bp  # Import the blueprint from __init__.py
+from flask import jsonify, abort, Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
 from ..models import Draft
+
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
 
 drafts_collection = db.holes
+drafts_bp = Blueprint('leagues_settings', __name__)
+
 
 @drafts_bp.route('/drafts/<league_id>', methods=['GET'])
 def get_drafts(league_id):

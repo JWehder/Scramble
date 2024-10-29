@@ -1,10 +1,8 @@
 from bson import ObjectId
-import pytz
 
 # Add this line to ensure the correct path
 import sys
 import os
-sys.path.append(os.path.dirname(__file__))
 
 from config import db
 

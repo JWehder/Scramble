@@ -1,5 +1,4 @@
-from flask import jsonify, abort, request
-from . import golfers_bp  # Import the blueprint from __init__.py
+from flask import jsonify, abort, request, Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
@@ -7,10 +6,12 @@ from bson.objectid import ObjectId
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from . import Golfer
+from ..models import Golfer, League
 
 golfers_collection = db.golfers
 teams_collection = db.teams
+
+golfers_bp = Blueprint('golfers', __name__)
 
 @golfers_bp.route('/golfers/<golfer_id>', methods=['GET'])
 def get_golfer(golfer_id):
@@ -31,8 +32,6 @@ def get_greeting():
 @golfers_bp.route('/available_golfers/leagues/<league_id>', methods=['GET'])
 def get_available_golfers(league_id):
     """Fetches available golfers for a league with pagination"""
-
-    from leagues.model import League
 
     print("I'm hit!")
 

@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, field_validator, root_validator
 from datetime import datetime
 from bson import ObjectId
 from datetime import timedelta
+from . import PyObjectId 
 
 # Add this line to ensure the correct path
 import sys
@@ -11,7 +12,6 @@ import os
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from models import PyObjectId 
 from config import db
 
 class DraftPick(BaseModel):

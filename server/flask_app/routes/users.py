@@ -1,5 +1,4 @@
-from flask import request, jsonify, session
-from . import users_bp  # Import the blueprint from __init__.py
+from flask import request, jsonify, session, Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
@@ -8,14 +7,15 @@ from pydantic import ValidationError
 import datetime
 import random
 import string
+from ..models import User
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from . import User
-
 users_collection = db.users
 teams_collection = db.teams
+
+users_bp = Blueprint('users', __name__)
 
 def generate_verification_code(length=6):
     """Generates a random alphanumeric verification code"""

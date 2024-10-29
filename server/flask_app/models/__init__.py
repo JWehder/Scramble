@@ -1,4 +1,5 @@
 # models/__init__.py
+from .PyObjectId import PyObjectId
 from .league import League
 from .period import Period
 from .team import Team
@@ -16,6 +17,7 @@ from .tournament import Tournament
 
 # Export the models
 __all__ = [
+    'PyObjectId',
     'League', 
     'Period', 
     'Team', 

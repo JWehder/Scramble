@@ -1,5 +1,4 @@
-from flask import jsonify, abort
-from . import holes_bp  # Import the blueprint from __init__.py
+from flask import jsonify, abort, Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
@@ -10,6 +9,8 @@ from config import db
 from ..models.hole import Hole
 
 holes_collection = db.holes
+holes_bp = Blueprint('holes', __name__)
+
 
 @holes_bp.route('/holes/<hole_id>', methods=['GET'])
 def get_hole(hole_id):

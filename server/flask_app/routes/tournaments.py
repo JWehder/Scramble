@@ -1,15 +1,16 @@
-from flask import jsonify, abort
-from . import tournaments_bp  # Import the blueprint from __init__.py
+from flask import jsonify, abort, Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
+from ..models import Tournament
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from . import Tournament
 
 tournaments_collection = db.tournaments
+
+tournaments_bp = Blueprint('tournaments', __name__)
 
 @tournaments_bp.route('/tournaments/pro_seasons/<pro_season_id>', methods=['GET'])
 def get_tournaments(pro_season_id):

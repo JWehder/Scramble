@@ -1,9 +1,1 @@
-from leagues.model import League
-from periods.model import Period
-from pro_seasons.model import ProSeason
-from fantasy_league_seasons.model import FantasyLeagueSeason
-from rounds.model import Round
-from teams_results import TeamResult
-from golfers_tournament_details.model import GolferTournamentDetails
-from leagues_settings.model import LeagueSettings
-from users.model import User
+
