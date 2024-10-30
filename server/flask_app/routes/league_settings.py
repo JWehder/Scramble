@@ -3,18 +3,18 @@ import sys
 import os
 from bson.objectid import ObjectId
 from pydantic import ValidationError
-from ..models import LeagueSettings
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
+from models import LeagueSettings
 
 leagues_settings_collection = db.leagueSettings
 league_collection = db.leagues
 
-leagues_settings_bp = Blueprint('league_settings', __name__)
+league_settings_bp = Blueprint('league_settings', __name__)
 
-@leagues_settings_bp.route('/leagues_settings/leagues/<league_id>', methods=['GET'])
+@league_settings_bp.route('/leagues_settings/leagues/<league_id>', methods=['GET'])
 def get_leagues_settings_by_league_id(league_id):
     """Fetches a round by ID"""
     league = league_collection.find_one({"_id": ObjectId(league_id)})
@@ -28,7 +28,7 @@ def get_leagues_settings_by_league_id(league_id):
     else:
         return abort(404, description="League not found.")
 
-@leagues_settings_bp.route('/leagues_settings/<leagues_settings_id>', methods=['PATCH'])
+@league_settings_bp.route('/leagues_settings/<leagues_settings_id>', methods=['PATCH'])
 def update_leagues_settings(leagues_settings_id):
     """Update specific fields in league settings with validation before database update"""
     data = request.get_json()  # Get the partial data from the request body

@@ -2,7 +2,6 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, model_validator, field_validator
 from datetime import datetime
 from bson import ObjectId
-from golfer_tournament_details import GolferTournamentDetails
 
 # Add this line to ensure the correct path
 import sys
@@ -10,11 +9,11 @@ import os
 
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from models.base_model import Base
 from models import PyObjectId
 from config import db
 
-class Golfer(BaseModel):
+class Golfer(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Rank: Optional[str] = None
     FirstName: str
@@ -36,7 +35,6 @@ class Golfer(BaseModel):
     College: Optional[str] = None
     Swing: Optional[str] = None
     TurnedPro: Optional[str] = None
-    TournamentDetails: Optional[List[GolferTournamentDetails]] = None
     OWGR: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -97,6 +95,8 @@ class Golfer(BaseModel):
 
     @field_validator('AvgScore')
     def avg_score_must_be_valid(cls, v):
+        if not v:
+            return v
         if v <= 0 or v > 120:
             raise ValueError('Average score must be a positive number and realistic')
         return v

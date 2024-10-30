@@ -6,7 +6,7 @@ from bson.objectid import ObjectId
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from ..models import Golfer, League
+from models import Golfer
 
 golfers_collection = db.golfers
 teams_collection = db.teams
@@ -33,8 +33,7 @@ def get_greeting():
 def get_available_golfers(league_id):
     """Fetches available golfers for a league with pagination"""
 
-    print("I'm hit!")
-
+    from models import League
     # Get pagination parameters
     page = request.args.get('page', default=0, type=int)
     limit = 50  # Number of golfers per page
@@ -49,21 +48,20 @@ def get_available_golfers(league_id):
     
     league = League(**league)
 
+    # Slice the list of available players for pagination
+    start_index = page * limit
+    end_index = start_index + limit
+
     # Get all available golfers
-    available_players = league.get_available_golfers()
+    available_golfers = league.get_available_golfers(limit=limit, page=page)
 
-    # Paginate the available golfers
-    if available_players:
-        # Slice the list of available players for pagination
-        start_index = page * limit
-        end_index = start_index + limit
-        paginated_players = available_players[start_index:end_index]
-
+    if available_golfers:
+        
         # Check if there is a next page
-        next_page = page + 1 if end_index < len(available_players) else None
+        next_page = page + 1 if end_index < len(available_golfers) else None
 
         return jsonify({
-            "golfers": paginated_players,
+            "golfers": available_golfers,
             "nextPage": next_page
         }), 200
 

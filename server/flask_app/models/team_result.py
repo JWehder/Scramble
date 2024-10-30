@@ -9,11 +9,11 @@ import os
 
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from models.base_model import Base
 from models import PyObjectId 
 from config import db
 
-class TeamResult(BaseModel):
+class TeamResult(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     TeamId: PyObjectId
     TournamentId: PyObjectId

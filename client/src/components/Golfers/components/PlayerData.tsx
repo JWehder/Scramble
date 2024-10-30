@@ -9,6 +9,7 @@ interface PlayerDataProps {
 }
 
 export default function PlayerData({ rank, name, age, even }: PlayerDataProps) {
+    
 
     const brightness = even ? 'brightness-125' : '';
 

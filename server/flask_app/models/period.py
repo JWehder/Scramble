@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, timezone
 from bson import ObjectId
@@ -10,13 +10,14 @@ import os
 
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from models.base_model import Base
 from helper_methods import convert_utc_to_local, get_day_number
-from . import TeamResult, League
 from models import PyObjectId
 from config import db
 
-class Period(BaseModel):
+TeamResult = Any
+
+class Period(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     StartDate: datetime
     EndDate: datetime
@@ -83,6 +84,8 @@ class Period(BaseModel):
             raise ValueError("Invalid waiver type specified in league settings.")
 
     def add_to_waiver_pool(self, golfer_id: PyObjectId, user_id: PyObjectId, bid: int) -> bool:
+        from models import League
+
         # Fetch the league and its settings
         league = db.leagues.find_one({"_id": self.LeagueId})
         league_settings = league["LeagueSettings"]
@@ -146,6 +149,8 @@ class Period(BaseModel):
         return self.id
 
     def set_standings(self) -> bool:
+        from models import TeamResult
+
         league_id = self.LeagueId
 
         # Find league settings in the db. Will be used for multiple things
@@ -236,7 +241,7 @@ class Period(BaseModel):
         return True
     
     # Tiebreaker method to get the highest scoring golfer in a team
-    def get_highest_golfer_score(self, team_result: TeamResult) -> int:
+    def get_highest_golfer_score(self, team_result: "TeamResult") -> int:
         # Retrieve the golfer scores associated with the team
         golfer_scores = []
 

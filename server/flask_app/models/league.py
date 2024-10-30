@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Tuple, Any
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ValidationError
 from datetime import datetime
 from bson import ObjectId
 from datetime import datetime, timedelta, timezone
@@ -15,17 +15,19 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from models import PyObjectId
 from helper_methods import convert_utc_to_local, get_day_number
 from config import db
+from models.base_model import Base
 
 FantasyLeagueSeason = Any  # Temporary alias to avoid circular dependency
 Tournament = Any  # Temporary alias to avoid circular dependency
 Period = Any  # Temporary alias to avoid circular dependency
+Golfer = Any  # Temporary alias to avoid circular dependency
 
-class League(BaseModel):
+class League(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     Name: str
     CommissionerId: PyObjectId
     Teams: List[PyObjectId] = []
-    LeagueSettings: Optional["LeagueSettings"]
+    LeagueSettings: Optional[Dict]
     FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
     CurrentFantasyLeagueSeasonId: Optional[PyObjectId] = None
     WaiverOrder: Optional[List[PyObjectId]] = []
@@ -498,21 +500,39 @@ class League(BaseModel):
             self.id = result.inserted_id
         return self.id
 
-    def get_available_golfers(self) -> List[PyObjectId]:
+    def get_available_golfers(self, limit: int, page: int = 0) -> List["Golfer"]:
+        from models import Golfer
+
         # Collect all unavailable players
         unavailable_players = set()
-        for team in self.Teams:
-            for golfer_id, golfer_info in team.Golfers.items():
+        for team_id in self.Teams:
+            team = db.teams.find_one({
+                "_id": ObjectId(team_id)
+            })
+
+            for golfer_id, golfer_info in team["Golfers"].items():
+                print(golfer_info)
                 if golfer_info['CurrentlyOnTeam']:
-                    unavailable_players.add(golfer_id)
+                    unavailable_players.add(ObjectId(golfer_id))
 
-        # Fetch all fields of available golfers, excluding those in `unavailable_players`
-        available_players = db.golfers.find({
-            '_id': {'$nin': list(unavailable_players)}
-        })
+        # Calculate the number of documents to skip
+        offset = page * limit
 
-        # Convert to a list of full documents
-        return list(available_players)
+        # Fetch golfers, skipping previous pages and limiting the result to `amount`
+        available_golfers_cursor = db.golfers.find(
+            {
+                '_id': {'$nin': list(unavailable_players)}
+            }
+        ).sort('_id', 1).skip(offset).limit(limit)
+
+        # Convert to a list of full documents and ensure all attributes are JSON-serializable
+        available_golfers = []
+        for golfer in available_golfers_cursor:
+            cleaned_golfer = {key.strip('"'): value for key, value in golfer.items()}
+            golfer = Golfer(**cleaned_golfer)
+            available_golfers.append(golfer.to_dict())  # Convert each golfer to a JSON-compatible dict
+
+        return available_golfers
 
     class Config:
         populate_by_name = True

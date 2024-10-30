@@ -3,14 +3,15 @@ from flask import Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
-from ..models import DraftPick
 
-draft_picks_bp = Blueprint('draft_picks', __name__) 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
+from models import DraftPick
 
 draft_picks_collection = db.draftPicks
+
+draft_picks_bp = Blueprint('draft_picks', __name__) 
 
 @draft_picks_bp.route('/draft_picks/drafts/<draft_id>', methods=['GET'])
 def get_draft_picks(draft_id):
