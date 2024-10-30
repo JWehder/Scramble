@@ -2,18 +2,34 @@ import Avatar  from "../../Utils/components/Avatar";
 import React from "react";
 
 interface PlayerDataProps {
-    rank: string;
+    rank: number | undefined;
     name: string;
     age?: number;
     even?: boolean;
+    flag?: string;
+    country?: string;
+    fedexPts?: number;
+    avgScore?: number;
+    top10s?: number;
+    wins?: number;
 }
 
-export default function PlayerData({ rank, name, age, even }: PlayerDataProps) {
-    
+export default function PlayerData({ 
+    rank, 
+    name, 
+    age, 
+    even, 
+    flag, 
+    country, 
+    avgScore, 
+    fedexPts,
+    top10s,
+    wins
+}: PlayerDataProps) {
 
     const brightness = even ? 'brightness-125' : '';
 
-    const exampleData = ["-3.2", "Top 10s", "Avg Placing", "Fedex Odds"];
+    const exampleData = [avgScore, wins, top10s, fedexPts];
 
     return (
         <div className={`w-full flex bg-middle h-14 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate p-2`}>
@@ -33,10 +49,10 @@ export default function PlayerData({ rank, name, age, even }: PlayerDataProps) {
 
                         <div className="pl-3 flex-col flex justify-center">
                             <div>
-                                {name}
+                                {name} {flag}
                             </div>
                             <span>
-                                Dallas, TX, {age}
+                                {country} Age: {age}
                             </span>
                         </div>
                     </div>

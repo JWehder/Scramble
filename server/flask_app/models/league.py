@@ -511,19 +511,24 @@ class League(Base):
             })
 
             for golfer_id, golfer_info in team["Golfers"].items():
-                print(golfer_info)
                 if golfer_info['CurrentlyOnTeam']:
                     unavailable_players.add(ObjectId(golfer_id))
 
         # Calculate the number of documents to skip
         offset = page * limit
 
-        # Fetch golfers, skipping previous pages and limiting the result to `amount`
+        # Fetch golfers who have both an OWGR and FedexPts, skipping previous pages and limiting the result to `amount`
         available_golfers_cursor = db.golfers.find(
             {
-                '_id': {'$nin': list(unavailable_players)}
+                '_id': {'$nin': list(unavailable_players)},                'FedexPts': {'$exists': True, '$ne': None}
             }
-        ).sort('_id', 1).skip(offset).limit(limit)
+        ).sort('FedexPts', -1).skip(offset).limit(limit)
+
+        # Count the total number of available golfers with OWGR and FedexPts
+        number_of_total_available_golfers = db.golfers.count_documents({
+            '_id': {'$nin': list(unavailable_players)},
+            'FedexPts': {'$exists': True, '$ne': None}
+        })
 
         # Convert to a list of full documents and ensure all attributes are JSON-serializable
         available_golfers = []
@@ -532,7 +537,7 @@ class League(Base):
             golfer = Golfer(**cleaned_golfer)
             available_golfers.append(golfer.to_dict())  # Convert each golfer to a JSON-compatible dict
 
-        return available_golfers
+        return available_golfers, number_of_total_available_golfers
 
     class Config:
         populate_by_name = True

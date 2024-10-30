@@ -3,6 +3,7 @@ import axios from "axios";
 
 const initialState = {
     status: "idle", 
+    showGolferModal: false
 };
 
 const golferSlice = createSlice({

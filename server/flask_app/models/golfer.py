@@ -15,7 +15,7 @@ from config import db
 
 class Golfer(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    Rank: Optional[str] = None
+    Rank: Optional[int] = None
     FirstName: str
     LastName: str
     Age: Optional[int] = None
@@ -35,7 +35,7 @@ class Golfer(Base):
     College: Optional[str] = None
     Swing: Optional[str] = None
     TurnedPro: Optional[str] = None
-    OWGR: Optional[str] = None
+    OWGR: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -77,7 +77,7 @@ class Golfer(Base):
 
     @field_validator('Rank', 'OWGR')
     def rank_and_owgr_must_be_valid(cls, v):
-        if not v.isdigit() or int(v) <= 0:
+        if int(v) <= 0:
             raise ValueError('Rank and OWGR must be positive integers')
         return v
 

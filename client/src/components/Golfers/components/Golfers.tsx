@@ -2,16 +2,18 @@ import DashboardTitle from "../../User/components/home/DashboardTitle";
 import PlayerData from "./PlayerData";
 import TableHeaders from "../../User/components/home/TableHeaders"
 import { useParams } from "react-router-dom";
-import React from "react";
+import React, { useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useInView } from "react-intersection-observer";
 
 interface Golfer {
     id?: string;  // String instead of ObjectId since it comes from API
-    Rank?: string;
+    Rank?: number;
     FirstName: string;
     LastName: string;
     Age?: number;
+    Country?: string;
     Earnings?: number;
     FedexPts?: number;
     Events?: number;
@@ -28,7 +30,7 @@ interface Golfer {
     College?: string;
     Swing?: string;
     TurnedPro?: string;
-    OWGR?: string;
+    OWGR?: number | undefined;
     created_at?: Date;
     updated_at?: Date;
 }
@@ -65,7 +67,15 @@ export default function Golfers() {
         getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
     });
 
-    const headers = ["Place", "Golfer", "R1", "Thru", "Total", "Projected Place"];
+    const { ref, inView } = useInView();
+
+    useEffect(() => {
+        if (inView && hasNextPage) {
+            fetchNextPage();
+        };
+    }, [inView, fetchNextPage]);
+
+    const headers = ["Fedex Rank", "Golfer", "Avg Score", "Wins", "Top 10s", "Fedex Pts"];
 
     // Render error message if there's an error
     if (isError) {
@@ -84,19 +94,21 @@ export default function Golfers() {
                         <PlayerData
                             key={golfer.id}
                             name={`${golfer.FirstName} ${golfer.LastName}`}
-                            rank={String(golfer.Rank)}
+                            rank={golfer.Rank}
                             age={golfer.Age}
                             even={idx % 2 === 0}
+                            country={golfer.Birthplace}
+                            flag={golfer.Flag}
+                            fedexPts={golfer.FedexPts}
+                            top10s={golfer.Top10s}
+                            wins={golfer.Wins}
+                            avgScore={golfer.AvgScore}
                         />
                     ))}
                 </div>
             ))}
             <div className="flex justify-center p-4">
-                {hasNextPage && !isFetchingNextPage && (
-                    <button onClick={() => fetchNextPage()} className="btn-primary">
-                        Load More
-                    </button>
-                )}
+                <div ref={ref}></div>
                 {isFetching && <p>Loading...</p>}
             </div>
         </div>

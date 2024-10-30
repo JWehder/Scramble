@@ -53,12 +53,12 @@ def get_available_golfers(league_id):
     end_index = start_index + limit
 
     # Get all available golfers
-    available_golfers = league.get_available_golfers(limit=limit, page=page)
+    available_golfers, num_of_total_available_golfers = league.get_available_golfers(limit=limit, page=page)
 
     if available_golfers:
         
         # Check if there is a next page
-        next_page = page + 1 if end_index < len(available_golfers) else None
+        next_page = page + 1 if end_index < num_of_total_available_golfers else None
 
         return jsonify({
             "golfers": available_golfers,
