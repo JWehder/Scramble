@@ -12,6 +12,7 @@ interface PlayerDataProps {
     avgScore?: number;
     top10s?: number;
     wins?: number;
+    onClick?: () => void; // Add onClick as an optional prop
 }
 
 export default function PlayerData({ 
@@ -24,7 +25,8 @@ export default function PlayerData({
     avgScore, 
     fedexPts,
     top10s,
-    wins
+    wins,
+    onClick
 }: PlayerDataProps) {
 
     const brightness = even ? 'brightness-125' : '';
@@ -32,7 +34,10 @@ export default function PlayerData({
     const exampleData = [avgScore, wins, top10s, fedexPts];
 
     return (
-        <div className={`w-full flex bg-middle h-14 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate p-2`}>
+        <div 
+        className={`w-full flex bg-middle h-14 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate p-2`}
+        onClick={onClick}
+        >
             <div className="text-center flex w-1/2 items-center">
                 <div className="w-1/6">
                     {rank}

@@ -2,56 +2,19 @@ import DashboardTitle from "../../User/components/home/DashboardTitle";
 import PlayerData from "./PlayerData";
 import TableHeaders from "../../User/components/home/TableHeaders"
 import { useParams } from "react-router-dom";
-import React, { useEffect } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {  useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
-
-interface Golfer {
-    id?: string;  // String instead of ObjectId since it comes from API
-    Rank?: number;
-    FirstName: string;
-    LastName: string;
-    Age?: number;
-    Country?: string;
-    Earnings?: number;
-    FedexPts?: number;
-    Events?: number;
-    Rounds?: number;
-    Flag?: string;
-    Cuts?: number;
-    Top10s?: number;
-    Wins?: number;
-    AvgScore?: number;
-    GolferPageLink?: string;
-    Birthdate?: Date;
-    Birthplace?: string;
-    HtWt?: string;
-    College?: string;
-    Swing?: string;
-    TurnedPro?: string;
-    OWGR?: number | undefined;
-    created_at?: Date;
-    updated_at?: Date;
-}
-
-interface GolfersResponse {
-    golfers: Golfer[];
-    nextPage?: number | null; // Handle the optional nextPage
-}
-
-// Fetch golfers with pagination
-const fetchAvailableGolfers = async ({ pageParam = 0, leagueId }: { pageParam?: number; leagueId: string }): Promise<GolfersResponse> => {
-    const response = await axios.get<GolfersResponse>(`/api/golfers/available_golfers/leagues/${leagueId}?page=${pageParam}`);
-    console.log(response.data)
-    return response.data;
-};
+import Modal from "../../Utils/components/Modal";
+import PlayerPage from "./player/PlayerPage";
+import { useFetchAvailableGolfers } from "../../../hooks/golfers";
 
 export default function Golfers() {
     // Retrieve the league ID from the URL
     const { leagueId } = useParams<{ leagueId: string }>();
+    const [selectedGolferId, setSelectedGolferId] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
-    // Use React Query for infinite pagination
     const {
         data,
         fetchNextPage,
@@ -60,12 +23,7 @@ export default function Golfers() {
         isFetchingNextPage,
         isError,
         error,
-    } = useInfiniteQuery<GolfersResponse>({
-        queryKey: ['golfers', leagueId],
-        queryFn: ({ pageParam }) => fetchAvailableGolfers({ pageParam: pageParam as number, leagueId: leagueId! }),
-        initialPageParam: 0,
-        getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
-    });
+    } = useFetchAvailableGolfers(leagueId!);
 
     const { ref, inView } = useInView();
 
@@ -80,7 +38,12 @@ export default function Golfers() {
     // Render error message if there's an error
     if (isError) {
         return <div>Error: {error instanceof Error ? error.message : 'An unexpected error occurred.'}</div>;
-    }
+    };
+
+    const onClose = () => {
+        setSelectedGolferId(null);
+        queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
+    };
 
     return (
         <div className="w-full h-full overflow-auto text-light font-PTSans break-all">
@@ -103,10 +66,25 @@ export default function Golfers() {
                             top10s={golfer.Top10s}
                             wins={golfer.Wins}
                             avgScore={golfer.AvgScore}
+                            onClick={() => setSelectedGolferId(golfer.id || null)}
                         />
                     ))}
                 </div>
             ))}
+            { selectedGolferId ?
+                <Modal 
+                open={open} 
+                onClose={onClose} 
+                bgColor="dark-green"
+                closeButtonColor={'light'}
+                >
+                    <PlayerPage 
+                    selectedGolferId={selectedGolferId}
+                    />
+                </Modal>
+                :
+                ""
+            }
             <div className="flex justify-center p-4">
                 <div ref={ref}></div>
                 {isFetching && <p>Loading...</p>}

@@ -131,13 +131,22 @@ def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
         remaining = element_to_click.find_elements(By.CSS_SELECTOR, "td.Table__TD")
 
         for key, element in zip(golfer_tournament_results.keys(), remaining[1:]):
+            int_fields = ["Score", "R1", "R2", "R3", "R4", "TotalStrokes"]
             if key == "Score" and element.text == "WD":
                 golfer_tournament_results["WD"] = True
                 golfer_tournament_results["Cut"] = False
             elif key == "Score" and element.text == "CUT":
                 golfer_tournament_results["Cut"] = True
                 golfer_tournament_results["WD"] = False
-            golfer_tournament_results[key] = element.text
+            if key in int_fields:
+                try:
+                    golfer_tournament_results[key] = int(element.text)
+                except ValueError:
+                    golfer_tournament_results[key] = element.text
+                
+            else:
+                golfer_tournament_results[key] = element.text
+
 
         golfer_tournament_results['Earnings'] = ''.join(re.findall(r'(\d+)', golfer_tournament_results['Earnings'])) if golfer_tournament_results['Earnings'] else ''
 

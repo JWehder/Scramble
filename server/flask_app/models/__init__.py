@@ -14,6 +14,7 @@ from .team_result import TeamResult
 from .user import User
 from .league_settings import LeagueSettings
 from .tournament import Tournament
+from .base_model import Base
 
 # Export the models
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     'TeamResult', 
     'User', 
     'LeagueSettings', 
-    'Tournament'
+    'Tournament', 
+    'Base'
 ]

@@ -78,7 +78,6 @@ const initialState = {
     showVerifyEmail: false,
     verifiedBanner: false,
     status: "idle",
-    playerModal: true,
     holesComparisonChart: false,
     tempUser: false,
     leagues: [
@@ -135,9 +134,6 @@ const userSlice = createSlice({
             // Only update the loginModal value
             state.loginModal = action.payload;
           }
-        },
-        setPlayerModal (state) {
-          state.playerModal = !(state.playerModal);
         },
         setHolesComparisonChart (state) {
           state.holesComparisonChart = !state.holesComparisonChart;

@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import Modal from "../../../Utils/components/Modal";
 import { setPlayerModal } from "../../state/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
-import PlayerPage from "../player/PlayerPage";
+import PlayerPage from "../../../Golfers/components/player/PlayerPage";
 import { RootState } from "../../../../store"
 import React from "react";
 
@@ -15,7 +15,7 @@ export const SignedInHome: React.FC<SignedInHomeProps> = ({ children }) => {
 
     const dispatch = useDispatch();
 
-    const open = useSelector((state: RootState ) => state.users.playerModal)
+    const open = useSelector((state: RootState ) => state.golfers.showGolferModal)
 
     function onClose() {
         dispatch(setPlayerModal())
@@ -27,14 +27,6 @@ export const SignedInHome: React.FC<SignedInHomeProps> = ({ children }) => {
             <div className='w-full flex justify-center items-center flex-col min-w-[800px] min-h-[600px] flex-grow'>
                 <Outlet />
             </div>
-            <Modal 
-            open={open} 
-            onClose={onClose} 
-            bgColor="dark-green"
-            closeButtonColor={'light'}
-            >
-                <PlayerPage />
-            </Modal>
         </div>
     )
 }

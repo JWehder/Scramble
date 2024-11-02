@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Union
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from bson import ObjectId
@@ -13,6 +13,23 @@ from models.base_model import Base
 from models import PyObjectId 
 from config import db
 
+class HoleData(Base):
+    _id: PyObjectId
+    Strokes: int
+    Par: bool
+    NetScore: int
+    HoleNumber: int
+    Birdie: bool
+    Bogey: bool
+    Eagle: bool
+    Albatross: bool
+    DoubleBogey: bool
+    WorseThanDoubleBogey: bool
+    GolferTournamentDetailsId: PyObjectId
+    RoundId: PyObjectId
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
 class Round(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     GolferTournamentDetailsId: PyObjectId
@@ -25,7 +42,7 @@ class Round(Base):
     DoubleBogeys: int
     WorseThanDoubleBogeys: int
     Score: int
-    Holes: List[PyObjectId]
+    Holes: List[HoleData]
     TournamentId: PyObjectId
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
 from bson import ObjectId
@@ -18,14 +18,14 @@ class GolferTournamentDetails(Base):
     GolferId: PyObjectId
     Position: str
     Name: str
-    Score: str
-    R1: Optional[str] = None
-    R2: Optional[str] = None
-    R3: Optional[str] = None
-    R4: Optional[str] = None
-    TotalStrokes: Optional[str] = None
-    Earnings: Optional[str] = None
-    FedexPts: Optional[str] = None
+    Score: Union[int, str]
+    R1: Union[int, str]
+    R2: Union[int, str]
+    R3: Union[int, str]
+    R4: Union[int, str]
+    TotalStrokes: Union[int, str]
+    Earnings: str
+    FedexPts: str 
     TournamentId: PyObjectId
     Rounds: List[PyObjectId]
     created_at: Optional[datetime] = None

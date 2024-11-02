@@ -10,13 +10,12 @@ const golferSlice = createSlice({
     name: "golfer",
     initialState,
     reducers: {
-
     },
     extraReducers: builder => {
         builder
     }
 });
 
-export const { } = golferSlice.actions;
+export const {  } = golferSlice.actions;
 
 export default golferSlice.reducer;
