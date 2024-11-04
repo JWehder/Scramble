@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import Modal from "../../../Utils/components/Modal";
 import { setPlayerModal } from "../../state/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
-import PlayerPage from "../../../Golfers/components/player/PlayerPage";
 import { RootState } from "../../../../store"
 import React from "react";
 

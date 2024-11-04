@@ -11,11 +11,11 @@ const fetchGolferTournamentDetails = async (golferId: string) => {
     return response.data;
 };
 
-export const useFetchGolferTournamentDetails = (golferId: string) => {
+export const useFetchGolferTournamentDetails = (golferId?: string) => {
     return useQuery<TournamentDetailsResponse>({
         queryKey: ['golferTournamentDetails', golferId],
-        queryFn: () => fetchGolferTournamentDetails(golferId),
-        enabled: !!golferId 
+        queryFn: () => fetchGolferTournamentDetails(golferId!),
+        enabled: !!golferId // Only enable query if golferId is valid
     });
 };
 

@@ -3,24 +3,22 @@ import TournamentTd from "./TournamentTd";
 import PlayerPageHeader from "./PlayerPageHeader";
 import React from "react";
 import { useFetchGolferTournamentDetails } from "../../../../hooks/golferTournamentDetails";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../store";
 
-export default function PlayerPage({
-    selectedGolferId,
-}: {
-    selectedGolferId: string | null;
-}) {
+export default function PlayerPage() {
 
-    const {
-        data,
+    const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
+
+    const { data,
         isFetching,
         isSuccess,
-        isError,
-        error
-    } = useFetchGolferTournamentDetails(selectedGolferId!);
-
+        isError, 
+        error } = useFetchGolferTournamentDetails(selectedGolfer?.id);
+    
     // data will be filed in, this is just an example
 
-    const tournamentHeaders = ["date", "tournament name", "position", "r1", "r2", "r3", "r4", "score", "total strokes", "leader"]
+    const tournamentHeaders = ["date", "tournament name", "position", "r1", "r2", "r3", "r4", "score", "strokes", "leader"]
 
     return (
         <div className="w-full h-[600px] p-2 overflow-auto">
@@ -29,11 +27,12 @@ export default function PlayerPage({
                 <TableHeaders 
                 headers={tournamentHeaders}
                 />
-                { isSuccess && data?.details.map((detail) => {
+                { isSuccess && data?.details.map((detail, idx) => {
                     return (
                         <TournamentTd 
+                        key={detail.id}
                         golferDetails={detail} 
-                        even={true}
+                        even={idx % 2 == 0}
                         />
                     )
                     })

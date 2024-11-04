@@ -1,10 +1,17 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { Golfer } from "../../../types/golfers";
 
-const initialState = {
-    status: "idle", 
+interface GolferState {
+    status: string;
+    showGolferModal: boolean;
+    selectedGolfer: Golfer | undefined;
+}
+
+const initialState: GolferState = {
+    status: "idle",
     showGolferModal: false,
-    selectedGolfer: null,
+    selectedGolfer: undefined,
 };
 
 const golferSlice = createSlice({
@@ -13,6 +20,9 @@ const golferSlice = createSlice({
     reducers: {
         setSelectedGolfer (state, action) {
             state.selectedGolfer = action.payload;
+        },
+        unsetSelectedGolfer (state) {
+            state.selectedGolfer = undefined;
         }
     },
     extraReducers: builder => {
@@ -20,6 +30,6 @@ const golferSlice = createSlice({
     }
 });
 
-export const {  } = golferSlice.actions;
+export const { setSelectedGolfer, unsetSelectedGolfer } = golferSlice.actions;
 
 export default golferSlice.reducer;

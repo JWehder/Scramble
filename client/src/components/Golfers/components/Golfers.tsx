@@ -8,12 +8,17 @@ import { useInView } from "react-intersection-observer";
 import Modal from "../../Utils/components/Modal";
 import PlayerPage from "./player/PlayerPage";
 import { useFetchAvailableGolfers } from "../../../hooks/golfers";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedGolfer, unsetSelectedGolfer } from "../state/golferSlice";
+import { RootState } from "../../../store";
 
 export default function Golfers() {
     // Retrieve the league ID from the URL
     const { leagueId } = useParams<{ leagueId: string }>();
-    const [selectedGolferId, setSelectedGolferId] = useState<string | null>(null);
     const queryClient = useQueryClient();
+    const dispatch = useDispatch();
+
+    const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
 
     const {
         data,
@@ -41,8 +46,12 @@ export default function Golfers() {
     };
 
     const onClose = () => {
-        setSelectedGolferId(null);
+        dispatch(unsetSelectedGolfer());
         queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
+    };
+
+    const handleGolferClick = (golfer: object) => {
+        dispatch(setSelectedGolfer(golfer));
     };
 
     return (
@@ -66,21 +75,19 @@ export default function Golfers() {
                             top10s={golfer.Top10s}
                             wins={golfer.Wins}
                             avgScore={golfer.AvgScore}
-                            onClick={() => setSelectedGolferId(golfer.id || null)}
+                            onClick={() => handleGolferClick(golfer)}
                         />
                     ))}
                 </div>
             ))}
-            { selectedGolferId ?
+            { selectedGolfer ?
                 <Modal 
                 open={open} 
                 onClose={onClose} 
                 bgColor="dark-green"
                 closeButtonColor={'light'}
                 >
-                    <PlayerPage 
-                    selectedGolferId={selectedGolferId}
-                    />
+                    <PlayerPage />
                 </Modal>
                 :
                 ""

@@ -7,10 +7,8 @@ import React from "react";
 
 export default function HolesComparisonChart({ rounds } : { rounds: object }) {
 
-    
-
     return (
-        <div className="w-full flex-shrink">
+        <div className="w-full flex-shrink p-2 border-y-2">
             <div className="flex flex-row p-2">
                 <THead datapoint="Holes" />
                 {

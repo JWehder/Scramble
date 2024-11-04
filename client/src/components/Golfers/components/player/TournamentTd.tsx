@@ -1,22 +1,18 @@
 import { setHolesComparisonChart } from "../../../User/state/userSlice";
-import { useDispatch, useSelector } from 'react-redux';
 import HolesComparisonChart from "./HolesComparisonChart";
+import React, { useState } from "react";
 
 export default function TournamentTd({ golferDetails, even }) {
-    const dispatch = useDispatch();
-
-    const showHolesComparisonChart = useSelector((state) => state.users.holesComparisonChart);
+    const [showHolesComparisonChart, setShowHolesComparisonChart] = useState<boolean | null>(false);
 
     const brightness = even ? 'brightness-125' : '';
 
     const desiredKeysSet = new Set(["Position", "R1", "R2", "R3", "R4", "TotalStrokes", "Score", "WinningScore"]);
 
-    console.log(golferDetails);
-
     return (
         <>
             <div 
-            onClick={() => dispatch(setHolesComparisonChart())}
+            onClick={() => setHolesComparisonChart(setShowHolesComparisonChart(!showHolesComparisonChart))}
             className={`w-full flex bg-middle h-10 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm truncate hover:b-1 my-1 overflow-visible border-x-2 border-middle`}>
                 <div className="text-center flex w-3/6 items-center">
                     <div className="w-1/6 text-left px-2">
@@ -34,7 +30,7 @@ export default function TournamentTd({ golferDetails, even }) {
                         .filter(([key]) => desiredKeysSet.has(key))
                         .map(([key, value]) => (
                             <div key={key} className="flex flex-col w-6 flex-grow items-center justify-center px-3">
-                                {value}
+                                {value as React.ReactNode}
                             </div>
                         ))
                 }
