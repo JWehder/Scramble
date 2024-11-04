@@ -3,8 +3,11 @@ import THead from "../../../Utils/components/THead";
 import range from "../../../Utils/methods/helpers";
 import Birdie from "./Birdie";
 import Bogey from "./Bogey";
+import React from "react";
 
-export default function HolesComparisonChart() {
+export default function HolesComparisonChart({ rounds } : { rounds: object }) {
+
+    
 
     return (
         <div className="w-full flex-shrink">

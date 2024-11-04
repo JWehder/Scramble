@@ -3,13 +3,17 @@ import axios from "axios";
 
 const initialState = {
     status: "idle", 
-    showGolferModal: false
+    showGolferModal: false,
+    selectedGolfer: null,
 };
 
 const golferSlice = createSlice({
     name: "golfer",
     initialState,
     reducers: {
+        setSelectedGolfer (state, action) {
+            state.selectedGolfer = action.payload;
+        }
     },
     extraReducers: builder => {
         builder

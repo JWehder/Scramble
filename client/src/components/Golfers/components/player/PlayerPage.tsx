@@ -20,7 +20,7 @@ export default function PlayerPage({
 
     // data will be filed in, this is just an example
 
-    const tournamentHeaders = ["date", "tournament name", "r1", "r2", "r3", "r4", "total", "score", "place", "leader"]
+    const tournamentHeaders = ["date", "tournament name", "position", "r1", "r2", "r3", "r4", "score", "total strokes", "leader"]
 
     return (
         <div className="w-full h-[600px] p-2 overflow-auto">
