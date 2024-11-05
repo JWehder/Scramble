@@ -33,8 +33,8 @@ export default function PlayerPageHeader() {
                 </div>
             </div>
             <div className="w-3/4">
-                <div className="flex items-center justify-center font-PTSans p-2 text-light">
-                    <h1 className="text-2xl">
+                <div className="flex items-center justify-center font-PTSans p-2 text-light font-bold">
+                    <h1 className="text-3xl">
                         {playerInfo?.FirstName} {playerInfo?.LastName}
                     </h1>
                 </div>

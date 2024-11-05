@@ -6,20 +6,33 @@ import Leaderboard from './Leaderboard';
 import Golfers from '../../../Golfers/components/Golfers';
 import SquigglyUnderline from "../../../Utils/components/SquigglyLine"
 import Schedule from './Schedule';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import Button from '../../../Utils/components/Button';
 import BackButton from '../../../Utils/components/BackButton';
 import NextButton from '../../../Utils/components/NextButton';
+import { RootState } from '../../../../store';
+import Modal from '../../../Utils/components/Modal';
+import { unsetSelectedGolfer } from '../../../Golfers/state/golferSlice';
+import { useQueryClient } from '@tanstack/react-query';
+import PlayerPage from '../../../Golfers/components/player/PlayerPage';
 
 export default function LeagueDashboard() {
+    const dispatch = useDispatch();
     const { leagueId } = useParams();
+    const queryClient = useQueryClient();
 
     const [activeComponent, setActiveComponent] = useState("Schedule");
 
-    const signedIn = useSelector((state) => state.users.user);
+    const signedIn = useSelector((state: RootState) => state.users.user);
+    const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
 
     // code to be implemented when we have data
+
+    const onClose = () => {
+        dispatch(unsetSelectedGolfer());
+        queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
+    };
 
     console.log(leagueId);
 
@@ -35,8 +48,16 @@ export default function LeagueDashboard() {
                     </div>
 
                     <div className='flex justify-center items-center flex-row'>
-                        <BackButton size="4" color={"stroke-light"} />
-                        <NextButton size="4" color={"stroke-light"} />
+                        <BackButton 
+                        size="4" 
+                        color={"stroke-light"} 
+                        handleBackClick={() => console.log("Clicked me")}
+                        />
+                        <NextButton 
+                        size="4" 
+                        color={"stroke-light"} 
+                        handleNextClick={() => console.log("Clicked me")}
+                        />
                     </div>
                 </div>
 
@@ -51,7 +72,10 @@ export default function LeagueDashboard() {
                 <div className='w-1/3 flex justify-center items-center'>
                     <Button
                     variant="secondary"
+                    type="null"
+                    disabled={false}
                     size="md"
+                    onClick={() => console.log("Clicked me")}
                     >
                         Settings
                     </Button>
@@ -85,7 +109,24 @@ export default function LeagueDashboard() {
                         <Schedule />
                     </div>
                 }
+                { selectedGolfer ?
+                    <Modal 
+                    open={open} 
+                    onClose={onClose} 
+                    bgColor="dark-green"
+                    closeButtonColor={'light'}
+                    >
+                    <div className="w-full h-auto flex items-center justify-center">
+                        <div className="w-[90%] p-4 bg-middle rounded-xl transition-all duration-300 ease-in-out">
+                            <PlayerPage />
+                        </div>
+                    </div>
+                    </Modal>
+                    :
+                    ""
+                }
             </div>
+
         </>
     );
   }

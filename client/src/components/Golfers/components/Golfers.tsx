@@ -18,8 +18,6 @@ export default function Golfers() {
     const queryClient = useQueryClient();
     const dispatch = useDispatch();
 
-    const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
-
     const {
         data,
         fetchNextPage,
@@ -43,11 +41,6 @@ export default function Golfers() {
     // Render error message if there's an error
     if (isError) {
         return <div>Error: {error instanceof Error ? error.message : 'An unexpected error occurred.'}</div>;
-    };
-
-    const onClose = () => {
-        dispatch(unsetSelectedGolfer());
-        queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
     };
 
     const handleGolferClick = (golfer: object) => {
@@ -80,18 +73,6 @@ export default function Golfers() {
                     ))}
                 </div>
             ))}
-            { selectedGolfer ?
-                <Modal 
-                open={open} 
-                onClose={onClose} 
-                bgColor="dark-green"
-                closeButtonColor={'light'}
-                >
-                    <PlayerPage />
-                </Modal>
-                :
-                ""
-            }
             <div className="flex justify-center p-4">
                 <div ref={ref}></div>
                 {isFetching && <p>Loading...</p>}

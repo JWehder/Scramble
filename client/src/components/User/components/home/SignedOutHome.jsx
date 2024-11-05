@@ -49,7 +49,7 @@ export default function SignedOutHome() {
   
         <Modal open={open} onClose={onClose} bgColor={'bg-dark'}>
             <div className="w-full h-full flex items-center justify-center">
-                <div className="w-[90%] max-w-[700px] min-h-[200px] sm:min-h-[300px] sm:w-[550px] md:w-[600px] lg:w-[650px] xl:w-[700px] p-4 bg-dark rounded-md transition-all duration-300 ease-in-out">
+                <div className="w-[90%] max-w-[700px] min-h-[200px] sm:min-h-[300px] sm:w-[550px] md:w-[600px] lg:w-[650px] xl:w-[700px] p-4 bg-dark rounded-xl transition-all duration-300 ease-in-out">
                 {showForgotPassword ? (
                     showCode ? (
                     <EnterCode />

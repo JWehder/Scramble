@@ -1,13 +1,22 @@
 import { setHolesComparisonChart } from "../../../User/state/userSlice";
 import HolesComparisonChart from "./HolesComparisonChart";
 import React, { useState } from "react";
+import { TournamentDetails } from "../../../../types/golferTournamentDetails";
 
-export default function TournamentTd({ golferDetails, even }) {
+export default function TournamentTd({ 
+    golferDetails, 
+    even, 
+    desiredKeys }
+    :
+    {
+    golferDetails: TournamentDetails,
+    even: boolean,
+    desiredKeys: Set<string>
+    }) 
+    {
     const [showHolesComparisonChart, setShowHolesComparisonChart] = useState<boolean | null>(false);
 
     const brightness = even ? 'brightness-125' : '';
-
-    const desiredKeysSet = new Set(["Position", "R1", "R2", "R3", "R4", "TotalStrokes", "Score", "WinningScore"]);
 
     return (
         <>
@@ -27,7 +36,7 @@ export default function TournamentTd({ golferDetails, even }) {
                 <div className="flex w-3/6 flex-row items-center">
                 {
                     Object.entries(golferDetails)
-                        .filter(([key]) => desiredKeysSet.has(key))
+                        .filter(([key]) => desiredKeys.has(key))
                         .map(([key, value]) => (
                             <div key={key} className="flex flex-col w-6 flex-grow items-center justify-center px-3">
                                 {value as React.ReactNode}

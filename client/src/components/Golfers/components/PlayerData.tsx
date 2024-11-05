@@ -65,9 +65,11 @@ export default function PlayerData({
             </div>
             <div className="w-1/2 flex flex-row items-center space-x-5">
                 {
-                    exampleData.map((data) => {
+                    exampleData.map((data, idx) => {
                         return (
-                            <div className="flex flex-col w-6 flex-grow items-center justify-center">
+                            <div 
+                            key={`${data}-${idx}`}
+                            className="flex flex-col w-6 flex-grow items-center justify-center">
                                 {data}
                             </div>
                         )

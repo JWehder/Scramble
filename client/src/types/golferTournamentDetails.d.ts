@@ -15,4 +15,6 @@ export interface TournamentDetails {
     Rounds: string[]
     created_at: Date
     updated_at: Date
+    TournamentName: string
+    WinningScore: string
 }
