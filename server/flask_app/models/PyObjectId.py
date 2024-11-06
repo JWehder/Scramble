@@ -1,11 +1,5 @@
 from bson import ObjectId
 
-# Add this line to ensure the correct path
-import sys
-import os
-
-from config import db
-
 class PyObjectId(ObjectId):
     @classmethod
     def __get_validators__(cls):

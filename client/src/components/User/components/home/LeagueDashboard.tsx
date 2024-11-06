@@ -13,7 +13,7 @@ import BackButton from '../../../Utils/components/BackButton';
 import NextButton from '../../../Utils/components/NextButton';
 import { RootState } from '../../../../store';
 import Modal from '../../../Utils/components/Modal';
-import { unsetSelectedGolfer } from '../../../Golfers/state/golferSlice';
+import { resetSelectedGolfer } from '../../../Golfers/state/golferSlice';
 import { useQueryClient } from '@tanstack/react-query';
 import PlayerPage from '../../../Golfers/components/player/PlayerPage';
 
@@ -30,7 +30,7 @@ export default function LeagueDashboard() {
     // code to be implemented when we have data
 
     const onClose = () => {
-        dispatch(unsetSelectedGolfer());
+        dispatch(resetSelectedGolfer());
         queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
     };
 

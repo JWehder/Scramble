@@ -9,7 +9,7 @@ import Modal from "../../Utils/components/Modal";
 import PlayerPage from "./player/PlayerPage";
 import { useFetchAvailableGolfers } from "../../../hooks/golfers";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedGolfer, unsetSelectedGolfer } from "../state/golferSlice";
+import { setSelectedGolfer } from "../state/golferSlice";
 import { RootState } from "../../../store";
 
 export default function Golfers() {

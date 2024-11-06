@@ -7,7 +7,6 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from flask_app.config import db
 
-
 # Connect to MongoDB
 tournaments_collection = db.tournaments  # Replace with your collection name
 

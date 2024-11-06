@@ -21,7 +21,7 @@ const golferSlice = createSlice({
         setSelectedGolfer (state, action) {
             state.selectedGolfer = action.payload;
         },
-        unsetSelectedGolfer (state) {
+        resetSelectedGolfer (state) {
             state.selectedGolfer = undefined;
         }
     },
@@ -30,6 +30,6 @@ const golferSlice = createSlice({
     }
 });
 
-export const { setSelectedGolfer, unsetSelectedGolfer } = golferSlice.actions;
+export const { setSelectedGolfer, resetSelectedGolfer } = golferSlice.actions;
 
 export default golferSlice.reducer;
