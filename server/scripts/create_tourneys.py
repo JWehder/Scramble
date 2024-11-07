@@ -21,6 +21,7 @@ def process_round_data(round_data, golfer_details_id, round_id, session=None):
 
         hole = Hole(
             Strokes=hole_data["Strokes"],
+            HolePar=hole_data["HolePar"],
             Par=hole_data["Par"],
             NetScore=hole_data["NetScore"],
             HoleNumber=hole_data["HoleNumber"],

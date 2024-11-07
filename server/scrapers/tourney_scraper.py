@@ -259,7 +259,7 @@ def parse_round_details(player_detail, round_text, wd_bool, par):
 
         hole_result = {
             'Strokes': strokes,
-            'Par': par_score,
+            'HolePar': par_score,
             'NetScore': score,
             "HoleNumber": hole,
             'Birdie': score_types['birdie'],

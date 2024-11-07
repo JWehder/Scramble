@@ -2,6 +2,7 @@ import { setHolesComparisonChart } from "../../../User/state/userSlice";
 import HolesComparisonChart from "./HolesComparisonChart";
 import React, { useState } from "react";
 import { TournamentDetails } from "../../../../types/golferTournamentDetails";
+import TData from "../../../Utils/components/TData";
 
 export default function TournamentTd({ 
     golferDetails, 
@@ -23,11 +24,11 @@ export default function TournamentTd({
                 className={`w-full flex bg-middle h-10 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm truncate hover:b-1 my-1 overflow-visible border-x-2 border-middle`}
             >
                 <div className="text-center flex w-3/6 items-center">
-                    <div className="w-1/6 text-left px-2">
+                    <div className="w-1/6 text-left px-2 overflow-hidden text-ellipsis whitespace-nowrap">
                         start date
                     </div>
                     <div className="w-5/6 text-left flex items-center pl-6">
-                        <div className="flex justify-center">
+                        <div className="flex justify-center overflow-hidden text-ellipsis whitespace-nowrap">
                             {golferDetails.TournamentName || "--"}
                         </div>
                     </div>
@@ -35,9 +36,9 @@ export default function TournamentTd({
                 <div className="flex w-3/6 flex-row items-center">
                     {
                         Array.from(desiredKeysSet).map((key) => (
-                            <div key={key} className="flex flex-col w-6 flex-grow items-center justify-center px-3">
+                            <TData key={key}>
                                 {(golferDetails[key as keyof TournamentDetails] ?? "--") as React.ReactNode}
-                            </div>
+                            </TData>
                         ))
                     }
                 </div>

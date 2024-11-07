@@ -15,7 +15,8 @@ from config import db
 
 class Hole(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
-    Strokes: Optional[int]
+    Strokes: int
+    HolePar: int
     Par: Optional[bool]
     NetScore: Optional[int]
     HoleNumber: int

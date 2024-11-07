@@ -21,11 +21,9 @@ export const SignedInHome: React.FC<SignedInHomeProps> = ({ children }) => {
     }
 
     return ( 
-        <div className="pt-20 pb-12 bg-dark h-screen w-screen overflow-x-auto">
+        <div className="pt-20 pb-12 bg-dark h-screen w-screen overflow-auto">
             <SideBar />
-            <div className='w-full flex justify-center items-center flex-col min-w-[800px] min-h-[600px] flex-grow'>
-                <Outlet />
-            </div>
+            <Outlet />
         </div>
     )
 }
