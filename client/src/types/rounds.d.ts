@@ -7,7 +7,7 @@ export type Round = {
     DoubleBogeys: number;
     Eagles: number;
     GolferTournamentDetailsId: string;
-    Holes: Hole[]; // Replace `Hole` with a more detailed type if needed
+    Holes: Hole[]; 
     Pars: number;
     Round: string;
     Score: number;

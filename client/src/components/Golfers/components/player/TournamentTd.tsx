@@ -25,7 +25,7 @@ export default function TournamentTd({
             >
                 <div className="text-center flex w-3/6 items-center">
                     <div className="w-1/6 text-left px-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                        start date
+                        {golferDetails.StartDate}
                     </div>
                     <div className="w-5/6 text-left flex items-center pl-6">
                         <div className="flex justify-center overflow-hidden text-ellipsis whitespace-nowrap">
@@ -46,6 +46,7 @@ export default function TournamentTd({
             {showHolesComparisonChart && (
                 <HolesComparisonChart
                     rounds={golferDetails.Rounds}
+                    holes={golferDetails.HoleData}
                 />
             )}
         </>

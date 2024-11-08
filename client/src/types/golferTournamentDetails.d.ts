@@ -1,3 +1,6 @@
+import { Round } from "./rounds"
+import { TournamentHoles } from "./tournamentHoles"
+
 export interface TournamentDetails {
     id: string
     GolferId: string
@@ -12,9 +15,11 @@ export interface TournamentDetails {
     Earnings: string
     FedexPts: string
     TournamentId: string
-    Rounds: string[]
+    Rounds: Round[]
     created_at: Date
     updated_at: Date
     TournamentName: string
     WinningScore: string
+    StartDate: string
+    HoleData: TournamentHoles[]
 }

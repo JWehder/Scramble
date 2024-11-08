@@ -1,10 +1,11 @@
 import TData from "../../../Utils/components/TData";
 import THead from "../../../Utils/components/THead";
-import Birdie from "./Birdie";
-import Bogey from "./Bogey";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { Round } from "../../../../types/rounds";
+import { TournamentHoles } from "../../../../types/tournamentHoles";
+import { ScoreWrapper } from "./ScoreWrapper";
 
-export default function HolesComparisonChart({ rounds } : { rounds: any }) {
+export default function HolesComparisonChart({ rounds, holes } : { rounds: Round[], holes: TournamentHoles[] }) {
     const [currentRound, setCurrentRound] = useState<number>(0);
     const [showSummary, setShowSummary] = useState<boolean>(true);
     const [selectCurrentRound, setSelectCurrentRound] = useState<number>(rounds.length);
@@ -20,7 +21,19 @@ export default function HolesComparisonChart({ rounds } : { rounds: any }) {
 
     const currentRoundData = rounds[currentRound] || {};
 
-    console.log(currentRoundData)
+    // Memoize the cumulative scores calculation
+    const cumulativeScores = useMemo(() => {
+        const scores: number[] = [];;
+        let totalScore = 0;
+
+        // Calculate cumulative scores for each hole
+        currentRoundData.Holes.forEach((hole) => {
+            totalScore += hole.NetScore; 
+            scores.push(totalScore);
+        });
+
+        return scores;
+    }, [currentRound]);
 
     const handleRoundChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedRound = rounds.length - Number(event.target.value);
@@ -36,7 +49,7 @@ export default function HolesComparisonChart({ rounds } : { rounds: any }) {
                 <div className="grid grid-cols-3 gap-2 w-full mb-3">
                     <select
                         id="round-select"
-                        className="p-2 rounded-lg w-1/4 text-center cursor-pointer bg-middle shadow border-dark-2"
+                        className="p-2 rounded-lg w-1/3 text-center cursor-pointer bg-middle shadow border-dark-2 lg:text-md md:text-md sm:text-sm text-md"
                         onChange={handleRoundChange}
                         value={selectCurrentRound}
                         disabled={rounds.length === 0}
@@ -125,35 +138,42 @@ export default function HolesComparisonChart({ rounds } : { rounds: any }) {
             </div>
             <div className="flex flex-row p-2">
                 <TData>Par</TData>
-                {Array.from({ length: 18 }, () => (
-                    <TData>{Math.floor(Math.random() * 5) + 1}</TData>
+                {holes.map((hole) => (
+                    <TData>{hole.Par}</TData>
                 ))}
             </div>
             <div className="flex flex-row p-2">
                 <TData>Strokes</TData>
-                {Array.from({ length: 18 }, (_, idx) => (
+                {currentRoundData?.Holes.map((hole, idx) => {
+                    
+                    let strokes: number | string = hole.Strokes;
+                    if (hole.Strokes === 0) {
+                        strokes = "--";
+                    }
+                    return ( 
                     <div key={idx} className="flex-grow flex items-center justify-center w-8">   
-                        <Birdie>
-                            <TData>{Math.floor(Math.random() * 5) + 1}</TData>
-                        </Birdie>
+                        <ScoreWrapper score={hole.NetScore}>
+                            <TData>{strokes}</TData>
+                        </ScoreWrapper>
                     </div>
-                ))}
+                    )
+                })}
             </div>
             <div className="flex flex-row p-2">
                 <TData>Ovr</TData>
-                {Array.from({ length: 18 }, () => (
-                    <div className="flex-grow flex items-center justify-center w-8"> 
-                        <Bogey size="12">
-                            <Bogey size="10">
-                                <Bogey size="8">
-                                    <Bogey>
-                                        <TData>{-Math.floor(Math.random() * 5) - 1}</TData>
-                                    </Bogey>
-                                </Bogey>
-                            </Bogey>
-                        </Bogey>    
-                    </div>
-                ))}
+                {cumulativeScores.map((score) => {
+                    let cumulativeScore: number | string = score;
+                    if (cumulativeScore === 0) {
+                        cumulativeScore = "E";
+                    }
+
+                    return (
+                        <div className="flex-grow flex items-center justify-center w-8"> 
+                            <TData>{cumulativeScore}</TData>
+                        </div>
+                    )
+
+                })}
             </div>
         </div>
     );

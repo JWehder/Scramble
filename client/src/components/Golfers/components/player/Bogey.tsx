@@ -1,4 +1,6 @@
-export default function Bogey({ children, size = "6" }) {
+import React from "react";
+
+export default function Bogey({ children, size = "6" } : { children: React.ReactNode, size: string }) {
     size = `w-${size} h-${size}`;
 
     return (

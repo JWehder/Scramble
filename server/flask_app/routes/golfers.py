@@ -4,6 +4,7 @@ import os
 from bson.objectid import ObjectId
 from pydantic import ValidationError 
 import traceback
+import datetime
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -65,9 +66,18 @@ def get_golfer_details(golfer_id):
                     "Position": "1" 
                 })
 
+                golfer_tourney_details_dict["HoleData"] = tournament_details["Holes"]
                 golfer_tourney_details_dict["TournamentName"] = tournament_details["Name"]
                 golfer_tourney_details_dict["WinningScore"] = winning_golfer["Score"]
-                golfer_tourney_details_dict["StartDate"] = tournament_details["StartDate"]
+
+                # Parse the ISO date string
+                start_date = tournament_details["StartDate"]
+
+                # Format it to a readable string
+                readable_date = start_date.strftime("%B %d, %Y")  # e.g., "March 17, 2024"
+
+
+                golfer_tourney_details_dict["StartDate"] = readable_date
 
                 golfers_details_list.append(golfer_tourney_details_dict)
                 
