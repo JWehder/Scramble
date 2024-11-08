@@ -83,7 +83,7 @@ export default function Schedule() {
     ]
 
     return (
-        <div className="w-1/2 rounded-xl overflow-auto my-2">
+        <div className="w-full rounded-xl overflow-auto p-2">
             <h1 
             className="text-2xl font-PTSans text-light text-center p-2 bg-middle rounded-t-xl brightness-125"
             >

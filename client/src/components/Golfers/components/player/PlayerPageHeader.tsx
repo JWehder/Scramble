@@ -1,4 +1,3 @@
-import golferPic from "../../../../assets/golfer.png";
 import PlayerInfoTd from "./PlayerInfoTd";
 import PlayerInfoHead from "./PlayerInfoHead";
 import { useSelector } from "react-redux";
@@ -29,7 +28,7 @@ export default function PlayerPageHeader() {
         <div className="bg-middle w-full h-1/3 rounded-t-xl flex">
             <div className="w-1/4">
                 <div className="flex items-center justify-center flex-grow">
-                    <img src={golferPic} alt="Player1" />
+                    
                 </div>
             </div>
             <div className="w-3/4">

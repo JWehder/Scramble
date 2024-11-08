@@ -17,10 +17,10 @@ export default function Dashboard() {
     // code to be implemented when we have data
 
     return (
-        <>
-            <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans py-2'>
+        <div className='flex justify-center items-center w-full flex-col min-w-[700px]'>
+            <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans'>
                 <div className='w-1/3 flex items-center justify-center'>
-                    <h1 className='text-4xl'>
+                    <h1 className='text-xl lg:text-4xl md:text-2xl sm:text-xl'>
                         Your Leagues
                     </h1>
                 </div>
@@ -42,7 +42,7 @@ export default function Dashboard() {
                 </div>
 
             </div>
-                <div className='w-10/12 bg-middle rounded-lg overflow-auto min-w-[500px] min-h-[400px] h-[500px] py-3 flex-grow shrink'> 
+                <div className='w-10/12 bg-middle rounded-lg overflow-auto spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)]'> 
 
                     { activeComponent === "Schedule" && 
                         <div className='flex items-center justify-center'>
@@ -55,6 +55,6 @@ export default function Dashboard() {
                         </div>
                     }
                 </div>
-        </>
+        </div>
     );
   }

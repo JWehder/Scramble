@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Standings from './Standings';
 import Roster from './Roster';
 import { useState } from 'react';
@@ -32,7 +32,9 @@ export default function LeagueDashboard() {
         queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
     };
 
-    console.log(leagueId);
+    useEffect(() => {
+        
+    }, [])
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[700px]'>

@@ -2,8 +2,15 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { fetchWrapper } from "../../Utils/methods/helpers";
 import axios from "axios";
 
+export const getLeague = createAsyncThunk(
+    "leagues/league_id", 
+    (league_id, thunkAPI) => {
+    response = axios.get(`/api/leagues/${league_id}`, thunkAPI);
+    return response.data;
+});
+
 const initialState = {
-    user: false,
+    league: {},
 };
 
 const leagueSlice = createSlice({
