@@ -2,7 +2,7 @@ import Avatar  from "../../Utils/components/Avatar";
 import React from "react";
 
 interface PlayerDataProps {
-    rank: number | undefined;
+    rank: number | string | undefined;
     name: string;
     age?: number;
     even?: boolean;

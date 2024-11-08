@@ -1,6 +1,8 @@
 import PlayerData from "../../../Golfers/components/PlayerData";
 import Tourney from "./Tourney";
 import TableHeaders from "./TableHeaders";
+import React from "react";
+import { useParams } from "react-router-dom";
 
 export default function Leaderboard() {
     const players = [
@@ -51,6 +53,10 @@ export default function Leaderboard() {
         }
     ]
 
+    const { leagueId } = useParams();
+
+    // const tournaments = useFetchTournaments()
+
     const displayRoster = players.map((player, idx) => {
             if (idx % 2 === 0) {
                 return <PlayerData
@@ -71,7 +77,7 @@ export default function Leaderboard() {
     const headers = ["Place", "Golfer", "R1", "Thru", "Total", "Projected Place"];
 
     return (
-        <div className="w-full h-full overflow-auto text-light font-PTSans">
+        <div className="w-full h-full overflow-auto text-light font-PTSans p-3 bg-dark shadow-xl">
             <Tourney />
             <TableHeaders headers={headers} />
             {displayRoster}

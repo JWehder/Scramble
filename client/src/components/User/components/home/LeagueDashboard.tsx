@@ -27,8 +27,6 @@ export default function LeagueDashboard() {
     const signedIn = useSelector((state: RootState) => state.users.user);
     const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
 
-    // code to be implemented when we have data
-
     const onClose = () => {
         dispatch(resetSelectedGolfer());
         queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });

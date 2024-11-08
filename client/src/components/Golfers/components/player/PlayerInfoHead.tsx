@@ -1,3 +1,5 @@
+import React from "react"
+
 export default function PlayerInfoHead({ datapoint, children }) {
     return (
         <div className="flex flex-col items-center justify-center p-2 flex-grow h-14 font-PTSans w-auto">

@@ -19,3 +19,16 @@ export const useFetchGolferTournamentDetails = (golferId?: string) => {
     });
 };
 
+const fetchTournamentDetails = async (tournamentId: string) => {
+    const response = await axios.get(`/api/tournaments/${tournamentId}/tournament-details`);
+    return response.data;
+};
+
+export const useFetchTournamentDetails = (golferId?: string) => {
+    return useQuery<TournamentDetailsResponse>({
+        queryKey: ['golferTournamentDetails', golferId],
+        queryFn: () => fetchGolferTournamentDetails(golferId!),
+        enabled: !!golferId // Only enable query if golferId is valid
+    });
+};
+

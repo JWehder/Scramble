@@ -28,7 +28,6 @@ class Tournament(Base):
     Yardage: Optional[str] = None
     IsCompleted: bool = False
     InProgress: bool = False
-    Golfers: Optional[List[PyObjectId]] = []
     ProSeasonId: Optional[PyObjectId]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

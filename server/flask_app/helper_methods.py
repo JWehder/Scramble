@@ -57,7 +57,7 @@ def to_serializable(data):
         return str(data)
     # Convert datetime to ISO format
     elif isinstance(data, datetime):
-        return data.isoformat()
+        return data.strftime("%m/%d/%Y")
     # Return data if no conversion is needed
     else:
         return data
