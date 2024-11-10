@@ -17,12 +17,6 @@ export const App: React.FC<AppProps> = ({ children }) => {
   const signedIn = useSelector((state: RootState) => state.users.user);
 
   useEffect(() => {
-    fetch('/api/tournaments')
-      .then((r) => r.json())
-      .then((data) => console.log(data));
-  });
-
-  useEffect(() => {
     // Make the GET request to retrieve the client ID
     axios.get('/api/get_client_id')
         .then(response => {

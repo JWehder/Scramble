@@ -13,22 +13,24 @@ leagues_collection = db.leagues
 
 leagues_bp = Blueprint('leagues', __name__)
 
-@leagues_bp.route('/leagues/<league_id>', methods=['GET'])
+@leagues_bp.route('/<league_id>', methods=['GET'])
 def get_teams_by_league_id(league_id):
     """Fetches a round by ID"""
     league = leagues_collection.find_one({"_id": ObjectId(league_id)})
+    league = League(**league)
     if league:
-        if len(league["Teams"]) > 1:
+        if len(league.Teams) > 1:
             teams = []
-            for team_id in league["Teams"]:
+            for team_id in league.Teams:
                 team = teams_collection.find_one({"_id": team_id})
                 if team:
                     teams.append(team)
                 else:
                     return abort(404, description=f"There was an error collecting the teams for this league. Team id: {team_id} does not exist.")
-            league["Teams"] = teams
+            league.Teams = teams
+        
         return jsonify({
-            league
-        })
+            "data": league.to_dict()
+        }), 200
     else:
-        return abort(404, description="League not found")
+        return jsonify({"error": "League was not found."}), 404

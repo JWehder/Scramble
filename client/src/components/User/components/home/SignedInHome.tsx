@@ -14,12 +14,6 @@ export const SignedInHome: React.FC<SignedInHomeProps> = ({ children }) => {
 
     const dispatch = useDispatch();
 
-    const open = useSelector((state: RootState ) => state.golfers.showGolferModal)
-
-    function onClose() {
-        dispatch(setPlayerModal())
-    }
-
     return ( 
         <div className="pt-20 pb-12 bg-dark h-screen w-screen overflow-auto">
             <SideBar />

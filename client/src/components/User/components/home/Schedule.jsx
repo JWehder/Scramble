@@ -89,7 +89,7 @@ export default function Schedule() {
             >
                 Events
             </h1>
-            {dates.map((date) => <EventDate date={date} />)}
+            {dates.map((date, idx) => <EventDate key={`${date}-${idx}`} date={date} />)}
         </div>
     )
 }

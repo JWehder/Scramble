@@ -16,11 +16,15 @@ import Modal from '../../../Utils/components/Modal';
 import { resetSelectedGolfer } from '../../../Golfers/state/golferSlice';
 import { useQueryClient } from '@tanstack/react-query';
 import PlayerPage from '../../../Golfers/components/player/PlayerPage';
+import { getLeague } from '../../../Leagues/state/leagueSlice';
+import { useAppDispatch } from '../../../../hooks/storeHooks';
 
 export default function LeagueDashboard() {
-    const dispatch = useDispatch();
-    const { leagueId } = useParams();
+    const appDispatch = useAppDispatch();
+    const { leagueId } = useParams<string>();
     const queryClient = useQueryClient();
+
+    console.log(leagueId)
 
     const [activeComponent, setActiveComponent] = useState("Schedule");
 
@@ -28,13 +32,16 @@ export default function LeagueDashboard() {
     const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
 
     const onClose = () => {
-        dispatch(resetSelectedGolfer());
+        appDispatch(resetSelectedGolfer());
         queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
     };
 
     useEffect(() => {
+        if (leagueId) {
+            appDispatch(getLeague(leagueId))
+        }
         
-    }, [])
+    }, [leagueId])
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[700px]'>
