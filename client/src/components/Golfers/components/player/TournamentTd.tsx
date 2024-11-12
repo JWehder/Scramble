@@ -5,17 +5,14 @@ import TableRow from "../../../Utils/components/TableRow";
 
 export default function TournamentTd({ 
     golferDetails, 
-    even 
+    even,
+    desiredKeysSet
 }: {
     golferDetails: TournamentDetails,
-    even: boolean
+    even: boolean,
+    desiredKeysSet: Set<string>
 }) {
     const [showHolesComparisonChart, setShowHolesComparisonChart] = useState(false);
-   
-    const brightness = even ? 'brightness-125' : '';
-
-    // Set of keys to display with fallback support
-    const desiredKeysSet = new Set(["Position", "R1", "R2", "R3", "R4", "TotalStrokes", "Score", "WinningScore"]);
 
     return (
         <>
@@ -23,7 +20,7 @@ export default function TournamentTd({
             firstTwoDatapoints={[golferDetails.StartDate, golferDetails.TournamentName]}
             data={golferDetails}
             columns={desiredKeysSet}
-            brightness={brightness}
+            brightness={even ? 'brightness-125' : ''}
             onClick={() => setShowHolesComparisonChart(!showHolesComparisonChart)}
             />
             {showHolesComparisonChart && (

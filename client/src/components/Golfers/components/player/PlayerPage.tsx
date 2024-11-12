@@ -17,14 +17,15 @@ export default function PlayerPage() {
     isSuccess,
     isError, 
     error } = useFetchGolferTournamentDetails(selectedGolfer?.id);
-    
-    // data will be filed in, this is just an example
 
     if (!selectedGolfer) {
         dispatch(resetSelectedGolfer());
     };
 
-    const tournamentHeaders = ["date", "tournament name", "position", "r1", "r2", "r3", "r4", "score", "strokes", "leader"]
+    const tournamentHeaders = ["date", "tournament name", "position", "r1", "r2", "r3", "r4", "score", "strokes", "leader"];
+
+    // Set of keys to display with fallback support
+    const desiredKeysSet = new Set(["Position", "R1", "R2", "R3", "R4", "TotalStrokes", "Score", "WinningScore"]);
 
     return (
         <div className="p-2 overflow-auto rounded-xl h-auto min-h-[300px] max-h-[600px]">
@@ -38,6 +39,7 @@ export default function PlayerPage() {
                         <TournamentTd 
                         key={detail.id}
                         golferDetails={detail} 
+                        desiredKeysSet={desiredKeysSet}
                         even={idx % 2 == 0}
                         />
                     )

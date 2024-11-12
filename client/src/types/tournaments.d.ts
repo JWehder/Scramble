@@ -16,4 +16,5 @@ export interface Tournament {
     ProSeasonId: string
     created_at: string
     updated_at: string
+    PreviousWinnerScore: number | null
 }

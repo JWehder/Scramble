@@ -1,7 +1,8 @@
+import { Tournament } from '../../../../types/tournaments';
 import Switch from '../../../Utils/components/Switch';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
-export default function Tourney() {
+export default function Tourney({ tournament } : { tournament:Tournament }) {
 
     const [checked, setChecked] = useState(false);
 
@@ -11,8 +12,20 @@ export default function Tourney() {
                 <div className="flex-1 items-center pb-2">   
                     <h1 className='text-3xl'>Players Championship Leaderboard</h1>
                     <div className="mt-2">
-                        <p>Date: March 14th - 17th</p>
-                        <p>Course: Players Stadium Course</p>
+                        <p>
+                            {tournament.StartDate} - {tournament.EndDate}
+                        </p>
+                        <p>
+                            {tournament.Venue ? 
+                            <>
+                                <div>
+                                    {tournament.Venue[0]}
+                                </div>
+                            </>
+                            :
+                            null
+                            }
+                        </p>
                         <p>Purse: $25,000,000</p>
                     </div>
                 </div>
@@ -24,7 +37,7 @@ export default function Tourney() {
                     <p>Precipitation: 0%</p>
                 </div>
             </div>
-            <div class="p-4 text-center">
+            <div className="p-4 text-center">
                 <Switch checked={checked} setChecked={setChecked} />
             </div>
         </div>

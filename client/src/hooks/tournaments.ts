@@ -1,16 +1,20 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { TournamentDetailsResponse } from "./golferTournamentDetails";
+import { Tournament } from "../types/tournaments";
 
-const fetchTournamentDetails = async (leagueId) => {
-    const response = await axios.get(`/api/tournaments/leagues/${leagueId}`);
+export interface TournamentDetailsResponse {
+    tournaments: Tournament[];
+}
+
+const fetchTournamentScheudule = async (fantasy_league_season_id: string) => {
+    const response = await axios.get(`/api/fantasy_league_seasons/${fantasy_league_season_id}/tournaments/tournament_schedule`);
     return response.data;
 };
 
-export const useFetchTournamentDetails = (leagueId?: string) => {
+export const useFetchTournamentDetails = (fantasy_league_season_id?: string) => {
     return useQuery<TournamentDetailsResponse>({
-        queryKey: ['golferTournamentDetails', leagueId],
-        queryFn: () => fetchTournamentDetails(leagueId!),
-        enabled: !!leagueId // Only enable query if golferId is valid
+        queryKey: ['golferTournamentDetails', fantasy_league_season_id],
+        queryFn: () => fetchTournamentScheudule(fantasy_league_season_id!),
+        enabled: !!fantasy_league_season_id // Only enable query if golferId is valid
     });
 };
