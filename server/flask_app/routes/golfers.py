@@ -76,7 +76,6 @@ def get_golfer_details(golfer_id):
                 # Format it to a readable string
                 readable_date = start_date.strftime("%B %d, %Y")  # e.g., "March 17, 2024"
 
-
                 golfer_tourney_details_dict["StartDate"] = readable_date
 
                 golfers_details_list.append(golfer_tourney_details_dict)

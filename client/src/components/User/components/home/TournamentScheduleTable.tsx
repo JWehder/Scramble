@@ -16,12 +16,12 @@ export default function TournamentScheduleTable({ setSelectedTournament }) {
         isError
     } = useFetchTournamentDetails(currentFantasyLeagueSeasonId);
 
-    const desiredKeysSet = new Set(["City", "State", "Purse", "PreviousWinner"]);
+    const desiredKeysSet = new Set(["City", "State", "PreviousWinner", "Purse"]);
 
     const headers = ["Date", "Tournament Name", "City", "State", "Purse", "Winner"];
 
     return (
-        <div className="bg-middle rounded-xl text-light">
+        <>
             <TableHeaders headers={headers} />
             { isSuccess && data?.tournaments.map((tournament: Tournament, idx) => {
                 let newDesiredKeysSet = {};
@@ -42,6 +42,6 @@ export default function TournamentScheduleTable({ setSelectedTournament }) {
             })}
             { isError && <div>Error loading tournament details.</div> }
             { isFetching && <div>Loading...</div> }
-        </div>
+        </>
     )
 }

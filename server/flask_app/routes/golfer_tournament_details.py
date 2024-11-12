@@ -2,6 +2,8 @@ from flask import jsonify, abort, Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
+import traceback
+from pydantic import ValidationError
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -73,32 +75,50 @@ def get_all_golfer_tournament_details_for_tournament(tournament_id: str):
 
     all_golfer_tournament_details = db.golfertournamentdetails.find({
         "TournamentId": ObjectId(tournament_id)
-    }).sort([("WD", 1), ("Score", 1)])
+    }).sort([("WD", 1), ("Cut", 1), ("Score", 1)])
 
     if all_golfer_tournament_details:
         all_golfer_tournament_details_list = []
 
         for golfer_tournament_detail in all_golfer_tournament_details:
-            golfer_tournament_detail_instance = GolferTournamentDetails(**golfer_tournament_detail)
+            try:
+                golfer_tournament_detail_instance = GolferTournamentDetails(**golfer_tournament_detail)
 
-            rounds = db.rounds.find({
-                "GolferTournamentDetailsId": ObjectId(golfer_tournament_detail_instance.id)
-            })
-            
-            # append the actual round results rather than just the id
-            rounds_dicts = [(Round(**_round)).to_dict() for _round in rounds]
+                rounds = db.rounds.find({
+                    "GolferTournamentDetailsId": ObjectId(golfer_tournament_detail_instance.id)
+                })
+                
+                # append the actual round results rather than just the id
+                rounds_dicts = [(Round(**_round)).to_dict() for _round in rounds]
 
-            # create a dict with custom method for the ability to jsonify
-            golfer_tourney_details_dict = golfer_tournament_detail_instance.to_dict()
+                # create a dict with custom method for the ability to jsonify
+                golfer_tourney_details_dict = golfer_tournament_detail_instance.to_dict()
 
-            golfer_tourney_details_dict["Rounds"] = rounds_dicts
+                golfer_tourney_details_dict["Rounds"] = rounds_dicts
 
-            all_golfer_tournament_details_list.append(golfer_tourney_details_dict)
+                all_golfer_tournament_details_list.append(golfer_tourney_details_dict)
+            except ValidationError as e:
+                print(f"there was an issue: {e}")
+                return jsonify({"error": f"There was an issue creating an instance: {e}"}), 400
 
-        return jsonify({
-            all_golfer_tournament_details_list
-        }), 200
-    else:
-        return jsonify({
-            "error": "Sorry, we could not find golfer tournament details for this tournament."
-        }), 404
+            except Exception as e:
+                # Catch any other exceptions and print the traceback
+                print("An unexpected error occurred:", type(e).__name__)
+                print("Error details:", str(e))
+                print("Traceback:")
+                traceback.print_exc()
+                return jsonify({"error": "An unexpected error occurred. Please check server logs for details."}), 500
+
+        if all_golfer_tournament_details_list:
+            try:
+                return jsonify({"details": all_golfer_tournament_details_list}), 200
+            except Exception as e:
+                # Catch any other exceptions and print the traceback
+                print("An unexpected error occurred:", type(e).__name__)
+                print("Error details:", str(e))
+                print("Traceback:")
+                traceback.print_exc()
+                return jsonify({"error": "An unexpected error occurred. Please check server logs for details."}), 500
+        else:
+            print("no tourney details")
+            return jsonify({"error": "No tournament details found for this golfer."}), 404

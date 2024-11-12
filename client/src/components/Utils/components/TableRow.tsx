@@ -2,7 +2,7 @@ import React from 'react';
 import TData from './TData';
 
 type TableRowProps = {
-    firstTwoDatapoints: string[];
+    firstTwoDatapoints: string[] | React.ReactNode[];
     data: Record<string, any>;
     columns: Set<string>;
     onClick: () => void;
@@ -17,7 +17,7 @@ const TableRow: React.FC<TableRowProps> = ({ firstTwoDatapoints, data, columns, 
     >
         {/* Left side: Start date and tournament name */}
         <div className="flex w-1/2 items-center">
-            <div className="w-1/6 text-left px-2 overflow-hidden text-ellipsis whitespace-nowrap">
+            <div className="w-1/6 text-center px-2 overflow-hidden text-ellipsis whitespace-nowrap">
                 {firstTwoDatapoints[0]}
             </div>
             <div className="w-5/6 text-left flex items-center pl-6">

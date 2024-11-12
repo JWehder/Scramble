@@ -9,8 +9,7 @@ export default function Leaderboard() {
     const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
 
     return (
-        <div className="w-full h-full overflow-hidden text-light font-PTSans p-4 bg-middle shadow-xl">
-            <div className="p-4 overflow-auto rounded-xl w-full h-auto min-h-[300px] max-h-[600px]">
+        <div className="w-full h-full text-light font-PTSans p-4 bg-middle shadow-xl">
                 { selectedTournament ?
                     <>
                         <Tourney 
@@ -28,7 +27,6 @@ export default function Leaderboard() {
                     </>
 
                 }
-            </div>
         </div>
     )
 }

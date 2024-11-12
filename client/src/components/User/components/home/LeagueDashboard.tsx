@@ -69,7 +69,7 @@ export default function LeagueDashboard() {
 
                 <div className='p-5 flex items-center justify-center w-1/3'>
                         <SquigglyUnderline 
-                        items={[{name:"Schedule"}, {name: "Standings"}, {name:"Team"}, {name:"Leaderboard"}, {name:"Golfers"}]}
+                        items={[{name:"Schedule"}, {name: "Standings"}, {name:"Team"}, {name:"Tournaments"}, {name:"Golfers"}]}
                         setActiveComponent={setActiveComponent}
                         active={activeComponent}
                         />
@@ -88,7 +88,7 @@ export default function LeagueDashboard() {
                 </div>
 
             </div>
-            <div className='w-10/12 bg-middle rounded-lg spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)] overflow-hidden'> 
+            <div className='w-10/12 bg-middle rounded-lg spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)] overflow-auto'> 
 
                 { activeComponent === "Standings" && 
                     <div className='flex items-center justify-center'>
@@ -100,7 +100,7 @@ export default function LeagueDashboard() {
                         <Roster />
                     </div>
                 } 
-                { activeComponent === "Leaderboard" && 
+                { activeComponent === "Tournaments" && 
                     <div className='flex items-center justify-center'>
                         <Leaderboard />
                     </div>
