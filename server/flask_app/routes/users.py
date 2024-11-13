@@ -188,7 +188,7 @@ def get_user(user_id):
 
     return jsonify({"error": "User not found"}), 404
 
-@users_bp.route('/users/<user_id>', methods=['PUT'])
+@users_bp.route('/<user_id>', methods=['PUT'])
 def update_user(user_id):
     """Updates an existing user"""
     data = request.get_json()

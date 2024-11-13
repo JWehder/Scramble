@@ -1,12 +1,18 @@
-import React, {useState} from "react";
+import React from "react";
 import TableHeaders from "./TableHeaders";
 import { useFetchAllTournamentDetails } from "../../../../hooks/golferTournamentDetails";
-import TableRow from "../../../Utils/components/TableRow";
-import HolesComparisonChart from "../../../Golfers/components/player/HolesComparisonChart";
+import GolferTournamentDetailsTd from "./GolferTournamentDetailsTd";
+import { TournamentHoles } from "../../../../types/tournamentHoles";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../store";
 
 export default function GolferTournamentDetailsTable(
-    { tournamentId } : 
-    { tournamentId: string }) {
+    { tournamentId, holeData } : 
+    {
+        tournamentId: string,
+        holeData: TournamentHoles[]
+    
+    }) {
 
     const { data,
     isFetching,
@@ -18,35 +24,43 @@ export default function GolferTournamentDetailsTable(
     // Set of keys to display with fallback support
     const desiredKeysSet = new Set(["Position", "R1", "R2", "R3", "R4", "TotalStrokes", "Score", "FedexPts"]);
 
+    const leaguesGolferTournamentDetailsIds = useSelector((state: RootState) => {
+        return state.golfers.leaguesGolfersTournamentDetailsIds
+    });
+
     return (
         <div className="bg-middle rounded-xl text-light overflow-auto">
         <TableHeaders 
         headers={tournamentHeaders}
         />
-        { isSuccess && data?.details.map((detail, idx) => {
-            const [showHolesComparisonChart, setShowHolesComparisonChart] = useState<Boolean>(false);
-
-            return (
-
-                <>
-                    <TableRow 
-                    firstTwoDatapoints={[detail.Position, detail.Name]}
-                    data={detail}
-                    columns={desiredKeysSet}
-                    brightness={idx % 2 === 0 ? 'brightness-125' : ''}
-                    onClick={() => setShowHolesComparisonChart(!showHolesComparisonChart)}
-                    />
-                    {showHolesComparisonChart && (
-                        <HolesComparisonChart
-                            rounds={detail.Rounds}
-                            holes={detail.HoleData}
+        {isSuccess && data?.details && (
+            leaguesGolferTournamentDetailsIds ? (
+                // Filter by IDs present in leaguesGolferTournamentDetailsIds
+                data.details
+                    .filter((detail) => leaguesGolferTournamentDetailsIds.has(detail.id))
+                    .map((detail, idx) => (
+                        <GolferTournamentDetailsTd 
+                            key={detail.id}  // Always include a key when mapping
+                            detail={detail}
+                            desiredKeysSet={desiredKeysSet}
+                            holeData={holeData}
+                            idx={idx}
                         />
-                    )}
-                </>
-
+                    ))
+            ) : (
+                // Render without filtering if leaguesGolferTournamentDetailsIds is not available
+                data.details.map((detail, idx) => (
+                    <GolferTournamentDetailsTd 
+                        key={detail.id}
+                        detail={detail}
+                        desiredKeysSet={desiredKeysSet}
+                        holeData={holeData}
+                        idx={idx}
+                    />
+                ))
             )
-            })
-        }
+        )}
+
         { isError && <div>Error loading tournament details.</div> }
         { isFetching && <div>Loading...</div> }
     </div>

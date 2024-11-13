@@ -6,6 +6,9 @@ import { useSelector } from 'react-redux';
 import { Outlet } from "react-router-dom";
 import React from 'react';
 import { RootState } from './store';
+import { AppDispatch } from './store';
+import { useDispatch } from 'react-redux';
+import { getUser } from './components/User/state/userSlice';
 
 interface AppProps {
   children: React.ReactNode;
@@ -13,6 +16,7 @@ interface AppProps {
 
 export const App: React.FC<AppProps> = ({ children }) => {
   const [clientId, setClientId] = useState();
+  const dispatch = useDispatch<AppDispatch>();
 
   const signedIn = useSelector((state: RootState) => state.users.user);
 
@@ -27,6 +31,11 @@ export const App: React.FC<AppProps> = ({ children }) => {
             console.error('Error fetching client ID:', error);
         });
   }, [clientId]); 
+
+  useEffect(() => {
+    dispatch(getUser());
+    console.log(signedIn)
+  }, []); 
 
   if (!clientId) return <div>Loading...</div>
 

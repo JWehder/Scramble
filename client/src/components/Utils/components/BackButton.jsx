@@ -10,7 +10,7 @@ export default function BackButton({ handleBackClick, size, color }) {
         viewBox="0 0 24 24" 
         strokeWidth={1.5} 
         stroke="currentColor" 
-        className={`${size} cursor-pointer mx-2 ${color}`}
+        className={`${size} cursor-pointer mx-2 ${color} hover:brightness-125`}
         >
             <path 
             strokeLinecap="round" 

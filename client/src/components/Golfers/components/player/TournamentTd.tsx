@@ -1,6 +1,6 @@
 import HolesComparisonChart from "./HolesComparisonChart";
 import React, { useState } from "react";
-import { TournamentDetails } from "../../../../types/golferTournamentDetails";
+import { GolferTournamentDetails } from "../../../../types/golferTournamentDetails";
 import TableRow from "../../../Utils/components/TableRow";
 
 export default function TournamentTd({ 
@@ -8,7 +8,7 @@ export default function TournamentTd({
     even,
     desiredKeysSet
 }: {
-    golferDetails: TournamentDetails,
+    golferDetails: GolferTournamentDetails,
     even: boolean,
     desiredKeysSet: Set<string>
 }) {

@@ -1,9 +1,9 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { TournamentDetails } from "../types/golferTournamentDetails";
+import { GolferTournamentDetails } from "../types/golferTournamentDetails";
 
 export interface GolferTournamentDetailsResponse {
-    details: TournamentDetails[];
+    details: GolferTournamentDetails[];
 }
 
 const fetchGolferTournamentDetails = async (golferId: string) => {

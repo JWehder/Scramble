@@ -44,7 +44,7 @@ export default function Standings() {
 
     return (
     <div className="w-full h-full overflow-auto text-light font-PTSans">
-        <DashboardTitle title="Overall Standings">
+        <DashboardTitle>
             <div className="flex-1 text-right mr-3">
                 <p>Next Tournament: Masters, April 20th-24th</p>
                 <p>Next Draft: April 20th-24th</p>

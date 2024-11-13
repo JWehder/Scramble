@@ -24,7 +24,7 @@ class User(Base):
     Teams: List[str] = []
     VerificationCode: Optional[str] = 0
     IsVerified: bool
-    VerificationExpiresAt: datetime
+    VerificationExpiresAt: Optional[datetime]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

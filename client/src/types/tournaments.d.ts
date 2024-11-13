@@ -1,3 +1,5 @@
+import { TournamentHoles } from "./tournamentHoles"
+
 export interface Tournament {
     id: string
     EndDate: string
@@ -17,4 +19,5 @@ export interface Tournament {
     created_at: string
     updated_at: string
     PreviousWinnerScore: number | null
+    Holes: TournamentHoles[]
 }

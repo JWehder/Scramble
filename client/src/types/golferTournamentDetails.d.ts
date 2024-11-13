@@ -1,7 +1,7 @@
 import { Round } from "./rounds"
 import { TournamentHoles } from "./tournamentHoles"
 
-export interface TournamentDetails {
+export interface GolferTournamentDetails {
     id: string
     GolferId: string
     Position: string

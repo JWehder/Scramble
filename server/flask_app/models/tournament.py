@@ -1,5 +1,5 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional, Dict, Union
+from pydantic import Field, field_validator
 from datetime import datetime
 from bson import ObjectId
 
@@ -29,6 +29,7 @@ class Tournament(Base):
     IsCompleted: bool = False
     InProgress: bool = False
     ProSeasonId: Optional[PyObjectId]
+    Holes: Optional[List[Dict[str, Union[str, int]]]]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

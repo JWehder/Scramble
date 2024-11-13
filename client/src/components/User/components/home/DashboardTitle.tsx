@@ -3,7 +3,7 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
 interface DashboardTitleProps {
-    title: string;
+    title: string | null;
     children?: React.ReactNode;
 }
 

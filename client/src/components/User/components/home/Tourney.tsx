@@ -1,13 +1,35 @@
+import { useDispatch } from 'react-redux';
 import { Tournament } from '../../../../types/tournaments';
 import Switch from '../../../Utils/components/Switch';
 import React, { useState } from 'react';
+import { getLeaguesGolferDetails } from '../../../Golfers/state/golferSlice';
+import { AppDispatch, RootState } from '../../../../store';
+import { useParams } from 'react-router-dom';
+import { resetLeaguesGolfersTournamentDetailsIds } from '../../../Golfers/state/golferSlice';
 
 export default function Tourney({ tournament } : { tournament: Tournament }) {
 
     const [checked, setChecked] = useState(false);
+    const dispatch = useDispatch<AppDispatch>();
 
     // Call the useQuery hook, passing in tournament location and start date
     // const { data: weatherData, isLoading, error } = useFetchTournamentWeatherData(tournament)
+
+    const { leagueId } = useParams<{ leagueId: string }>();
+
+    // Use leagueId and dispatch action if it's defined
+    function handleCheckedClick() {
+        if (leagueId && checked === false) {
+            setChecked(true);
+            dispatch(getLeaguesGolferDetails({ tournamentId: tournament.id, leagueId }));
+        }
+        else if (checked === true) {
+            setChecked(false);
+            dispatch(resetLeaguesGolfersTournamentDetailsIds())
+        } else {
+            console.error("League ID is not available in URL parameters.");
+        }
+    }
 
     return (
         <div>
@@ -31,7 +53,7 @@ export default function Tourney({ tournament } : { tournament: Tournament }) {
                             null
                             }
                         </p>
-                        <p>Purse: $25,000,000</p>
+                        <p>Purse: {tournament.Purse}</p>
                     </div>
                 </div>
                 <div className="flex-1 text-right pb-2">
@@ -50,7 +72,7 @@ export default function Tourney({ tournament } : { tournament: Tournament }) {
                 </div>
             </div>
             <div className="p-4 text-center">
-                <Switch checked={checked} setChecked={setChecked} />
+                <Switch checked={checked} setChecked={handleCheckedClick} />
             </div>
         </div>
 

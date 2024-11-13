@@ -46,8 +46,6 @@ export default function VerifyEmail() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        console.log(showLogin)
-
         dispatch(verifyEmail({
           code,
           email

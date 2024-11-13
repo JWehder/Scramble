@@ -14,6 +14,7 @@ export default function ForgotPassword({ showLogin, showCode }) {
   return (
     <div className="text-light font-PTSans rounded px-8 pt-6 pb-8 mb-4 w-full h-full">
     <h1 className="text-2xl text-center mb-4">Reset Password</h1>
+    {
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-sm font-bold mb-2" htmlFor="email">
@@ -43,6 +44,8 @@ export default function ForgotPassword({ showLogin, showCode }) {
             </p>
         </div>
       </form>
+    }
+
     </div>
   );
 }

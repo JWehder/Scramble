@@ -35,7 +35,7 @@ app.register_blueprint(golfer_tournament_details_bp, url_prefix='/golfer_tournam
 app.register_blueprint(holes_bp, url_prefix='/holes')
 app.register_blueprint(rounds_bp, url_prefix='/rounds')
 app.register_blueprint(team_results_bp, url_prefix='/team_results')
-app.register_blueprint(users_bp, url_prefix='/users')
+app.register_blueprint(users_bp, url_prefix='/auth')
 app.register_blueprint(league_settings_bp, url_prefix='/league_settings')
 app.register_blueprint(tournaments_bp, url_prefix='/tournaments')
 
