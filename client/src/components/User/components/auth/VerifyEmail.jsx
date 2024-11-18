@@ -16,8 +16,6 @@ export default function VerifyEmail() {
     const resendCodeStatus = useSelector((state) => state.users.resendCodeStatus);
     const verifyEmailError = useSelector((state) => state.users.verifyEmailError)
 
-    const showLogin = useSelector((state) => state.users.showLogin);
-
     const showCodeExpired = () => {
         setCodeExpired(true);
     };

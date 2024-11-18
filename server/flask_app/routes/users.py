@@ -11,7 +11,7 @@ import string
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import db
-from models import User
+from models import User, Team, League
 
 users_collection = db.users
 teams_collection = db.teams
@@ -29,12 +29,26 @@ def auth():
     user_id = session.get('user_id')
     if user_id:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
-        if user and user["IsVerified"]:
+        user = User(**user)
+        if user and user.IsVerified:
+            associated_leagues = []
+            # Query to find all teams in the user's teams list
+            teams = db.teams.find(
+                {"_id": {"$in": user.Teams}}
+            )
+            teams = [Team(**team).to_dict() for team in teams]
+            
+            for team in teams:
+                associated_leagues.append(team["LeagueId"])
+            session['user_id'] = str(user.id)
             return jsonify({
-                "_id": str(user["_id"]), 
-                "Username": user["Username"], 
-                "Email": user["Email"],
-                "Teams": user.get("Teams", [])
+                "user": {
+                    "Username": user.Username,
+                    "Email": user.Email,
+                    "Teams": teams,
+                    "Leagues": associated_leagues,
+                    "IsVerified": user.IsVerified
+                }
             }), 200
     return jsonify({"error": "Unauthorized access"}), 422
 
@@ -61,7 +75,6 @@ def signup():
                 formatted_errors[field] = ("Email is not valid. Please utilize this format: john.doe@example.com.")
             if field == "Password":
                 formatted_errors[field] = "Password must be between 8 and 50 characters long, and must include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
-            print(error)
         return jsonify(formatted_errors), 422  # Send this to the frontend
 
     does_email_exist = users_collection.find_one({"Email": new_user.Email})
@@ -90,6 +103,9 @@ def request_new_code():
     email = data.get("email")
     
     user = users_collection.find_one({ "Email": email })
+
+    
+
     if not user:
         return jsonify({"error": "User not found."}), 404
 
@@ -120,15 +136,9 @@ def verify_email():
     # Update the user's verification status
     users_collection.update_one({"Email": email}, {"$set": {"IsVerified": True}})
 
-    if session.get("user_id"):
-        return jsonify({
-            "message": "Email successfully verified.",
-            "User": session.get("user_id")
-        }), 200                  
-    else:
-        return jsonify({
-            "message": "Email successfully verified.",
-        }), 200                  
+    return jsonify({
+        "message": "Email successfully verified.",
+    }), 200        
 
 @users_bp.route('/login', methods=['POST'])
 def login():
@@ -151,19 +161,53 @@ def login():
     if user_data and user_data['IsVerified']:
         user = User(**user_data)
         if user.check_password(data.get("password")):
+            associated_leagues = []
+            # Query to find all teams in the user's teams list
+            teams = db.teams.find(
+                {"_id": {"$in": user.Teams}}
+            )
+            teams = [Team(**team).to_dict() for team in teams]
+            
+            for team in teams:
+                associated_leagues.append(team["LeagueId"])
             session['user_id'] = str(user.id)
             return jsonify({
-                "message": "Login successful",
-                "IsVerified": True
+                "user": {
+                    "Username": user.Username,
+                    "Email": user.Email,
+                    "Teams": teams,
+                    "Leagues": associated_leagues,
+                    "IsVerified": user.IsVerified
+                }
             }), 200
     else:
         user = User(**user_data)
-        user.send_verification_email()
-        session['user_id'] = str(user.id)
-        return jsonify({
-                "message": "Login successful after email verification.",
-                "IsVerified": False
+        if user.check_password(data.get("password")):
+            associated_leagues = []
+            # Query to find all teams in the user's teams list
+            teams = db.teams.find(
+                {"_id": {"$in": user.Teams}}
+            )
+            teams = [Team(**team).to_dict() for team in teams]
+            
+            for team in teams:
+                associated_leagues.append(team["LeagueId"])
+        
+            user.send_verification_email()
+            session['user_id'] = str(user.id)
+            return jsonify({
+                    "user": {
+                        "Username": user.Username,
+                        "Email": user.Email,
+                        "Teams": teams,
+                        "Leagues": associated_leagues,
+                        "IsVerified": user.IsVerified
+                    }
             }), 200
+        else:
+            return jsonify({
+                "error": "Password is incorrect"
+            }), 422
 
     return jsonify({"error": "Email, username, or password is incorrect. Please try again."}), 401
 
@@ -173,28 +217,14 @@ def logout():
     session.pop('user_id', None)
     return jsonify({"message": "Logged out successfully"}), 200
 
-@users_bp.route('/users/<user_id>', methods=['GET'])
-def get_user(user_id):
-    """Fetches a user by ID"""
-    user_data = users_collection.find_one({"_id": ObjectId(user_id)})
-    if user_data:
-        user = User(**user_data)
-        return jsonify({
-            "_id": str(user.id),
-            "Username": user.Username,
-            "Email": user.Email,
-            "Teams": user.Teams
-        }), 200
-
-    return jsonify({"error": "User not found"}), 404
-
-@users_bp.route('/<user_id>', methods=['PUT'])
-def update_user(user_id):
+@users_bp.route('/update_user', methods=['PUT'])
+def update_user():
     """Updates an existing user"""
     data = request.get_json()
+    user_id = session["user_id"]
     user_data = users_collection.find_one({"_id": ObjectId(user_id)})
 
-    if user_data:
+    if user_data and str(user_data["_id"]) == session["user_id"]:
         user = User(**user_data)
 
         # Update user's fields
@@ -202,23 +232,56 @@ def update_user(user_id):
             user.Username = data['Username']
         if 'Email' in data:
             user.Email = data['Email']
+
+        # Password update: check if new password is the same as the current password
         if 'Password' in data:
-            user.Password = user.hash_password(data['Password'])
+            new_password = data['Password']
+            if user.Password.check_password(new_password):
+                return jsonify({"error": "New password cannot be the same as the current password"}), 400
+            else:
+                # Hash the new password and update
+                user.Password = user.hash_password(new_password)
 
         user.save()
-        return jsonify({"message": "User updated successfully"}), 200
+        return jsonify({
+                "user": {
+                    "Username": user.Username,
+                    "Email": user.Email,
+                    "IsVerified": user.IsVerified
+                }
+        }), 200
+    return jsonify({"error": "You are unauthorized to change this document."}), 401
+
+@users_bp.route('/reset_password', methods=['PUT'])
+def reset_password():
+    """Updates an existing user"""
+    data = request.get_json()
+    user_data = users_collection.find_one({"Email": data["email"]})
+
+    if user_data:
+        user = User(**user_data)
+
+        user.Password = user.hash_password(data['Password'])
+
+        user.save()
+        return jsonify({"message": "User password updated successfully"}), 200
 
     return jsonify({"error": "User not found"}), 404
 
-@users_bp.route('/users/<user_id>', methods=['DELETE'])
-def delete_user(user_id):
+@users_bp.route('/delete_user', methods=['DELETE'])
+def delete_user():
     """Deletes a user by ID"""
+    user_id = session["user_id"]
     result = users_collection.delete_one({"_id": ObjectId(user_id)})
+
+    if not user_id:
+        return jsonify({"message": "You are unauthorized to delete this user."}), 401
+
     if result.deleted_count > 0:
         return jsonify({"message": "User deleted"}), 200
     return jsonify({"error": "User not found"}), 404
 
-@users_bp.route('/users/<user_id>/teams', methods=['GET'])
+@users_bp.route('/teams', methods=['GET'])
 def get_user_teams(user_id):
     """Fetches all teams for a given user"""
     teams = list(teams_collection.find({"owner_id": ObjectId(user_id)}))

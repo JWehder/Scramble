@@ -1,7 +1,6 @@
 import SideBar from "../sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
 import Modal from "../../../Utils/components/Modal";
-import { setPlayerModal } from "../../state/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from "../../../../store"
 import React from "react";

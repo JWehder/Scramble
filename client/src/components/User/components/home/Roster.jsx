@@ -3,12 +3,11 @@ import Headers from "./TableHeaders";
 import DashboardTitle from "./DashboardTitle";
 import Button from "../../../Utils/components/Button";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../store";
 import React from "react";
 
 export default function Roster() {
 
-    const user = useSelector((state: RootState) => state.users.user);
+    const user = useSelector((state) => state.users.user);
 
     console.log(user);
 

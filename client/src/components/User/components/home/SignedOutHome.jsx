@@ -12,7 +12,6 @@ export default function SignedOutHome() {
     const signedIn = useSelector((state) => state.users.user);
 
     useEffect(() => {
-        console.log("should be moving to leagues")
         if (signedIn) {
             navigate("/leagues");
         }
