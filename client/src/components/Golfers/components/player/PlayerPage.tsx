@@ -1,4 +1,4 @@
-import TableHeaders from "../../../User/components/home/TableHeaders";
+import TableHeaders from "../../../Utils/components/TableHeaders";
 import TournamentTd from "./TournamentTd";
 import PlayerPageHeader from "./PlayerPageHeader";
 import React from "react";

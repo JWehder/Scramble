@@ -3,6 +3,7 @@ import Button from '../../../Utils/components/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { verifyEmail, resendCode, clearResendCodeError, clearVerifyEmailError } from "../../state/userSlice";
 import NotificationBanner from '../../../Utils/components/NotificationBanner';
+import LoadingWidget from '../../../Utils/components/LoadingWidget';
 
 export default function VerifyEmail() {
     const dispatch = useDispatch();
@@ -14,11 +15,19 @@ export default function VerifyEmail() {
 
     const resendCodeError = useSelector((state) => state.users.resendCodeError);
     const resendCodeStatus = useSelector((state) => state.users.resendCodeStatus);
-    const verifyEmailError = useSelector((state) => state.users.verifyEmailError)
+    const verifyEmailError = useSelector((state) => state.users.verifyEmailError);
+    const user = useSelector((state) => state.users.user);
 
     const showCodeExpired = () => {
         setCodeExpired(true);
     };
+
+    useEffect(() => {
+      if (user) {
+        dispatch(resendCode);
+        setEmail(user.Email);
+      };
+    }, [])
 
     // Reset the timer when sendNewVerifyEmailCode is fulfilled
     useEffect(() => {
@@ -54,14 +63,13 @@ export default function VerifyEmail() {
       <div className="text-light font-PTSans rounded px-8 pt-6 pb-8 mb-4 w-full h-full">
         <h1 className="text-2xl text-center mb-4">Verify Your Email</h1>
         <form onSubmit={handleSubmit} className='space-y-4'>
-          {
-              codeExpired ?
+          { codeExpired ?
               <NotificationBanner
               message="Your code has expired. Please request another with your email."
               variant="warning"
               timeout={10000}
               />
-              :
+                :
               <NotificationBanner
               message="Please check your email for your unique code"
               variant="success"
@@ -130,15 +138,21 @@ export default function VerifyEmail() {
               <p className="text-sm text-red-500">Code expired</p>
             )}
           </div>
+          <div className="mt-4 flex items-center space-x-2">
+            <p
+              className="font-bold text-sm cursor-pointer"
+              onClick={() => dispatch(resendCode(email))}
+            >
+              Request a New Code
+            </p>
+            {resendCodeStatus === 'pending' && <LoadingWidget message="" />}
+          </div>
           <div className="mt-4">
             <p
               className="inline-block align-baseline font-bold text-sm text-light hover:text-middle cursor-pointer"
-              onClick={() => dispatch(resendCode(email))}
+              
             >
               Request a New Code{' '}
-              <a>
-                Login
-              </a>
             </p>
           </div>
         </form>

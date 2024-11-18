@@ -1,5 +1,5 @@
 import PlayerData from "../../../Golfers/components/PlayerData";
-import Headers from "./TableHeaders";
+import Headers from "../../../Utils/components/TableHeaders";
 import DashboardTitle from "./DashboardTitle";
 import Button from "../../../Utils/components/Button";
 import { useSelector } from "react-redux";

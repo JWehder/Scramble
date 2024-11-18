@@ -1,6 +1,6 @@
 import DashboardTitle from "../../User/components/home/DashboardTitle";
 import PlayerData from "./PlayerData";
-import TableHeaders from "../../User/components/home/TableHeaders"
+import TableHeaders from "../../Utils/components/TableHeaders"
 import { useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import {  useQueryClient } from "@tanstack/react-query";

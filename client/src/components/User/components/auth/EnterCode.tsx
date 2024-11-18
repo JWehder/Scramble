@@ -6,12 +6,12 @@ import {
   verifyEmail,
   resendCode,
   clearResendCodeError,
-  clearVerifyEmailError,
-  resetShowCode,
+  clearVerifyEmailError
 } from '../../state/userSlice';
 import { AppDispatch, RootState } from '../../../../store' // Update with the correct path to your store
+import LoadingWidget from '../../../Utils/components/LoadingWidget';
 
-export default function VerifyEmail() {
+export default function VerifyEmail({ setResetPasswordEmail } : {setResetPasswordEmail: (email: string) => void}) {
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -36,7 +36,7 @@ export default function VerifyEmail() {
       setCodeExpired(false); // Reset the expired flag
       dispatch(clearResendCodeError()); // Clear errors
     }
-  }, [resendCodeStatus, showCode, dispatch]);
+  }, [showCode, resendCodeStatus]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -46,21 +46,24 @@ export default function VerifyEmail() {
       }, 1000);
 
       return () => clearInterval(countdown);
-    } else if (timer <= 0 && showCode) {
+    } else if (timer <= 0) {
       showCodeExpired(); // Mark the code as expired
-      dispatch(resetShowCode()); // Reset code visibility
     }
-  }, [timer, showCode, dispatch]);
+  }, [timer, showCode]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+
     dispatch(verifyEmail({ code, email }));
+
+    setResetPasswordEmail(email)
   };
 
-  if (resendCodeStatus === "pending") {
-    return <div>loading...</div>
-  }; 
+  const handleRequestClick = () => {
+    dispatch(clearVerifyEmailError());
+    dispatch(resendCode(email));
+  };
 
   return (
     <div className="text-light font-PTSans rounded px-8 pt-6 pb-8 mb-4 w-full h-full">
@@ -69,14 +72,12 @@ export default function VerifyEmail() {
         {showCode && (
           <>
             {codeExpired ? (
-              resendCodeStatus !== 'idle' ? (
-                <NotificationBanner
-                  message="Your code has expired. Please request another with your email."
-                  variant="warning"
-                  timeout={10000}
-                  onClose={null}
-                />
-              ) : null
+              <NotificationBanner
+                message="Your code has expired. Please request another with your email."
+                variant="warning"
+                timeout={10000}
+                onClose={null}
+              />
             ) : (
               <NotificationBanner
                 message="Please check your email for your unique code"
@@ -93,7 +94,7 @@ export default function VerifyEmail() {
             Email
           </label>
           <input
-            className="shadow appearance-none border w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline text-dark bg-light focus:ring-green-500 focus:border-green-500 rounded-full"
+            className="shadow appearance-none border w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline text-dark bg-light focus:ring-middle focus:border-middle rounded-full"
             id="email"
             type="text"
             placeholder="Please enter the email you signed up with"
@@ -108,13 +109,13 @@ export default function VerifyEmail() {
           />
         </div>
 
-        {showCode && codeExpired && (
+        {codeExpired && (
           <p className="text-red-500 font-bold text-sm italic">
-            Please enter your email and select "request a new code" below to receive a new code.
+            Your code expired. Please request a new one.
           </p>
         )}
 
-        {showCode && !codeExpired && (
+        {showCode && timer > 0 && (
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="verification-code">
               Verification Code
@@ -136,14 +137,14 @@ export default function VerifyEmail() {
           </div>
         )}
 
-        {(!codeExpired && (verifyEmailError || resendCodeError)) && (
+        {((verifyEmailError || resendCodeError)) && (
           <p className="text-red-500 font-bold text-sm italic">
             {verifyEmailError as React.ReactNode || resendCodeError as React.ReactNode}
           </p>
         )}
 
         <div className="flex items-center justify-between">
-          {!codeExpired && showCode && (
+          {timer > 0 && showCode && (
             <Button 
             variant="secondary" 
             type="submit"
@@ -155,19 +156,20 @@ export default function VerifyEmail() {
             </Button>
           )}
           {timer > 0 && showCode ? (
-            <p className="text-sm text-light">Time remaining: {timer}s</p>
+            <p className={`text-sm ${timer < 10 ? "text-red-500" : "text-light"}`}>Time remaining: {timer}s</p>
           ) : (
-            showCode && <p className="text-sm text-red-500">Code expired</p>
+            null
           )}
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 flex items-center space-x-2">
           <p
-            className="inline-block align-baseline font-bold text-sm cursor-pointer"
-            onClick={() => dispatch(resendCode(email))}
+            className="font-bold text-sm cursor-pointer"
+            onClick={handleRequestClick}
           >
             {showCode ? 'Request a New Code' : 'Request a Code'}
           </p>
+          {resendCodeStatus === 'pending' && <LoadingWidget message="" />}
         </div>
       </form>
     </div>

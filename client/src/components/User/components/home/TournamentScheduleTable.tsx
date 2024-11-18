@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import TableRow from "../../../Utils/components/TableRow";
 import { RootState } from "../../../../store";
 import { Tournament } from "../../../../types/tournaments";
-import TableHeaders from "./TableHeaders";
+import TableHeaders from "../../../Utils/components/TableHeaders";
 import { useFetchTournamentDetails } from "../../../../hooks/tournaments";
 
 export default function TournamentScheduleTable({ setSelectedTournament }) {

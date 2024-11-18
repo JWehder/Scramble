@@ -104,10 +104,8 @@ def request_new_code():
     
     user = users_collection.find_one({ "Email": email })
 
-    
-
     if not user:
-        return jsonify({"error": "User not found."}), 404
+        return jsonify({"error": "Email not found."}), 404
 
     user = User(**user)
 
@@ -261,7 +259,7 @@ def reset_password():
     if user_data:
         user = User(**user_data)
 
-        user.Password = user.hash_password(data['Password'])
+        user.Password = user.hash_password(data['password'])
 
         user.save()
         return jsonify({"message": "User password updated successfully"}), 200

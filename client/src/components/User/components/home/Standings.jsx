@@ -1,5 +1,5 @@
 import TeamData from "./TeamData";
-import TableHeaders from "./TableHeaders";
+import TableHeaders from "../../../Utils/components/TableHeaders";
 import DashboardTitle from "./DashboardTitle";
 
 export default function Standings() {

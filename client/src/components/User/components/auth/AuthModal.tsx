@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../../store";
-import { setShowLogin, closeVerifyEmail, setLoginModal, resetPassword } from "../../state/userSlice";
+import { resetPassword, resetAuth, setShowChangePassword } from "../../state/userSlice";
 import Modal from "../../../Utils/components/Modal";
 import Login from "./Login";
 import VerifyEmail from "./VerifyEmail";
@@ -12,24 +12,22 @@ import EnterCode from "./EnterCode";
 export default function AuthModal() {
     const dispatch = useDispatch<AppDispatch>();
 
-    const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
+    const [resetPasswordEmail, setResetPasswordEmail] = useState<string>('');
 
     // Redux selectors
     const open = useSelector((state: RootState) => state.users.loginModal);
     const showLogin = useSelector((state: RootState) => state.users.showLogin);
     const showVerifyEmail = useSelector((state: RootState) => state.users.showVerifyEmail);
+    const showChangePassword = useSelector((state: RootState) => state.users.showChangePassword);
     
     function onClose() {
-        dispatch(setShowLogin(true));    // Reset login view on close
-        dispatch(closeVerifyEmail());   // Reset verification state
+        dispatch(resetAuth());
         setShowForgotPassword(false);
-        setShowChangePassword(false);
-        dispatch(setLoginModal(false));  // Close the modal
     };  
 
     function changePassword(password: string) {
-        dispatch(resetPassword(password))
+        dispatch(resetPassword(password));
     };
 
     return (
@@ -42,7 +40,9 @@ export default function AuthModal() {
                     handlePasswordChange={changePassword}
                     />
                     ) : (
-                    <EnterCode />
+                    <EnterCode 
+                    setResetPasswordEmail={setResetPasswordEmail}
+                    />
                     )
                 ) : showLogin ? (
                     <Login

@@ -1,6 +1,6 @@
 import TeamData from "./TeamData";
 import { Link } from "react-router-dom";
-import Headers from "./TableHeaders";
+import Headers from "../../../Utils/components/TableHeaders";
 
 export default function StrokePlayQuickView({ league }) {
 

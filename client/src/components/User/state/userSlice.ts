@@ -42,7 +42,7 @@ interface UserState {
     logoutError: ErrorPayload | string | null;
     resetPasswordError: ErrorPayload | string | null;
     resendCodeStatus: "idle" | "pending" | "rejected";
-    showForgotPassword: boolean;
+    showChangePassword: boolean;
     loginModal: boolean;
     showLogin: boolean;
     showVerifyEmail: boolean;
@@ -67,7 +67,7 @@ const initialState: UserState = {
     logoutError: null,
     resetPasswordError: null,
     resendCodeStatus: "idle",
-    showForgotPassword: false,
+    showChangePassword: false,
     showCode: false,
     loginModal: false,
     showLogin: true,
@@ -109,10 +109,10 @@ export const verifyEmail = createAsyncThunk<
     object, 
     { rejectValue: ErrorPayload | undefined }
     >(
-    "auth/verify_email",
+    "/auth/verifyEmail",
     async (codeAndEmail: object, thunkAPI) => {
         try{
-            const response: AxiosResponse<UsersMessage> = await axios.post("/ api/auth/verify_email", codeAndEmail);
+            const response: AxiosResponse<UsersMessage> = await axios.post("/api/auth/verify_email", codeAndEmail);
             return response.data
         } catch (err: any) {
             const error = err.response.data;
@@ -126,7 +126,7 @@ export const resendCode = createAsyncThunk<
     string,
     { rejectValue: ErrorPayload | undefined }
     >(
-    "/api/auth/send_new_verify_email_code",
+    "/auth/resendCode",
     async (email: string, thunkAPI) => {
         try {
             const response: AxiosResponse<UsersMessage> = await axios.post("/api/auth/send_new_verify_email_code", { email });
@@ -234,9 +234,16 @@ const userSlice = createSlice({
         clearVerifyEmailError(state) {
             state.verifyEmailError = null;
         },
-        resetShowCode(state) {
-            state.showCode = false;
+        setShowCode(state, action) {
+            state.showCode = action.payload;
+        },
+        resetAuth() {
+            return initialState;
+        },
+        setShowChangePassword(state, action) {
+            state.showChangePassword = action.payload;
         }
+
     },
     extraReducers: (builder) => {
         builder
@@ -274,11 +281,12 @@ const userSlice = createSlice({
                     ...state.user,
                     IsVerified: true,
                 };
+            } else if (state.showCode) {
+                state.showChangePassword = true;
+                state.showCode = false;
             } else {
                 state.showLogin = true;
-                state.showForgotPassword = false;
             }
-
         })
         .addCase(verifyEmail.rejected, (state, action: PayloadAction<ErrorPayload | undefined>) => {
             state.status = "idle";
@@ -290,11 +298,11 @@ const userSlice = createSlice({
             state.resendCodeStatus = "pending";
             state.resendCodeError = null;
         })
-        .addCase(resendCode.fulfilled, (state, action) => {
+        .addCase(resendCode.fulfilled, (state) => {
             state.resendCodeStatus = "idle";
             state.resendCodeError = null;
-            state.showForgotPassword = true;
             state.showCode = true;
+            console.log(state.showCode);
         })
         .addCase(resendCode.rejected, (state, action: PayloadAction<ErrorPayload | undefined>) => {
             state.resendCodeStatus = "rejected";
@@ -387,7 +395,9 @@ export const {
   closeVerifyEmail,
   clearResendCodeError,
   clearVerifyEmailError,
-  resetShowCode
+  setShowCode,
+  resetAuth,
+  setShowChangePassword
 } = userSlice.actions;
 
 export default userSlice.reducer;

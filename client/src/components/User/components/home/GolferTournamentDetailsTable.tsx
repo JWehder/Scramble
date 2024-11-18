@@ -1,10 +1,11 @@
 import React from "react";
-import TableHeaders from "./TableHeaders";
+import TableHeaders from "../../../Utils/components/TableHeaders";
 import { useFetchAllTournamentDetails } from "../../../../hooks/golferTournamentDetails";
 import GolferTournamentDetailsTd from "./GolferTournamentDetailsTd";
 import { TournamentHoles } from "../../../../types/tournamentHoles";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../store";
+import SkeletonTable from "../../../Utils/components/SkeletonTable";
 
 export default function GolferTournamentDetailsTable(
     { tournamentId, holeData } : 
@@ -62,7 +63,7 @@ export default function GolferTournamentDetailsTable(
         )}
 
         { isError && <div>Error loading tournament details.</div> }
-        { isFetching && <div>Loading...</div> }
+        { isFetching && <SkeletonTable /> }
     </div>
     )
 }
