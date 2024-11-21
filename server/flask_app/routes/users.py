@@ -23,33 +23,37 @@ def generate_verification_code(length=6):
     characters = string.ascii_uppercase + string.digits
     return ''.join(random.choices(characters, k=length))
 
+def returnable_user_dict(user: User):
+    associated_leagues = []
+    # Query to find all teams in the user's teams list
+    teams = db.teams.find(
+        {"_id": {"$in": user.Teams}}
+    )
+    teams = [Team(**team).to_dict() for team in teams]
+    
+    for team in teams:
+        league = db.leagues.find_one({"_id": ObjectId(team["LeagueId"])})
+        associated_leagues.append({"id": str(league["_id"]), "Name": league["Name"], "ScoreType": league["LeagueSettings"]["ScoreType"]})
+
+    session['user_id'] = str(user.id)
+    return {
+        "Username": user.Username,
+        "Email": user.Email,
+        "Teams": teams,
+        "Leagues": associated_leagues,
+        "IsVerified": user.IsVerified
+    }
+
 @users_bp.route('/me', methods=['GET'])
 def auth():
     """Returns the current authenticated user if logged in"""
     user_id = session.get('user_id')
+    print(user_id)
     if user_id:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
         user = User(**user)
         if user and user.IsVerified:
-            associated_leagues = []
-            # Query to find all teams in the user's teams list
-            teams = db.teams.find(
-                {"_id": {"$in": user.Teams}}
-            )
-            teams = [Team(**team).to_dict() for team in teams]
-            
-            for team in teams:
-                associated_leagues.append(team["LeagueId"])
-            session['user_id'] = str(user.id)
-            return jsonify({
-                "user": {
-                    "Username": user.Username,
-                    "Email": user.Email,
-                    "Teams": teams,
-                    "Leagues": associated_leagues,
-                    "IsVerified": user.IsVerified
-                }
-            }), 200
+           return jsonify(returnable_user_dict(user)), 200
     return jsonify({"error": "Unauthorized access"}), 422
 
 @users_bp.route('/signup', methods=['POST'])
@@ -156,52 +160,13 @@ def login():
         "Username": username_or_email
         })
 
-    if user_data and user_data['IsVerified']:
+    if user_data:
         user = User(**user_data)
         if user.check_password(data.get("password")):
-            associated_leagues = []
-            # Query to find all teams in the user's teams list
-            teams = db.teams.find(
-                {"_id": {"$in": user.Teams}}
-            )
-            teams = [Team(**team).to_dict() for team in teams]
-            
-            for team in teams:
-                associated_leagues.append(team["LeagueId"])
+            if not user.IsVerified:
+                user.send_verification_email()
             session['user_id'] = str(user.id)
-            return jsonify({
-                "user": {
-                    "Username": user.Username,
-                    "Email": user.Email,
-                    "Teams": teams,
-                    "Leagues": associated_leagues,
-                    "IsVerified": user.IsVerified
-                }
-            }), 200
-    else:
-        user = User(**user_data)
-        if user.check_password(data.get("password")):
-            associated_leagues = []
-            # Query to find all teams in the user's teams list
-            teams = db.teams.find(
-                {"_id": {"$in": user.Teams}}
-            )
-            teams = [Team(**team).to_dict() for team in teams]
-            
-            for team in teams:
-                associated_leagues.append(team["LeagueId"])
-        
-            user.send_verification_email()
-            session['user_id'] = str(user.id)
-            return jsonify({
-                    "user": {
-                        "Username": user.Username,
-                        "Email": user.Email,
-                        "Teams": teams,
-                        "Leagues": associated_leagues,
-                        "IsVerified": user.IsVerified
-                    }
-            }), 200
+            return jsonify(returnable_user_dict(user)), 200
         else:
             return jsonify({
                 "error": "Password is incorrect"
@@ -257,12 +222,17 @@ def reset_password():
     user_data = users_collection.find_one({"Email": data["email"]})
 
     if user_data:
-        user = User(**user_data)
+        try: 
+            user = User(**user_data)
 
-        user.Password = user.hash_password(data['password'])
+            user.Password = user.hash_password(data['newPassword'])
 
-        user.save()
-        return jsonify({"message": "User password updated successfully"}), 200
+            user.save()
+            return jsonify({"message": "User password updated successfully"}), 200
+        except ValidationError as e:
+            return jsonify({
+                "error": "Password must be between 8 and 50 characters long, and must include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+            }), 422
 
     return jsonify({"error": "User not found"}), 404
 

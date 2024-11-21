@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import List, Optional
+from typing import List, Optional, Union
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import bcrypt
@@ -21,7 +21,7 @@ class User(Base):
     Username: str
     Email: EmailStr
     Password: str
-    Teams: List[str] = []
+    Teams: List[Union[PyObjectId, str, dict]] = []
     VerificationCode: Optional[str] = 0
     IsVerified: bool
     VerificationExpiresAt: Optional[datetime]

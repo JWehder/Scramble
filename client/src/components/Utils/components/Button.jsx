@@ -9,7 +9,7 @@ export default function Button({ children, type, onClick, size, variant, disable
         size === 'lg' && 'lg:text-lg md:text-md sm:text-sm text-sm w-36',
         // Variant styles (optional)
         variant === 'primary' && 'bg-middle text-light',
-        variant === 'secondary' && 'bg-transparent border-2 border-light hover:border-light hover:bg-light/20 text-light',
+        variant === 'secondary' && "bg-light text-dark py-2 px-4 rounded-md hover:bg-light/90",
         // Disabled styles
         disabled && 'opacity-50 cursor-not-allowed',
       ];

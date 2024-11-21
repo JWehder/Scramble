@@ -9,6 +9,7 @@ import { RootState } from './store';
 import { AppDispatch } from './store';
 import { useDispatch } from 'react-redux';
 import { getUser } from './components/User/state/userSlice';
+import LoadingScreen from './components/Utils/components/LoadingSpinner';
 
 interface AppProps {
   children: React.ReactNode;
@@ -37,7 +38,7 @@ export const App: React.FC<AppProps> = ({ children }) => {
     console.log(signedIn)
   }, []); 
 
-  if (!clientId) return <div>Loading...</div>
+  if (!clientId) return <LoadingScreen />
 
   return (
     <div className='w-full h-screen relative'>

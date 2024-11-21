@@ -6,7 +6,9 @@ import {
   verifyEmail,
   resendCode,
   clearResendCodeError,
-  clearVerifyEmailError
+  clearVerifyEmailError,
+  setShowLogin,
+  setShowForgotPassword
 } from '../../state/userSlice';
 import { AppDispatch, RootState } from '../../../../store' // Update with the correct path to your store
 import LoadingWidget from '../../../Utils/components/LoadingWidget';
@@ -24,6 +26,11 @@ export default function VerifyEmail({ setResetPasswordEmail } : {setResetPasswor
   const resendCodeStatus = useSelector((state: RootState) => state.users.resendCodeStatus);
   const verifyEmailError = useSelector((state: RootState) => state.users.verifyEmailError);
   const showCode = useSelector((state: RootState) => state.users.showCode);
+
+  const showLogin = () => {
+    dispatch(setShowLogin(true));
+    dispatch(setShowForgotPassword(false));
+  };
 
   const showCodeExpired = () => {
     setCodeExpired(true);
@@ -160,9 +167,11 @@ export default function VerifyEmail({ setResetPasswordEmail } : {setResetPasswor
           ) : (
             null
           )}
-        </div>
-
-        <div className="mt-4 flex items-center space-x-2">
+        </div>  
+      </form>
+      <div className="flex justify-between items-center mt-4">
+        {/* Left Side: Request a Code */}
+        <div className="flex items-center space-x-2">
           <p
             className="font-bold text-sm cursor-pointer"
             onClick={handleRequestClick}
@@ -171,7 +180,17 @@ export default function VerifyEmail({ setResetPasswordEmail } : {setResetPasswor
           </p>
           {resendCodeStatus === 'pending' && <LoadingWidget message="" />}
         </div>
-      </form>
-    </div>
+
+        {/* Right Side: Login Link */}
+        <div>
+          <p
+            onClick={showLogin}
+            className="inline-block align-baseline font-bold text-sm cursor-pointer"
+          >
+            Remember your password? <a>Login</a>
+          </p>
+        </div>
+      </div>
+      </div>
   );
 }

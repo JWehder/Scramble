@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime
 from bson import ObjectId
@@ -23,7 +23,6 @@ class LeagueSettings(Base):
     DraftStartTime: Optional[str] = Field(default="12:00", description="Time of day when the draft starts, in HH:MM format.")
     DropDeadline: Optional[str] = None
     ForceDrops: Optional[int] = 0
-    HeadToHead: bool = Field(default=False, description="Determine whether the competition is league wide or just between two users for each week.")
     LeagueId: PyObjectId
     MaxDraftedPlayers: int = Field(default=1, ge=0, description="Number of draft players per period")
     MaxGolfersPerTeam: int = Field(default=3, ge=1, description="Maximum number of golfers per team")
@@ -42,10 +41,9 @@ class LeagueSettings(Base):
         'DoubleBogeys': -5,
         'WorseThanDoubleBogeys': -7
     }, description="Points awarded per round performance")
-    ScorePlay: bool = Field(default=False, description="Score will accumulate based on the particular number of strokes under par the golfer receives and how many points the league agrees that type of score should receive.")
+    ScoreType: Literal["Stroke Play", "Head to Head", "Match Play", "Matchups"] = Field(default="Stroke Play", description="Decide whether to score by the sum of strokes, points awarded via score under or over par, or match golfers up and give out points per round won.")
     SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
     SnakeDraft: bool = Field(default=True, description="The order of picks reverses with each round.")
-    StrokePlay: bool = Field(default=False, description="Score will match the under par score for the golfer in the tournament")
     TimeZone: str = "UTC"
     updated_at: Optional[datetime] = None
     WaiverDeadline: Optional[str] = Field(default="Wednesday", description="Day of the week where players on waivers are distributed.")

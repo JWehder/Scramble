@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
 import Button from '../../../Utils/components/Button';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../store';
 
-interface Errors {
-  password: string;
-  confirmPassword: string;
+interface PasswordChange {
+  email: string;
+  newPassword: string;
 }
 
-export default function ChangePassword({ handlePasswordChange }) {
+// Component definition with type annotations
+export default function ChangePassword({
+  handlePasswordChange,
+  email,
+}: {
+  handlePasswordChange: (data: PasswordChange) => void; // Accepts an object of type PasswordChange
+  email: string;
+}) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<Errors | null>(null); // Initialize as an empty object
+  const [error, setError] = useState<string | null>(null); // Initialize as an empty object
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+
+  const resetPasswordError = useSelector((state: RootState) => state.users.resetPasswordError)
 
   const handlePasswordToggle = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleConfirmPasswordToggle = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   const handleSubmit = (e) => {
@@ -21,13 +37,13 @@ export default function ChangePassword({ handlePasswordChange }) {
 
     // Validate passwords before submission
     if (newPassword !== confirmPassword) {
-      errors?.password = 'Passwords do not match. Please try again.';
+      setError("Passwords must match. Please check your spelling.")
       return;
     }
 
     // Handle password change logic here
-    console.log('New password:', newPassword);
-    // handlePasswordChange(newPassword);
+    
+    handlePasswordChange({ email, newPassword });
   };
 
   return (
@@ -40,14 +56,14 @@ export default function ChangePassword({ handlePasswordChange }) {
             Password
           </label>
           <input
-            className={`shadow appearance-none border w-full py-2 px-3 bg-light text-dark leading-tight focus:outline-none focus:shadow-outline rounded-full pr-10 ${errors.password || signupErrors?.Password ? 'border-red-500' : 'border'}`}
+            className={`shadow appearance-none border w-full py-2 px-3 bg-light text-dark leading-tight focus:outline-none focus:shadow-outline rounded-full pr-10 ${ error ? 'border-red-500' : 'border'}`}
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             value={newPassword}
             onChange={(e) => {
               setNewPassword(e.target.value);
-              setErrors({ ...errors, password: '' });
+              setError(null);
             }}
           />
           <button
@@ -105,12 +121,10 @@ export default function ChangePassword({ handlePasswordChange }) {
               </svg>
             )}
           </button>
-          {errors.password && (
-            <p className="text-red-500 font-bold text-sm italic">{ errors.password }</p>
+          {resetPasswordError && (
+            <p className="text-red-500 font-bold text-sm italic">{ resetPasswordError as React.ReactNode }</p>
           )}
-          { signupErrors?.Password && (
-            <p className="text-red-500 font-bold text-sm italic">{signupErrors.Password }</p>
-          )}
+
         </div>
 
         {/* Confirm Password Input */}
@@ -119,14 +133,14 @@ export default function ChangePassword({ handlePasswordChange }) {
             Confirm Password
           </label>
           <input
-            className={`shadow appearance-none border w-full py-2 px-3 bg-light text-dark leading-tight focus:outline-none focus:shadow-outline rounded-full pr-10 ${errors.confirmPassword ? 'border-red-500' : 'border'}`}
+            className={`shadow appearance-none border w-full py-2 px-3 bg-light text-dark leading-tight focus:outline-none focus:shadow-outline rounded-full pr-10 ${error ? 'border-red-500' : 'border'}`}
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm your password"
             value={confirmPassword}
             onChange={(e) => {
               setConfirmPassword(e.target.value);
-              setErrors({ ...errors, confirmPassword: '' });
+              setError(null);
             }}
           />
           <button
@@ -184,8 +198,8 @@ export default function ChangePassword({ handlePasswordChange }) {
               </svg>
             )}
           </button>
-          {errors.confirmPassword && (
-            <p className="text-red-500 font-bold text-sm italic">{errors.confirmPassword}</p>
+          {error && (
+            <p className="text-red-500 font-bold text-sm italic">{error as React.ReactNode}</p>
           )}
         </div>
         <div className="flex items-center justify-between">

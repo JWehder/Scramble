@@ -6,21 +6,6 @@ export default function StrokePlayQuickView({ league }) {
 
     const myTeam = league.myTeam;
 
-    // const teams = sortedArray.map((team, idx) => {
-    //     if (idx % 2 === 0) {
-    //         return <TeamData
-    //         team={team}
-    //         rank = {team.rank}
-    //         even
-    //         />
-    //       } else {
-    //         return <TeamData
-    //         rank = {team.rank}
-    //         team={team}
-    //         />
-    //       }
-    // })
-
     const headers = ["Place", "Team", "Score", "Top 10s", "Missed Cuts", "Wins"];
 
     return (

@@ -123,7 +123,6 @@ class League(Base):
             )
 
             first_season_id = first_season.save()
-            print(first_season_id)
 
             self.FantasyLeagueSeasons.append(first_season_id)
             self.CurrentFantasyLeagueSeasonId = first_season_id

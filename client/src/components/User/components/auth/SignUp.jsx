@@ -4,7 +4,6 @@ import google_logo from "../../../../assets/web_light_rd_na.svg";
 import FacebookLoginButton from "./FacebookLoginButton";
 import Button from "../../../Utils/components/Button";
 import { useDispatch, useSelector } from "react-redux";
-import NotificationBanner from "../../../Utils/components/NotificationBanner";
 
 export default function SignUp() {
   const dispatch = useDispatch();

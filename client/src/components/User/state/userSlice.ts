@@ -33,7 +33,7 @@ interface SignupErrors {
 }
 
 interface UserState {
-    user: any | null;
+    user: object | null;
     loginErrors: ErrorPayload | string | null;
     signupErrors: SignupErrors | { general: string } | null;
     updateError: ErrorPayload | string | null;
@@ -42,7 +42,9 @@ interface UserState {
     logoutError: ErrorPayload | string | null;
     resetPasswordError: ErrorPayload | string | null;
     resendCodeStatus: "idle" | "pending" | "rejected";
+    showForgotPassword: boolean;
     showChangePassword: boolean;
+    resetPasswordSuccessBanner: boolean;
     loginModal: boolean;
     showLogin: boolean;
     showVerifyEmail: boolean;
@@ -65,9 +67,11 @@ const initialState: UserState = {
     resendCodeError: null,
     verifyEmailError: null,
     logoutError: null,
+    showForgotPassword: false,
     resetPasswordError: null,
     resendCodeStatus: "idle",
     showChangePassword: false,
+    resetPasswordSuccessBanner: false,
     showCode: false,
     loginModal: false,
     showLogin: true,
@@ -188,11 +192,11 @@ export const logout = createAsyncThunk<UsersMessage, void, { rejectValue: ErrorP
     }
 });
 
-export const resetPassword = createAsyncThunk<UsersMessage, string, { rejectValue: ErrorPayload }>(
+export const resetPassword = createAsyncThunk<UsersMessage, {email: string, newPassword: string}, { rejectValue: ErrorPayload }>(
     "auth/resetPassword",
-    async (password: string, thunkAPI) => {
+    async ({ email, newPassword }, thunkAPI) => {
         try {
-            const response: AxiosResponse<UsersMessage> = await axios.post("api/auth/reset_password", { password });
+            const response: AxiosResponse<UsersMessage> = await axios.put("api/auth/reset_password", { email, newPassword });
             return response.data
         } catch (err: any) {
             const error = err.response.data;
@@ -242,6 +246,9 @@ const userSlice = createSlice({
         },
         setShowChangePassword(state, action) {
             state.showChangePassword = action.payload;
+        },
+        setShowForgotPassword(state, action) {
+            state.showForgotPassword = action.payload;
         }
 
     },
@@ -378,6 +385,8 @@ const userSlice = createSlice({
             state.status = "idle";
             state.showLogin = true;
             state.loginErrors = null;
+            state.showForgotPassword = false;
+            state.resetPasswordSuccessBanner = true;
         })
         .addCase(resetPassword.rejected, (state, action: PayloadAction<ErrorPayload | undefined>) => {
             state.status = "idle";
@@ -397,7 +406,8 @@ export const {
   clearVerifyEmailError,
   setShowCode,
   resetAuth,
-  setShowChangePassword
+  setShowChangePassword,
+  setShowForgotPassword
 } = userSlice.actions;
 
 export default userSlice.reducer;

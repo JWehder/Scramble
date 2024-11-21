@@ -40,7 +40,7 @@ export default function Player({ score = 0, imgUrl, name, size, active }) {
     }
 
     return (
-        <div onClick={handleClick}>
+        <div>
             { active ?
                 <PlayerTooltip
                 player={
