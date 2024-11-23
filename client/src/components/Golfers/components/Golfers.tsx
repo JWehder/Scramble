@@ -15,7 +15,6 @@ import { RootState } from "../../../store";
 export default function Golfers() {
     // Retrieve the league ID from the URL
     const { leagueId } = useParams<{ leagueId: string }>();
-    const queryClient = useQueryClient();
     const dispatch = useDispatch();
 
     const {

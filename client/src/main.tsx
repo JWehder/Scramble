@@ -7,8 +7,8 @@ import { Provider } from "react-redux";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import SignedOutHome from './components/User/components/home/SignedOutHome.jsx'
 import { SignedInHome } from './components/User/components/home/SignedInHome.jsx';
-import Dashboard from './components/User/components/home/Dashboard.jsx';
-import LeagueDashboard from './components/User/components/home/LeagueDashboard.jsx';
+import Dashboard from './components/Leagues/components/Dashboard.js';
+import LeagueDashboard from './components/Leagues/components/LeagueDashboard.js';
 import ErrorPage from './components/Utils/components/ErrorPage.jsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 

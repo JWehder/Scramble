@@ -1,47 +1,57 @@
 import React, { useEffect } from 'react';
-import Standings from './Standings';
-import Roster from './Roster';
+import Roster from '../../User/components/home/Roster';
 import { useState } from 'react';
-import Leaderboard from './Leaderboard';
-import Golfers from '../../../Golfers/components/Golfers';
-import SquigglyUnderline from "../../../Utils/components/SquigglyLine"
-import Schedule from './Schedule';
+import Leaderboard from '../../User/components/home/Leaderboard';
+import Golfers from '../../Golfers/components/Golfers';
+import SquigglyUnderline from "../../Utils/components/SquigglyLine"
+import Schedule from '../../User/components/home/Schedule';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import Button from '../../../Utils/components/Button';
-import BackButton from '../../../Utils/components/BackButton';
-import NextButton from '../../../Utils/components/NextButton';
-import { RootState } from '../../../../store';
-import Modal from '../../../Utils/components/Modal';
-import { resetSelectedGolfer } from '../../../Golfers/state/golferSlice';
+import Button from '../../Utils/components/Button';
+import BackButton from '../../Utils/components/BackButton';
+import NextButton from '../../Utils/components/NextButton';
+import { AppDispatch, RootState } from '../../../store';
+import Modal from '../../Utils/components/Modal';
+import { resetSelectedGolfer } from '../../Golfers/state/golferSlice';
 import { useQueryClient } from '@tanstack/react-query';
-import PlayerPage from '../../../Golfers/components/player/PlayerPage';
-import { getLeague } from '../../../Leagues/state/leagueSlice';
-import { useAppDispatch } from '../../../../hooks/storeHooks';
+import PlayerPage from '../../Golfers/components/player/PlayerPage';
+import { getLeague } from '../state/leagueSlice';
+import NewStandings from "../../User/components/home/NewStandings"
+import { setSelectedTeamByUserId } from '../../Teams/state/teamsSlice';
 
 export default function LeagueDashboard() {
-    const appDispatch = useAppDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const { leagueId } = useParams<string>();
     const queryClient = useQueryClient();
 
-    console.log(leagueId)
+    const [activeComponent, setActiveComponent] = useState<string>("Schedule");
 
-    const [activeComponent, setActiveComponent] = useState("Schedule");
-
-    const signedIn = useSelector((state: RootState) => state.users.user);
     const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
+    const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
+
+    const user = useSelector((state: RootState) => state.users.user);
+
+    const leagueTeams = useSelector((state: RootState) => state.teams.leaguesTeams)
 
     const onClose = () => {
-        appDispatch(resetSelectedGolfer());
+        dispatch(resetSelectedGolfer());
         queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
     };
 
     useEffect(() => {
         if (leagueId) {
-            appDispatch(getLeague(leagueId))
-        }
-        
+            dispatch(getLeague(leagueId))
+        };
+
     }, [leagueId])
+
+    useEffect(() => {
+        if (leagueTeams) {
+            dispatch(setSelectedTeamByUserId(user.Teams)
+        }
+    }, [leagueTeams, user])
+
+    console.log(leagueTeams)
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[950px]'>
@@ -49,7 +59,7 @@ export default function LeagueDashboard() {
                 <div className='flex flex-col w-1/3'>
                     <div className='flex justify-center items-center flex-row'>
                         <h1 className='text-xl lg:text-4xl md:text-2xl sm:text-xl'>
-                            League Name
+                            {selectedLeague?.Name}
                         </h1>
                     </div>
 
@@ -92,7 +102,7 @@ export default function LeagueDashboard() {
 
                 { activeComponent === "Standings" && 
                     <div className='flex items-center justify-center'>
-                        <Standings />
+                        <NewStandings />
                     </div>
                 }
                 { activeComponent === "Team" && 

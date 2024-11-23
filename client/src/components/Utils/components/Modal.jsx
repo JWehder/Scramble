@@ -3,13 +3,13 @@ export default function Modal({ open, onClose, bgColor, closeButtonColor, childr
     return (
         <div onClick={onClose} className={`
             fixed inset-0 flex justify-center items-center transition-colors
-            ${open ? "visible bg-black/20" : "invisible"}
+            ${open ? "visible bg-dark/20" : "invisible"}
         `}>
             {/* modal */}
             <div
             onClick={(e) => e.stopPropagation()}
             className={`
-            rounded-xl shadow p-6 transition-all ${bgColor}
+            rounded-xl p-6 transition-all ${bgColor}
             ${open ? "scale-100 opacity-100" : "scale-125 opacity-0"}
             `}
             >

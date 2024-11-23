@@ -4,12 +4,14 @@ import DashboardTitle from "./DashboardTitle";
 import Button from "../../../Utils/components/Button";
 import { useSelector } from "react-redux";
 import React from "react";
+import { RootState } from "../../../../store";
+import { Golfer } from "../../../../types/golfers";
 
 export default function Roster() {
 
-    const user = useSelector((state) => state.users.user);
+    const usersTeam = useSelector((state: RootState) => state.teams.userSelectedTeam)
 
-    console.log(user);
+    console.log(usersTeam);
 
     const players = [
         {
@@ -29,19 +31,19 @@ export default function Roster() {
         }
     ]
 
-    const displayRoster = players.map((player, idx) => {
+    const displayRoster = usersTeam?.Golfers.map((player: Golfer, idx) => {
         if (idx % 2 === 0) {
             return <PlayerData
-            name={player.name}
-            rank={player.rank}
-            age={player.age}
+            name={`${player.FirstName} ${player.LastName}`}
+            rank={player.Rank}
+            age={player.Age}
             even
             />
         } else {
             return <PlayerData
-            name={player.name}
-            rank={player.rank}
-            age={player.age}
+            name={`${player.FirstName} ${player.LastName}`}
+            rank={player.Rank}
+            age={player.Age}
             />
         }
     })
@@ -50,12 +52,15 @@ export default function Roster() {
 
     return (
         <div className="w-full overflow-auto h-full md:h-[400px] text-light font-PTSans">
-            <DashboardTitle title="Team Name">
+            <DashboardTitle title={usersTeam?.TeamName}>
                 <div className="flex-1 flex items-center justify-center">
                     <div className="mr-2">
                         <Button 
                             variant="secondary" 
                             size="md"
+                            disabled={false}
+                            onClick={null}
+                            type={null}
                         >
                             Trade
                         </Button>
@@ -65,6 +70,9 @@ export default function Roster() {
                     <Button 
                         variant="secondary" 
                         size="md"
+                        disabled={false}
+                        onClick={null}
+                        type={null}
                     >
                         Waivers
                     </Button>

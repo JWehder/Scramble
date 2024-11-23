@@ -2,12 +2,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import usersReducer from "./components/User/state/userSlice";
 import leaguesReducer from "./components/Leagues/state/leagueSlice";
 import golfersReducer from "./components/Golfers/state/golferSlice";
+import teamsReducer from "./components/Teams/state/teamsSlice"
 
 const store = configureStore({
     reducer:{
         users: usersReducer,
         leagues: leaguesReducer,
-        golfers: golfersReducer
+        golfers: golfersReducer,
+        teams: teamsReducer
     },
 });
 

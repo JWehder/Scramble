@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios, { AxiosResponse } from "axios";
 import { UsersData } from "../../../types/users";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../../store";
+import { setLeagues } from "../../Leagues/state/leagueSlice";
+import { setTeams } from "../../Teams/state/teamsSlice"
 
 interface ErrorPayload {
     error: string;
@@ -33,7 +37,7 @@ interface SignupErrors {
 }
 
 interface UserState {
-    user: object | null;
+    user: UsersData | null;
     loginErrors: ErrorPayload | string | null;
     signupErrors: SignupErrors | { general: string } | null;
     updateError: ErrorPayload | string | null;
@@ -142,10 +146,32 @@ export const resendCode = createAsyncThunk<
     }
 );
 
+// Utility function to normalize the data structure
+function normalizeUserData(data: any) {
+    const { Email, IsVerified, VerificationExpiresAt, Username, Leagues, Teams } = data;
+
+    return {
+        user: { Email, IsVerified, Username, VerificationExpiresAt },
+        leagues: Leagues,
+        teams: Teams,
+    };
+}
+
 export const getUser = createAsyncThunk<UsersData, void, { rejectValue: ErrorPayload | undefined }>("/api/auth/me", async (_, thunkAPI) => {
     try {
         const response = await axios.get('/api/auth/me');
-        return response.data;
+        const data = response.data;
+        console.log(response)
+
+        // Break down the response data into relevant parts
+        const { user, leagues, teams } = normalizeUserData(data);
+
+        // Dispatch each part to the respective slice
+        thunkAPI.dispatch(setLeagues(leagues));
+        thunkAPI.dispatch(setTeams(teams));
+
+        return user; // Optionally return the user for further actions
+
     } catch (err: any) {
         const error = err.response.data;
         return thunkAPI.rejectWithValue(error);
@@ -249,7 +275,7 @@ const userSlice = createSlice({
         },
         setShowForgotPassword(state, action) {
             state.showForgotPassword = action.payload;
-        }
+        },
 
     },
     extraReducers: (builder) => {
@@ -322,6 +348,7 @@ const userSlice = createSlice({
         })
         .addCase(getUser.fulfilled, (state, action) => {
             state.status = "idle";
+            console.log(action.payload)
             state.user = action.payload;
         })
         .addCase(getUser.rejected, (state, action) => {

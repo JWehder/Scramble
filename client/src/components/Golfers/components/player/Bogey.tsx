@@ -4,7 +4,7 @@ export default function Bogey({ children, size = "6" } : { children: React.React
     size = `w-${size} h-${size}`;
 
     return (
-        <div className={`border-2 font-bold border-light font-lobster flex flex-col justify-center items-center text-sm text-light ${size} bg-transparent`}
+        <div className={`border-4 font-bold border-light font-lobster flex flex-col justify-center items-center text-sm text-light ${size} bg-transparent`}
         >
             {children}
         </div>

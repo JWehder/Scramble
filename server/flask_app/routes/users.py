@@ -25,21 +25,35 @@ def generate_verification_code(length=6):
 
 def returnable_user_dict(user: User):
     associated_leagues = []
+
     # Query to find all teams in the user's teams list
-    teams = db.teams.find(
-        {"_id": {"$in": user.Teams}}
-    )
-    teams = [Team(**team).to_dict() for team in teams]
-    
+    teams = db.teams.find({"_id": {"$in": user.Teams}})
+    teams = [Team(**team) for team in teams]
+
+    teams_dicts = []  # Store the dictionaries of teams
+
     for team in teams:
-        league = db.leagues.find_one({"_id": ObjectId(team["LeagueId"])})
-        associated_leagues.append({"id": str(league["_id"]), "Name": league["Name"], "ScoreType": league["LeagueSettings"]["ScoreType"]})
+        if team.Golfers and len(team.Golfers.keys()) > 0:
+            team.Golfers = team.get_all_current_golfers()
+        
+        print(team)
+
+        # Convert to dictionary here and append to teams_dicts
+        teams_dicts.append(team.to_dict())
+
+        # Fetch league details
+        league = db.leagues.find_one({"_id": ObjectId(team.LeagueId)})
+        associated_leagues.append({
+            "id": str(league["_id"]),
+            "Name": league["Name"],
+            "ScoreType": league["LeagueSettings"]["ScoreType"]
+        })
 
     session['user_id'] = str(user.id)
     return {
         "Username": user.Username,
         "Email": user.Email,
-        "Teams": teams,
+        "Teams": teams_dicts,
         "Leagues": associated_leagues,
         "IsVerified": user.IsVerified
     }
@@ -48,7 +62,6 @@ def returnable_user_dict(user: User):
 def auth():
     """Returns the current authenticated user if logged in"""
     user_id = session.get('user_id')
-    print(user_id)
     if user_id:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
         user = User(**user)

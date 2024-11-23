@@ -1,6 +1,7 @@
 import os
 import sys
 from bson.objectid import ObjectId
+import pymongo
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -57,10 +58,27 @@ def add_team_stats_from_period(period):
             {"$set": {"TeamStats": team_stats}}
         )
 
-def add_team_stats_via_historicals(fantasty_league_season_id):
-    periods = db.periods.find({"FantasyLeagueSeasonId": ObjectId(fantasty_league_season_id)})
-    for period in periods:
-        add_team_stats_from_period(period)
+def add_team_stats_via_historicals(fantasy_league_season_id):
+    # periods = db.periods.find({"FantasyLeagueSeasonId": ObjectId(fantasy_league_season_id)})
+    # for period in periods:
+    #     add_team_stats_from_period(period)
+
+    # Fetch teams for the given FantasyLeagueSeasonId and sort them by Points
+    teams = list(db.teams.find({"FantasyLeagueSeasonId": ObjectId(fantasy_league_season_id)}).sort("Points", -1))
+
+    # Enumerate through the sorted teams and assign placements
+    bulk_operations = []
+    for i, team in enumerate(teams, start=1):
+        bulk_operations.append(
+            pymongo.UpdateOne(
+                {"_id": team["_id"]},
+                {"$set": {"Placement": i}}
+            )
+        )
+
+    # Perform bulk update to reduce database calls
+    if bulk_operations:
+        db.teams.bulk_write(bulk_operations)
 
 if __name__ == "__main__":
     add_team_stats_via_historicals(ObjectId('66cfb58fcb1c3460e49138c4'))

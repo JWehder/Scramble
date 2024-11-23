@@ -9,7 +9,7 @@ import { RootState } from './store';
 import { AppDispatch } from './store';
 import { useDispatch } from 'react-redux';
 import { getUser } from './components/User/state/userSlice';
-import LoadingScreen from './components/Utils/components/LoadingSpinner';
+import LoadingScreen from './components/Utils/components/LoadingScreen';
 
 interface AppProps {
   children: React.ReactNode;

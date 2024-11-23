@@ -1,19 +1,29 @@
 import React from 'react';
 import { useState } from 'react';
-import SquigglyUnderline from "../../../Utils/components/SquigglyLine"
-import Schedule from './Schedule';
+import SquigglyUnderline from "../../Utils/components/SquigglyLine"
+import Schedule from '../../User/components/home/Schedule';
 import LeaguesList from "./LeaguesList"
-import Button from '../../../Utils/components/Button';
-import { useSelector } from 'react-redux';
+import Button from '../../Utils/components/Button';
+import PlayerPage from '../../Golfers/components/player/PlayerPage';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../store';
+import Modal from '../../Utils/components/Modal';
+import { resetSelectedGolfer } from '../../Golfers/state/golferSlice';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Dashboard() {
+    const queryClient = useQueryClient();
 
     const [activeComponent, setActiveComponent] = useState("Schedule");
 
-    // code to be implemented when we have data
+    const dispatch = useDispatch<AppDispatch>();
 
-    const user = useSelector((state) => state.users.user);
-    console.log(user);
+    const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
+
+    const onClose = () => {
+        dispatch(resetSelectedGolfer());
+        queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
+    };
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[700px]'>
@@ -33,8 +43,11 @@ export default function Dashboard() {
                 </div>
                 <div className='w-1/3 flex items-center justify-center'>
                     <Button
-                    size="md"
-                    variant="secondary"
+                    type={null}
+                    onClick={null}
+                    size= 'md'
+                    variant= 'secondary'
+                    disabled={false}
                     >
                         Settings
                     </Button>
@@ -52,6 +65,22 @@ export default function Dashboard() {
                         <div className='flex items-center justify-center'>
                             <LeaguesList />
                         </div>
+                    }
+                    { selectedGolfer ?
+                        <Modal 
+                        open={open} 
+                        onClose={onClose} 
+                        bgColor="dark-green"
+                        closeButtonColor={'light'}
+                        >
+                        <div className="w-full h-auto flex items-center justify-center min-w-[900px]">
+                            <div className="w-[90%] p-4 bg-middle rounded-xl transition-all duration-300 ease-in-out">
+                                <PlayerPage />
+                            </div>
+                        </div>
+                        </Modal>
+                        :
+                        ""
                     }
                 </div>
         </div>

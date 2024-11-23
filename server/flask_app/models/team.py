@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Union
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from bson import ObjectId
@@ -10,7 +10,7 @@ import os
 # Adjust the paths for MacOS to get the server directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.base_model import Base
-from models import PyObjectId 
+from models import PyObjectId
 from config import db
 
 class Team(Base):
@@ -23,6 +23,14 @@ class Team(Base):
     Points: int = Field(default=0, description="the amount of points that the team holds for the season based on their aggregate fantasy placings")
     FAAB: int = Field(default=0, description="How much total points you have to spend on players.")
     WaiverNumber: Optional[int] = 0
+    TeamStats: Dict[str, Union[int, float]] = Field(default_factory=lambda: {
+        "Wins": 0,
+        "TotalUnderPar": 0,
+        "AvgScore": 0.00,
+        "MissedCuts": 0,
+        "Top10s": 0
+    })
+    Placement: Optional[int]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -215,11 +223,18 @@ class Team(Base):
     def total_golfers(self) -> int:
         return sum(1 for golfer in self.Golfers.values() if golfer['CurrentlyOnTeam'])
 
-    def get_all_current_golfers_ids(self) -> int:
-        # Collect all golfer IDs that are currently on the team
-        golfer_ids = [golfer_id for golfer_id in self.Golfers.keys() if self.Golfers[golfer_id]['CurrentlyOnTeam']]
+    def get_all_current_golfers(self) -> List[Dict]:
+        from models import Golfer 
+
+        # Collect all golfer data that are currently on the team
+        golfers = [
+            Golfer(**golfer_data).to_dict()
+            for golfer_id in self.Golfers.keys()
+            if self.Golfers[golfer_id]['CurrentlyOnTeam']
+            and (golfer_data := db.golfers.find_one({"_id": ObjectId(golfer_id)})) is not None
+        ]
         
-        return golfer_ids
+        return golfers
 
     def get_all_golfers(self, db) -> list:
         golfer_ids = list(self.Golfers.keys())
