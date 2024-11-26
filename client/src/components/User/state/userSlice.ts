@@ -1,17 +1,13 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios, { AxiosResponse } from "axios";
+import axios, { Axios, AxiosResponse } from "axios";
 import { UsersData } from "../../../types/users";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../../store";
 import { setLeagues } from "../../Leagues/state/leagueSlice";
 import { setTeams } from "../../Teams/state/teamsSlice"
+import { Team } from "../../../types/teams";
+import { League } from "../../../types/leagues";
 
 interface ErrorPayload {
     error: string;
-}
-
-interface UserResponse {
-    user: UsersData;
 }
 
 interface UsersMessage {
@@ -21,12 +17,6 @@ interface UsersMessage {
 interface LoginInfo {
     usernameOrEmail: string
     password: string
-}
-
-interface UpdateUserResponse {
-    Username: string;
-    Email: string;
-    IsVerified: string;
 }
 
 interface SignupErrors {
@@ -99,13 +89,23 @@ const initialState: UserState = {
 };
 
 export const login = createAsyncThunk<
-    UserResponse,
+    UsersData,
     LoginInfo,
     { rejectValue: ErrorPayload | undefined }
 >("auth/login", async (credentials, thunkAPI) => {
     try {
         const response = await axios.post("/api/auth/login", credentials);
-        return response.data;
+
+        const data = response.data;
+
+        // Break down the response data into relevant parts
+        const { user, leagues, teams } = normalizeUserData(data);
+
+        // Dispatch each part to the respective slice
+        thunkAPI.dispatch(setLeagues(leagues));
+        thunkAPI.dispatch(setTeams(teams));
+
+        return user;
     } catch (err: any) {
         const error = err.response.data;
         return thunkAPI.rejectWithValue(error);
@@ -161,7 +161,6 @@ export const getUser = createAsyncThunk<UsersData, void, { rejectValue: ErrorPay
     try {
         const response = await axios.get('/api/auth/me');
         const data = response.data;
-        console.log(response)
 
         // Break down the response data into relevant parts
         const { user, leagues, teams } = normalizeUserData(data);
@@ -192,15 +191,25 @@ export const signup = createAsyncThunk<UsersMessage, LoginInfo, { rejectValue: S
 );
 
 export const updateUser = createAsyncThunk<
-  UpdateUserResponse,
+  UsersData,
   { [key: string]: any },  // Type for userObj
   { rejectValue: ErrorPayload }
 >(
   "/auth/updateUser",
   async (userObj, thunkAPI) => {  // Take userObj as the argument
     try {
-      const response = await axios.patch(`/api/auth/update_user`, userObj);  // Pass userObj directly in the patch request
-      return response.data;
+      const response: AxiosResponse<UsersData> = await axios.patch(`/api/auth/update_user`, userObj);  // Pass userObj directly in the patch request
+
+      const data = response.data;
+
+      // Break down the response data into relevant parts
+      const { user, leagues, teams } = normalizeUserData(data);
+
+      // Dispatch each part to the respective slice
+      thunkAPI.dispatch(setLeagues(leagues));
+      thunkAPI.dispatch(setTeams(teams));
+
+      return user;
     } catch (err: any) {
       const error = err.response.data;
       return thunkAPI.rejectWithValue(error);
@@ -287,10 +296,10 @@ const userSlice = createSlice({
         })
         .addCase(login.fulfilled, (state, action) => {
             state.status = "idle";
-            state.user = action.payload.user;
+            state.user = action.payload;
             state.showLogin = false;
-            state.loginModal = !action.payload.user.IsVerified;
-            state.showVerifyEmail = !action.payload.user.IsVerified;
+            state.loginModal = !action.payload.IsVerified;
+            state.showVerifyEmail = !action.payload.IsVerified;
             state.loginErrors = null;
         })
         .addCase(login.rejected, (state, action: PayloadAction<ErrorPayload | undefined>) => {

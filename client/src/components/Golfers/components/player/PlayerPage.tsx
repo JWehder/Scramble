@@ -6,7 +6,7 @@ import { useFetchGolferTournamentDetails } from "../../../../hooks/golferTournam
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store";
 import { resetSelectedGolfer } from "../../state/golferSlice";
-import LoadingWidget from "../../../Utils/components/LoadingWidget";
+import SkeletonTable from "../../../Utils/components/SkeletonTable";
 
 export default function PlayerPage() {
     const dispatch = useDispatch();
@@ -47,7 +47,7 @@ export default function PlayerPage() {
                     })
                 }
                 { isError && <div>Error loading tournament details.</div> }
-                { isFetching && <LoadingWidget /> }
+                { isFetching && <SkeletonTable /> }
             </div>
         </div>
     )

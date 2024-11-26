@@ -2,8 +2,6 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios, { AxiosResponse } from "axios";
 import { League } from "../../../types/leagues";
 import { setLeagueTeams } from "../../Teams/state/teamsSlice"
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../../store";
 
 export const getLeague = createAsyncThunk<League, string>(
     "leagues/fetchLeagueById",
@@ -64,6 +62,7 @@ const leagueSlice = createSlice({
         .addCase(getLeague.fulfilled, (state, action) => {
             state.status = "succeeded";
             state.selectedLeague = action.payload; // assuming 'data' is the key for your league data
+            console.log(state.selectedLeague)
             state.leagueError = null;
         })
         .addCase(getLeague.rejected, (state, action) => {

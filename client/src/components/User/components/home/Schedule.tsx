@@ -84,4 +84,4 @@ const Schedule: React.FC = () => (
     </div>
 );
 
-export default Schedule;// TypeScript types for data consistency
+export default Schedule; // TypeScript types for data consistency

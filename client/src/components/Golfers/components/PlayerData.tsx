@@ -1,37 +1,20 @@
 import Avatar  from "../../Utils/components/Avatar";
 import React from "react";
+import { Golfer } from "../../../types/golfers";
 
 interface PlayerDataProps {
-    rank: number | string | undefined;
-    name: string;
-    age?: number;
-    even?: boolean;
-    flag?: string;
-    country?: string;
-    fedexPts?: number;
-    avgScore?: number;
-    top10s?: number;
-    wins?: number;
+    player: Golfer;
+    even: Boolean;
     onClick?: () => void; // Add onClick as an optional prop
 }
 
 export default function PlayerData({ 
-    rank, 
-    name, 
-    age, 
-    even, 
-    flag, 
-    country, 
-    avgScore, 
-    fedexPts,
-    top10s,
-    wins,
+    player,
+    even,
     onClick
 }: PlayerDataProps) {
 
     const brightness = even ? 'brightness-125' : '';
-
-    const exampleData = [avgScore, wins, top10s, fedexPts];
 
     return (
         <div 
@@ -40,24 +23,24 @@ export default function PlayerData({
         >
             <div className="text-center flex w-1/2 items-center">
                 <div className="w-1/6">
-                    {rank}
+                    {player.Rank}
                 </div>
                 <div className="w-5/6 text-left flex items-center pl-6">
                     <div className="flex-1 flex">
                         <div className="flex-col">
                             <Avatar 
                             imgUrl={""}
-                            name={name}
+                            name={`${player.FirstName } ${player.LastName}`}
                             size={"10"}
                             />
                         </div>
 
                         <div className="pl-3 flex-col flex justify-center">
                             <div>
-                                {name} {flag}
+                                {`${player.FirstName } ${player.LastName}`} {player.Flag ? player.Flag : null}
                             </div>
                             <span>
-                                {country} Age: {age}
+                                {player.Country ? player.Country : null} Age: {player.Age}
                             </span>
                         </div>
                     </div>

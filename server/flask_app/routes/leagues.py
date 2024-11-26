@@ -16,6 +16,8 @@ leagues_bp = Blueprint('leagues', __name__)
 @leagues_bp.route('/<league_id>', methods=['GET'])
 def get_teams_by_league_id(league_id):
     """Fetches a league by ID, including its teams."""
+    from models import Team
+
     try:
         league = leagues_collection.find_one({"_id": ObjectId(league_id)})
         
@@ -25,16 +27,26 @@ def get_teams_by_league_id(league_id):
         league = League(**league)
 
         if len(league.Teams) > 1:
-            teams = []
-            for team_id in league.Teams:
-                team = teams_collection.find_one({"_id": ObjectId(team_id)})
-                
-                if not team:
-                    return abort(404, description=f"Team id: {team_id} does not exist.")
-                
-                teams.append(team)  # Add the team to the list
+            # Convert team IDs to ObjectId
+            team_ids = [ObjectId(team_id) for team_id in league.Teams]
+            
+            # Query to fetch all teams in one go
+            teams = list(teams_collection.find({"_id": {"$in": team_ids}}).sort("Placement"))
 
-            league.Teams = teams
+            team_instances = []
+
+            for team in teams:
+                team_instance = Team(**team)
+                team_instance.Golfers = team_instance.get_all_current_golfers()
+                team_instance = team_instance.to_dict()
+                team_instances.append(team_instance)
+            
+            # Check if all teams were found
+            if len(teams) != len(league.Teams):
+                missing_ids = set(team_ids) - {team["_id"] for team in teams}
+                return jsonify({"error": f'Some team IDs do not exist: {missing_ids}'}), 404
+
+            league.Teams = team_instances
 
         return jsonify(league.to_dict()), 200
     except Exception as e:

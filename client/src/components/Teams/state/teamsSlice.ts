@@ -39,25 +39,8 @@ const teamsSlice = createSlice({
                 state.userTeams = state.userTeams.filter(team => team.LeagueId !== action.payload);
             }
         },
-        setSelectedTeamByUserId(state, action) {
-            // Find the team based on the UserId
-            const selectedTeam = state.leaguesTeams.find(team => team.OwnerId === action.payload);
-
-            // If a team is found, set it as the selected team and filter it out from the teams array
-            if (selectedTeam) {
-                state.userSelectedTeam = selectedTeam;
-
-                // Filter out the selected team from the teams array to avoid duplication
-                state.leaguesTeams = state.userTeams.filter(team => team.OwnerId !== action.payload);
-            }
-        },
         setLeagueTeams(state, action) {
-            const teams = action.payload
-            if (state.userSelectedTeam) {
-                state.leaguesTeams = teams.filter((team: Team) => team.id === state.userSelectedTeam?.id)
-            } else {
-                state.leaguesTeams = teams.map((team: Team) => team);
-            }
+            state.leaguesTeams = action.payload
         }
     },
     extraReducers: builder => {
@@ -65,6 +48,6 @@ const teamsSlice = createSlice({
     }
 });
 
-export const { setTeams, setLeagueTeams, setSelectedTeamByUserId } = teamsSlice.actions;
+export const { setTeams, setLeagueTeams, setSelectedTeam } = teamsSlice.actions;
 
 export default teamsSlice.reducer;

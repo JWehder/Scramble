@@ -11,7 +11,7 @@ const SkeletonTable: React.FC<SkeletonTableProps> = ({
   rowCount = 5,
   columnCount = 4,
 }) => (
-  <div className="border border-gray-300 rounded-md overflow-hidden">
+  <div className="rounded-lg overflow-hidden bg-dark">
     <SkeletonTableHeaders columns={columnCount} />
     {Array.from({ length: rowCount }).map((_, idx) => (
       <SkeletonTableRow key={idx} columns={columnCount} />

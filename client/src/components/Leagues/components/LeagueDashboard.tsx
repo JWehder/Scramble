@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import Roster from '../../User/components/home/Roster';
+import Roster from '../../Teams/components/Roster';
 import { useState } from 'react';
 import Leaderboard from '../../User/components/home/Leaderboard';
 import Golfers from '../../Golfers/components/Golfers';
@@ -16,8 +16,9 @@ import { resetSelectedGolfer } from '../../Golfers/state/golferSlice';
 import { useQueryClient } from '@tanstack/react-query';
 import PlayerPage from '../../Golfers/components/player/PlayerPage';
 import { getLeague } from '../state/leagueSlice';
-import NewStandings from "../../User/components/home/NewStandings"
-import { setSelectedTeamByUserId } from '../../Teams/state/teamsSlice';
+import NewStandings from "./NewStandings"
+import { setSelectedTeam } from '../../Teams/state/teamsSlice';
+import AnimatedTooltipStarters from '../../Utils/components/StartersNew';
 
 export default function LeagueDashboard() {
     const dispatch = useDispatch<AppDispatch>();
@@ -30,8 +31,8 @@ export default function LeagueDashboard() {
     const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
 
     const user = useSelector((state: RootState) => state.users.user);
-
     const leagueTeams = useSelector((state: RootState) => state.teams.leaguesTeams)
+    const userTeam = useSelector((state: RootState) => state.teams.userSelectedTeam)
 
     const onClose = () => {
         dispatch(resetSelectedGolfer());
@@ -47,11 +48,9 @@ export default function LeagueDashboard() {
 
     useEffect(() => {
         if (leagueTeams) {
-            dispatch(setSelectedTeamByUserId(user.Teams)
+            dispatch(setSelectedTeam(leagueId))
         }
     }, [leagueTeams, user])
-
-    console.log(leagueTeams)
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[950px]'>
@@ -98,50 +97,39 @@ export default function LeagueDashboard() {
                 </div>
 
             </div>
-            <div className='w-10/12 bg-middle rounded-lg spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)] overflow-auto'> 
-
+            <div className='w-10/12 rounded-lg spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)] overflow-auto'> 
                 { activeComponent === "Standings" && 
-                    <div className='flex items-center justify-center'>
-                        <NewStandings />
-                    </div>
+                    <NewStandings />
                 }
                 { activeComponent === "Team" && 
-                    <div className='flex items-center justify-center'>
-                        <Roster />
-                    </div>
+                    <Roster team={userTeam} />
                 } 
                 { activeComponent === "Tournaments" && 
-                    <div className='flex items-center justify-center'>
-                        <Leaderboard />
-                    </div>
+                    <Leaderboard />
                 }
                 { activeComponent === "Golfers" && 
-                    <div className='flex items-center justify-center'>
-                        <Golfers />
-                    </div>
+                    <Golfers />
                 }
                 { activeComponent === "Schedule" && 
-                    <div className='flex items-center justify-center'>
-                        <Schedule />
-                    </div>
-                }
-                { selectedGolfer ?
-                    <Modal 
-                    open={open} 
-                    onClose={onClose} 
-                    bgColor="dark-green"
-                    closeButtonColor={'light'}
-                    >
-                    <div className="w-full h-auto flex items-center justify-center min-w-[900px]">
-                        <div className="w-[90%] p-4 bg-middle rounded-xl transition-all duration-300 ease-in-out">
-                            <PlayerPage />
-                        </div>
-                    </div>
-                    </Modal>
-                    :
-                    ""
+                    <Schedule />
                 }
             </div>
+            { selectedGolfer ?
+                <Modal 
+                open={open} 
+                onClose={onClose} 
+                bgColor="dark-green"
+                closeButtonColor={'light'}
+                >
+                <div className="w-full h-auto flex items-center justify-center min-w-[900px]">
+                    <div className="w-[90%] p-4 bg-middle rounded-xl transition-all duration-300 ease-in-out">
+                        <PlayerPage />
+                    </div>
+                </div>
+                </Modal>
+                :
+                ""
+            }
 
         </div>
     );

@@ -1,4 +1,4 @@
-import TeamData from "./TeamData";
+import TeamData from "../../../Leagues/components/TeamData";
 import { Link } from "react-router-dom";
 import Headers from "../../../Utils/components/TableHeaders";
 
