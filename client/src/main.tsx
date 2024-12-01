@@ -47,6 +47,12 @@ const router = createBrowserRouter([
           {
             path: "/leagues/:leagueId",
             element: <LeagueDashboard />,
+            children: [
+              {
+                path: "/leagues/:leagueId/settings",
+                element: <LeagueDashboard />,
+              }
+            ]
           }
       ]
       },

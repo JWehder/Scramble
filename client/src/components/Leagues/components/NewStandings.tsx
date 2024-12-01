@@ -13,10 +13,13 @@ import {
 import { ChartOptions } from "chart.js";
 import TableHeaders from "../../Utils/components/TableHeaders";
 import TeamData from "./TeamData";
+import { Team } from "../../../types/teams";
+import Button from "../../Utils/components/Button";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const NewStandings = (s) => {
+const NewStandings = ({ changeUserSelectedTeam } : 
+  { changeUserSelectedTeam: (team: Team) => void}) => {
 
   const selectedLeagueTeams = useSelector((state: RootState) => state.teams.leaguesTeams) || []
 
@@ -84,9 +87,19 @@ const NewStandings = (s) => {
       {/* League Standings Table */}
       <div className="w-full max-w-5xl bg-middle my-4 p-4 rounded-md shadow-lg">
         <h2 className="text-lg font-semibold mb-3">Team Rankings</h2>
+        <div className="w-full flex items-center justify-center">
+          <button 
+          className="rounded-full bg-light text-dark font-PTSans p-2 text-xs boreder-dark border-2 hover:bg-light/90"
+          >
+            current period
+          </button>
+        </div>
         <TableHeaders headers={headers} />
         {selectedLeagueTeams.map((team, index) => (
-          <TeamData even={index % 2 == 0} team={team} />
+          <TeamData even={index % 2 == 0} 
+          team={team} 
+          onClick={() => changeUserSelectedTeam(team)} 
+          />
         ))}
       </div>
 

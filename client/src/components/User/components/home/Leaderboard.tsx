@@ -1,6 +1,6 @@
 import Tourney from "./Tourney";
 import React, { useState } from "react";
-import GolferTournamentDetailsTable from "./GolferTournamentDetailsTable";
+import GolferTournamentDetailsTable from "../../../Golfers/components/GolferTournamentDetailsTable";
 import TournamentScheduleTable from "./TournamentScheduleTable";
 import { Tournament } from "../../../../types/tournaments";
 import BackButton from "../../../Utils/components/BackButton";

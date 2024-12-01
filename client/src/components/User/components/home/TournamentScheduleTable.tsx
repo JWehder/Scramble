@@ -5,6 +5,7 @@ import { RootState } from "../../../../store";
 import { Tournament } from "../../../../types/tournaments";
 import TableHeaders from "../../../Utils/components/TableHeaders";
 import { useFetchTournamentDetails } from "../../../../hooks/tournaments";
+import SkeletonTable from "../../../Utils/components/SkeletonTable";
 
 export default function TournamentScheduleTable({ setSelectedTournament }) {
 
@@ -41,7 +42,7 @@ export default function TournamentScheduleTable({ setSelectedTournament }) {
                 )
             })}
             { isError && <div>Error loading tournament details.</div> }
-            { isFetching && <div>Loading...</div> }
+            { isFetching && <SkeletonTable /> }
         </>
     )
 }

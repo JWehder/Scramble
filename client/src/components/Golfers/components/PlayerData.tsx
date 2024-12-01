@@ -1,6 +1,7 @@
 import Avatar  from "../../Utils/components/Avatar";
 import React from "react";
 import { Golfer } from "../../../types/golfers";
+import TData from "../../Utils/components/TData";
 
 interface PlayerDataProps {
     player: Golfer;
@@ -15,17 +16,24 @@ export default function PlayerData({
 }: PlayerDataProps) {
 
     const brightness = even ? 'brightness-125' : '';
+    const space = even ? 'my-2' : '';
+
+
+    const desiredKeys = ["AvgScore", "Top10s", "Wins", "Cuts", "FedexPts"]
 
     return (
         <div 
-        className={`w-full flex bg-middle h-14 justify-center items-center hover:z-30 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} break-all hover:b-1 my-1 lg:text-md md:text-sm sm:text-xs text-xs truncate p-2`}
+        className={`w-full flex bg-middle h-auto justify-center items-center 
+        cursor-pointer hover:shadow-lg shadow-middle flex-row 
+        border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm 
+        truncate hover:border-1 ${space} overflow-visible rounded-lg transition-all group/team p-2`}
         onClick={onClick}
         >
             <div className="text-center flex w-1/2 items-center">
                 <div className="w-1/6">
                     {player.Rank}
                 </div>
-                <div className="w-5/6 text-left flex items-center pl-6">
+                <div className="w-5/6 text-left flex items-center pl-6 group-hover/team:translate-x-2 transition duration-200">
                     <div className="flex-1 flex">
                         <div className="flex-col">
                             <Avatar 
@@ -48,13 +56,13 @@ export default function PlayerData({
             </div>
             <div className="w-1/2 flex flex-row items-center space-x-5">
                 {
-                    exampleData.map((data, idx) => {
+                    desiredKeys.map((data, idx) => {
                         return (
-                            <div 
+                            <TData 
                             key={`${data}-${idx}`}
-                            className="flex flex-col w-6 flex-grow items-center justify-center">
-                                {data}
-                            </div>
+                            >
+                                {player[data]}
+                            </TData>
                         )
                     })
                 }

@@ -126,7 +126,7 @@ export default function Header() {
                     <div className='flex justify-end items-center w-1/3'>
                         <Button
                         handleClick={handleGetTheAppClick}
-                        size="sm"
+                        size="md"
                         variant="secondary"
                         >
                             Get the App

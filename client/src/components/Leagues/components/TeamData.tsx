@@ -3,9 +3,16 @@ import Starters from "../../Utils/components/Starters";
 import AnimatedTooltipStarters from "../../Utils/components/StartersNew";
 import Avatar from "../../Utils/components/Avatar";
 import TData from "../../Utils/components/TData";
-import { Portal } from 'react-portal';
+import { Team } from "../../../types/teams";
 
-export default function TeamData({ team, even }) {
+export default function TeamData(
+    { team, even, onClick }:
+    { 
+        team: Team,
+        even: boolean,
+        onClick: () => void
+    }
+    ) {
 
     const brightness = even ? 'brightness-125' : '';
     const space = even ? 'my-2' : '';
@@ -18,6 +25,7 @@ export default function TeamData({ team, even }) {
         cursor-pointer hover:shadow-lg shadow-middle flex-row 
         border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm 
         truncate hover:border-1 ${space} overflow-visible rounded-lg transition-all group/team p-2`}
+        onClick={onClick}
         >
             {/* Left side: Start date and tournament name */}
             <div className="flex w-1/2 items-center">

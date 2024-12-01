@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Starters from "../../Utils/components/Starters";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import { League } from "../../../types/leagues";
 import { Team } from "../../../types/teams";
 import { cn } from "../lib/utils";
+import AnimatedTooltipStarters from "../../Utils/components/StartersNew";
  
 export const BentoGrid = ({
   className,
@@ -61,7 +61,7 @@ export const BentoGridItem = ({
 };
 
 const Headers: React.FC<{ headers: string[] }> = ({ headers }) => (
-  <div className="flex justify-between text-light bg-middle p-2 rounded-md font-semibold text-xs md:text-sm lg:text-sm overflow-x-auto">
+  <div className="flex justify-between text-light bg-middle rounded-md font-semibold text-xs md:text-sm lg:text-sm overflow-x-auto">
     {headers.map((header, idx) => (
       <span key={idx} className="w-1/5 text-center">
         {header}
@@ -114,8 +114,8 @@ const StrokePlayQuickView: React.FC<{ league: League; myTeam: Team | undefined, 
       )}>
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold group-hover/bento:translate-x-2 transition duration-200 font-PTSans text-light">{league.Name}</h1>
         <h2 className="text-sm md:text-lg lg:text-xl text-light/80 mb-1 group-hover/bento:translate-x-2 transition duration-200">{league.ScoreType}</h2>
-        <Starters players={myTeam?.Golfers} />
-        <h2 className="text-sm md:text-lg lg:text-xl text-light underline mb-1">{myTeam?.TeamName}</h2>
+        <AnimatedTooltipStarters players={myTeam?.Golfers} />
+        <h2 className="text-sm md:text-lg lg:text-xl text-light">{myTeam?.TeamName}</h2>
         <div className="w-full bg-middle p-4 rounded-xl m-0">
             <Headers headers={headers} />
             <TeamData team={myTeam} rank={myTeam?.Placement} />

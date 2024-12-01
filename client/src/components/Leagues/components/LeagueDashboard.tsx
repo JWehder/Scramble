@@ -18,7 +18,7 @@ import PlayerPage from '../../Golfers/components/player/PlayerPage';
 import { getLeague } from '../state/leagueSlice';
 import NewStandings from "./NewStandings"
 import { setSelectedTeam } from '../../Teams/state/teamsSlice';
-import AnimatedTooltipStarters from '../../Utils/components/StartersNew';
+import { Team } from '../../../types/teams';
 
 export default function LeagueDashboard() {
     const dispatch = useDispatch<AppDispatch>();
@@ -26,6 +26,7 @@ export default function LeagueDashboard() {
     const queryClient = useQueryClient();
 
     const [activeComponent, setActiveComponent] = useState<string>("Schedule");
+    const [userSelectedTeam, setUserSelectedTeam] = useState<Team | null>(null);
 
     const selectedGolfer = useSelector((state: RootState) => state.golfers.selectedGolfer);
     const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
@@ -99,10 +100,19 @@ export default function LeagueDashboard() {
             </div>
             <div className='w-10/12 rounded-lg spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)] overflow-auto'> 
                 { activeComponent === "Standings" && 
-                    <NewStandings />
+                    <NewStandings 
+                    changeUserSelectedTeam={(team: Team) => {
+                        setUserSelectedTeam(team);
+                        setActiveComponent("Team");
+                    }}
+                    />
                 }
                 { activeComponent === "Team" && 
-                    <Roster team={userTeam} />
+                    <Roster 
+                    team={userSelectedTeam || userTeam} 
+                    resetUserSelectedTeam={() => setUserSelectedTeam(null)} 
+                    userSelectedTeam={!!userSelectedTeam}
+                    />
                 } 
                 { activeComponent === "Tournaments" && 
                     <Leaderboard />

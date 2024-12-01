@@ -11,6 +11,7 @@ import { useFetchAvailableGolfers } from "../../../hooks/golfers";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedGolfer } from "../state/golferSlice";
 import { RootState } from "../../../store";
+import SkeletonTable from "../../Utils/components/SkeletonTable";
 
 export default function Golfers() {
     // Retrieve the league ID from the URL
@@ -57,16 +58,8 @@ export default function Golfers() {
                     {page.golfers.map((golfer, idx) => (
                         <PlayerData
                             key={golfer.id}
-                            name={`${golfer.FirstName} ${golfer.LastName}`}
-                            rank={golfer.Rank}
-                            age={golfer.Age}
-                            even={idx % 2 === 0}
-                            country={golfer.Birthplace}
-                            flag={golfer.Flag}
-                            fedexPts={golfer.FedexPts}
-                            top10s={golfer.Top10s}
-                            wins={golfer.Wins}
-                            avgScore={golfer.AvgScore}
+                            even={idx % 2 == 0}
+                            player={golfer}
                             onClick={() => handleGolferClick(golfer)}
                         />
                     ))}
@@ -74,7 +67,7 @@ export default function Golfers() {
             ))}
             <div className="flex justify-center p-4">
                 <div ref={ref}></div>
-                {isFetching && <p>Loading...</p>}
+                {isFetching && <SkeletonTable />}
             </div>
         </div>
     );

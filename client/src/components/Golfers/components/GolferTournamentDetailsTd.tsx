@@ -1,8 +1,8 @@
 import React, { useState } from "react"
-import TableRow from "../../../Utils/components/TableRow"
-import HolesComparisonChart from "../../../Golfers/components/player/HolesComparisonChart"
-import { GolferTournamentDetails } from "../../../../types/golferTournamentDetails";
-import { TournamentHoles } from "../../../../types/tournamentHoles";
+import TableRow from "../../Utils/components/TableRow"
+import HolesComparisonChart from "./player/HolesComparisonChart"
+import { GolferTournamentDetails } from "../../../types/golferTournamentDetails";
+import { TournamentHoles } from "../../../types/tournamentHoles";
 
 export default function GolferTournamentDetailsTd({ detail, desiredKeysSet, idx, holeData}: 
     {

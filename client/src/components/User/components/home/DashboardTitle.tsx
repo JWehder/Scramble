@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
+import Avatar from "../../../Utils/components/Avatar";
 
 interface DashboardTitleProps {
     title: string | undefined;
+    avatar: string | undefined;
     children?: React.ReactNode;
 }
 
@@ -17,23 +19,16 @@ const fetchGreeting = async (): Promise<GolfersGreeting> => {
 };
 
 export default function DashboardTitle(
-    { title, children }: DashboardTitleProps) {
-
-    const { data, error, isLoading } = useQuery({
-        queryKey: ['golfersGreeting'], 
-        queryFn: fetchGreeting
-    });
-
-    useEffect(() => {
-        // This effect can be used for additional logic if needed
-        if (data) {
-            console.log('Fetched greeting:', data.message);
-        }
-    }, []);
+    { title, avatar, children }: DashboardTitleProps) {
 
     return (
         <div className='flex-row h-16 w-full mb-5 pl-14 flex text-light font-PTSans'>
             <div className="flex-1 flex items-center">   
+                { avatar ? 
+                    <Avatar imgUrl={avatar} size="12" />
+                    :
+                    null
+                }
                 <h1 className='text-4xl'>{title}</h1>              
             </div>
             
