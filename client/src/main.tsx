@@ -11,6 +11,9 @@ import Dashboard from './components/Leagues/components/Dashboard.js';
 import LeagueDashboard from './components/Leagues/components/LeagueDashboard.js';
 import ErrorPage from './components/Utils/components/ErrorPage.jsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import LeagueSettingsPage from './components/Leagues/components/LeagueSettingsPage';
+import LeagueSettings from './types/leagueSettings';
+import axios from 'axios';
 
 // import { ApolloServer } from '@apollo/server';
 // import { startStandaloneServer } from '@apollo/server/standalone';
@@ -24,6 +27,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // const { url } = await startStandaloneServer(server, {
 //     listen: { port: 4000 }
 // })
+
 
 const router = createBrowserRouter([
   {
@@ -47,12 +51,12 @@ const router = createBrowserRouter([
           {
             path: "/leagues/:leagueId",
             element: <LeagueDashboard />,
-            children: [
-              {
-                path: "/leagues/:leagueId/settings",
-                element: <LeagueDashboard />,
-              }
-            ]
+          },
+          {
+            path: "/leagues/:leagueId/settings",
+            element: <LeagueSettingsPage 
+            onSave={() => null}
+            />,
           }
       ]
       },

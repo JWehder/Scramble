@@ -98,7 +98,7 @@ export default function LeagueDashboard() {
                 </div>
 
             </div>
-            <div className='w-10/12 rounded-lg spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)] overflow-auto'> 
+            <div className='w-10/12 rounded-lg spy-3 flex-grow shrink flex-row h-full max-h-[calc(100vh-225px)] overflow-auto bg-grass-gradient'> 
                 { activeComponent === "Standings" && 
                     <NewStandings 
                     changeUserSelectedTeam={(team: Team) => {

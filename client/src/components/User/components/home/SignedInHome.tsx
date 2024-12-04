@@ -9,7 +9,7 @@ interface SignedInHomeProps {
 export const SignedInHome: React.FC<SignedInHomeProps> = ({ children }) => {
 
     return ( 
-        <div className="pt-20 pb-12 bg-dark h-screen w-screen overflow-auto">
+        <div className="pt-20 pb-12 h-screen w-screen">
             <SideBar />
             <Outlet />
         </div>

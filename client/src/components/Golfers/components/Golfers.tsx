@@ -2,15 +2,11 @@ import DashboardTitle from "../../User/components/home/DashboardTitle";
 import PlayerData from "./PlayerData";
 import TableHeaders from "../../Utils/components/TableHeaders"
 import { useParams } from "react-router-dom";
-import React, { useEffect, useState } from "react";
-import {  useQueryClient } from "@tanstack/react-query";
+import React, { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import Modal from "../../Utils/components/Modal";
-import PlayerPage from "./player/PlayerPage";
 import { useFetchAvailableGolfers } from "../../../hooks/golfers";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setSelectedGolfer } from "../state/golferSlice";
-import { RootState } from "../../../store";
 import SkeletonTable from "../../Utils/components/SkeletonTable";
 
 export default function Golfers() {
@@ -36,7 +32,7 @@ export default function Golfers() {
         };
     }, [inView, fetchNextPage]);
 
-    const headers = ["Fedex Rank", "Golfer", "Avg Score", "Wins", "Top 10s", "Fedex Pts"];
+    const headers = ["Fedex Rank", "Golfer", "Avg Score", "Top 10s", "Wins", "Cuts Made", "Fedex Pts"];
 
     // Render error message if there's an error
     if (isError) {
@@ -48,13 +44,16 @@ export default function Golfers() {
     };
 
     return (
-        <div className="w-full h-full overflow-auto text-light font-PTSans break-all">
+        <div className="w-full h-full overflow-auto text-light font-PTSans break-all bg-middle p-2">
+
             <div>
-                <DashboardTitle title="Golfers" />
+                <DashboardTitle avatar={undefined} title="Golfers" />
                 <TableHeaders headers={headers} />
             </div>
             {data?.pages.map((page, pageIndex) => (
-                <div key={pageIndex + (page.nextPage || 0)}>
+                <div 
+                key={pageIndex + (page.nextPage || 0)}
+                >
                     {page.golfers.map((golfer, idx) => (
                         <PlayerData
                             key={golfer.id}

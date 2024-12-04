@@ -14,7 +14,7 @@ const SkeletonTable: React.FC<SkeletonTableProps> = ({
   <div className="rounded-lg overflow-hidden bg-dark">
     <SkeletonTableHeaders columns={columnCount} />
     {Array.from({ length: rowCount }).map((_, idx) => (
-      <SkeletonTableRow key={idx} columns={columnCount} />
+      <SkeletonTableRow even={idx % 2 === 0} key={idx} columns={columnCount} />
     ))}
   </div>
 );

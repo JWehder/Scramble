@@ -1,4 +1,4 @@
-from flask import jsonify, abort, Blueprint
+from flask import jsonify, abort, Blueprint, session
 import sys
 import os
 from bson.objectid import ObjectId
@@ -48,6 +48,9 @@ def get_teams_by_league_id(league_id):
 
             league.Teams = team_instances
 
-        return jsonify(league.to_dict()), 200
+            league_dict = league.to_dict()
+            league_dict["IsCommish"] = session.get('user_id') == league_dict["CommissionerId"]
+
+        return jsonify(league_dict), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

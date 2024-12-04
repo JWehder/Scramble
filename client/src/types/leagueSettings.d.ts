@@ -26,7 +26,8 @@ export interface LeagueSettings {
       DoubleBogeys: number;
       WorseThanDoubleBogeys: number;
     };
-    ScorePlay: boolean;
+    ScoreType: "Total Standings" | "Head to Head" | "Match Play";
+    PointsType: "Strokes" | "Points per Score" | "Matchup Win";
     SecondsPerDraftPick?: number;
     SnakeDraft: boolean;
     StrokePlay: boolean;
@@ -34,4 +35,5 @@ export interface LeagueSettings {
     updated_at?: string;  // datetime to string
     WaiverDeadline?: string;
     WaiverType: string;
+    DefaultPointsForNonPlacers: number;
   }

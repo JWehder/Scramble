@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
 import Avatar from "../../../Utils/components/Avatar";
 
 interface DashboardTitleProps {
