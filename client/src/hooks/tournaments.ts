@@ -13,7 +13,7 @@ const fetchTournamentScheudule = async (fantasy_league_season_id: string) => {
 
 export const useFetchTournamentDetails = (fantasy_league_season_id?: string) => {
     return useQuery<TournamentDetailsResponse>({
-        queryKey: ['golferTournamentDetails', fantasy_league_season_id],
+        queryKey: ['tournaments', fantasy_league_season_id],
         queryFn: () => fetchTournamentScheudule(fantasy_league_season_id!),
         enabled: !!fantasy_league_season_id // Only enable query if golferId is valid
     });

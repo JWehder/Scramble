@@ -4,7 +4,12 @@ import { AppDispatch, RootState } from "../../../store";
 import { getLeague } from "../state/leagueSlice";
 import { useParams } from "react-router-dom";
 import { LeagueSettings } from "../../../types/leagueSettings";
-import Tooltip from "../../Utils/components/Tooltip";
+import TournamentScheduleTable from "../../User/components/home/TournamentScheduleTable";
+import { Tournament } from "../../../types/tournaments";
+import Tourney from "../../User/components/home/Tourney";
+import BackButton from "../../Utils/components/BackButton";
+import GolferTournamentDetailsTable from "../../Golfers/components/GolferTournamentDetailsTable";
+import { SettingsProvider } from "../settingsContext";
 
 type PointsPerScoreType = {
   Birdies: number;
@@ -64,18 +69,17 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
 
     const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague)
 
-    const foundLeague = leagues.find((league) => league.id === leagueId)
-
     const dispatch = useDispatch<AppDispatch>();
 
     const [settings, setSettings] = useState<LeagueSettings | undefined>(defaultSettings);
     const [isCommissioner, setIsCommissioner] = useState<boolean>(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
 
     useEffect(() => {
 
-        if (!selectedLeague && foundLeague) {
-            dispatch(getLeague(foundLeague.id));
+        if (!selectedLeague && leagueId) {
+            dispatch(getLeague(leagueId));
         };
 
     }, [leagueId])
@@ -83,6 +87,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
     useEffect(() => {
         if (selectedLeague) {
             setSettings(selectedLeague?.LeagueSettings)
+            
         }
        
     }, [selectedLeague])
@@ -110,7 +115,6 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
         setErrors((prev) => ({ ...prev, [field]: "" }));
         setSettings((prev) => ({ ...prev!, [field]: value }));
     };
-    
 
     const handleSave = () => {
         if (settings) saveLeagueSettings(settings);
@@ -120,10 +124,17 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
         "30 secs": 30, 
         "1 min": 60, 
         "1 min 30 secs": 90, 
-        "2 mins", 
-        "1 hour", 
-        "3 hours", 
-        "6 hours"
+        "2 mins": 120, 
+        "1 hour": 3600, 
+        "3 hours": 10800, 
+        "6 hours": 21600
+    }
+
+    const cutsObj = {
+        "+1": 1,
+        "+2": 2,
+        "+3": 3,
+        "+4": 4
     }
 
     const displayStarters = () => {
@@ -146,18 +157,18 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
         );
     }
 
-    const renderInput = (label, name, type, value, options, disabled = false) => {
+    const renderInput = (label, name, type, value, options: Array<string> | Array<number> | null, disabled = false, obj: Object | undefined = undefined) => {
         if (options) {
           return (
             <div className="space-y-2">
               <label className="text-sm font-semibold">{label}</label>
               <div className="flex flex-wrap gap-2">
-                {options.map((option) => (
+                {options.map((option) => ( 
                   <button
                     key={option}
-                    onClick={() => handleInputChange(name, option)}
+                    onClick={() => handleInputChange(name, (obj ? obj[option] : option))}
                     className={`px-4 py-2 rounded ${
-                      value === option ? "bg-highlightBlue text-light" : "bg-light text-dark"
+                      value === (obj ? obj[option] : option) ? "bg-highlightBlue text-light" : "bg-light text-dark"
                     } ${isCommissioner ? "cursor-not-allowed opacity-50" : "hover:brightness-110"}`}
                     disabled={disabled}
                   >
@@ -191,7 +202,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
 
         {/* Tabs for Navigation */}
         <div className="flex justify-center mb-6 text-light space-x-2">
-            {["Draft", "Scoring", "Team Management"].map((tab) => (
+            {["Draft", "Scoring", "Team Management", "Tournaments"].map((tab) => (
             <button
                 key={tab}
                 onClick={() => setCurrentTab(tab)}
@@ -209,11 +220,11 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             {currentTab === "Draft" && (
             <div className="space-y-6">
                 {renderInput(
-                "Draft Frequency (Draft every X amount of tournaments)",
+                "Draft Frequency (Free Agent Draft every X amount of tournaments after first draft)",
                 "DraftingFrequency",
                 "number",
                 settings?.DraftingFrequency,
-                ["Once Per Season", "Twice Per Season", 1, 2, 3, 4],
+                [1, 2, 3, 4],
                 !isCommissioner
                 )}
                 {renderInput(
@@ -229,8 +240,9 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "SecondsPerDraftPick",
                 "text",
                 settings?.SecondsPerDraftPick,
-                ["30 secs", "1 min", "1 min 30 secs", "2 mins", "1 hour", "3 hours", "6 hours"],
-                !isCommissioner
+                Object.keys(timePerDraftPickObj),
+                !isCommissioner,
+                timePerDraftPickObj
                 )}
                 {renderInput("Draft Time", "DraftStartTime", "time", settings?.DraftStartTime, null, !isCommissioner)}
                 {renderInput("Snake Draft", "SnakeDraft", "checkbox", settings?.SnakeDraft, null, !isCommissioner)}
@@ -254,8 +266,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
 
                 {renderInput("Game", "ScoreType", "text", settings?.DefaultPointsForNonPlacers, ["Match Play", "Standard", "Customized Scoring"], !isCommissioner)}
                 {renderInput("Default Points for Non-Placers (Withdrawals or something else)", "DefaultPointsForNonPlacers", "number", settings?.DefaultPointsForNonPlacers, [0, 1, 2, 3, 4], !isCommissioner)}
-                {renderInput("Cut Penalty", "CutPenalty", "text", settings?.DefaultPointsForNonPlacers, ["+1", "+2", "+3", "+4"], !isCommissioner)}
-
+                {renderInput("Cut Penalty", "CutPenalty", "text", settings?.CutPenalty, Object.keys(cutsObj), !isCommissioner, cutsObj)}
             </div>
             )}
 
@@ -294,18 +305,49 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 )}
             </div>
             )}
+
+            <div className="bg-middle rounded-b-lg text-light">
+                {currentTab === "Tournaments" && (
+                    selectedTournament ? (
+                    <>
+                        <span className="inline-flex items-center">
+                        <BackButton
+                            size="8"
+                            color="stroke-light"
+                            handleBackClick={() => setSelectedTournament(null)}
+                        />
+                        </span>
+                        <Tourney tournament={selectedTournament} />
+                        <GolferTournamentDetailsTable
+                        tournamentId={selectedTournament.id}
+                        holeData={selectedTournament.Holes}
+                        />
+                    </>
+                    ) : (
+                    <>
+                        <SettingsProvider>
+                            <TournamentScheduleTable
+                            setSelectedTournament={setSelectedTournament}
+                            currentFantasyLeagueSeasonId={selectedLeague?.CurrentFantasyLeagueSeasonId!}
+                            />
+                        </SettingsProvider>
+                    </>
+                    )
+                )}
+            </div>
         </div>
 
-        {/* Save Button */}
-        <div className="flex justify-center mt-6">
-            <button
-            onClick={handleSave}
-            className="bg-light text-dark px-6 py-3 rounded-lg shadow-2xl"
-            disabled={!isCommissioner}
-            >
-            Save Settings
-            </button>
-        </div>
+
+            {/* Save Button */}
+            <div className="flex justify-center mt-6">
+                <button
+                onClick={handleSave}
+                className="bg-light text-dark px-6 py-3 rounded-lg shadow-2xl"
+                disabled={!isCommissioner}
+                >
+                Save Settings
+                </button>
+            </div>
         </div>
     </div>
     );
