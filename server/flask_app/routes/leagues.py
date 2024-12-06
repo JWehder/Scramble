@@ -54,3 +54,4 @@ def get_teams_by_league_id(league_id):
         return jsonify(league_dict), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+

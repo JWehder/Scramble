@@ -12,3 +12,5 @@ pro_seasons_bp = Blueprint('pro_seasons', __name__)
 
 pro_seasons_collection = db.proSeasons
 
+
+

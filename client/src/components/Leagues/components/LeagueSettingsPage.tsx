@@ -10,6 +10,7 @@ import Tourney from "../../User/components/home/Tourney";
 import BackButton from "../../Utils/components/BackButton";
 import GolferTournamentDetailsTable from "../../Golfers/components/GolferTournamentDetailsTable";
 import { SettingsProvider } from "../settingsContext";
+import Button from "../../Utils/components/Button";
 
 type PointsPerScoreType = {
   Birdies: number;
@@ -62,7 +63,6 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
   saveLeagueSettings
 }) => {
 
-    const leagues = useSelector((state: RootState) => state.leagues.leagues);
     const { leagueId } = useParams<string>();
 
     const [currentTab, setCurrentTab] = useState<string>("Draft");
@@ -306,8 +306,36 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             </div>
             )}
 
+
+            { /* buttons for editing tournament list */}
+            { currentTab === "Tournaments" ?
+            <div className="flex items-center justify-end space-x-2 p-1">
+                <Button
+                type= "submit"
+                onClick= {null}
+                size='md'
+                variant= 'secondary'
+                disabled={false}
+                >
+                    Add
+                </Button>
+                <Button
+                type= "submit"
+                onClick= {null}
+                size='md'
+                variant= 'primary'
+                disabled={false}
+                >
+                    Remove
+                </Button>
+            </div>
+            :
+            null
+            }
+
             <div className="bg-middle rounded-b-lg text-light">
                 {currentTab === "Tournaments" && (
+                    
                     selectedTournament ? (
                     <>
                         <span className="inline-flex items-center">

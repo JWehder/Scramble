@@ -8,8 +8,8 @@ export default function Button({ children, type, onClick, size, variant, disable
         size === 'spmd' && 'md:text-md text-lg w-min font-lobster text-dark',
         size === 'lg' && 'lg:text-lg md:text-md sm:text-sm text-sm w-36',
         // Variant styles (optional)
-        variant === 'primary' && 'bg-middle text-light',
-        variant === 'secondary' && "bg-light text-dark py-2 px-4 rounded-md hover:bg-light/90",
+        variant === 'primary' && 'bg-dark text-light py-2 px-4 rounded-md hover:bg-dark/90 shadow-lg',
+        variant === 'secondary' && "bg-light text-dark py-2 px-4 rounded-md hover:bg-light/90 shadow-lg",
         // Disabled styles
         disabled && 'opacity-50 cursor-not-allowed',
       ];
