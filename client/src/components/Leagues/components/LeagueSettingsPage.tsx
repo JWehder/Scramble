@@ -11,86 +11,44 @@ import BackButton from "../../Utils/components/BackButton";
 import GolferTournamentDetailsTable from "../../Golfers/components/GolferTournamentDetailsTable";
 import { SettingsProvider } from "../settingsContext";
 import Button from "../../Utils/components/Button";
-
-type PointsPerScoreType = {
-  Birdies: number;
-  Eagles: number;
-  Pars: number;
-  Albatross: number;
-  Bogeys: number;
-  DoubleBogeys: number;
-  WorseThanDoubleBogeys: number;
-};
+import LoadingScreen from "../../Utils/components/LoadingScreen";
+import axios from "axios";
 
 interface LeagueSettingsProps {
   saveLeagueSettings: (settings: LeagueSettings) => void;
 }
 
-const defaultSettings: LeagueSettings = {
-  CutPenalty: 0,
-  DraftingFrequency: 1,
-  DraftStartDayOfWeek: "Monday",
-  DraftStartTime: "12:00",
-  DropDeadline: "",
-  ForceDrops: 0,
-  MaxDraftedPlayers: 1,
-  MaxGolfersPerTeam: 3,
-  MaxNumOfGolferUses: 0,
-  MinFreeAgentDraftRounds: 3,
-  NumOfBenchGolfers: 1,
-  NumOfStarters: 2,
-  NumberOfTeams: 8,
-  PointsPerPlacing: [10, 5, 3],
-  PointsPerScore: {
-    Birdies: 3,
-    Eagles: 5,
-    Pars: 1,
-    Albatross: 7,
-    Bogeys: -3,
-    DoubleBogeys: -5,
-    WorseThanDoubleBogeys: -7,
-  },
-  ScoreType: "Total Standings",
-  PointsType: "Strokes",
-  SecondsPerDraftPick: 3600,
-  SnakeDraft: true,
-  TimeZone: "UTC",
-  WaiverDeadline: "Wednesday",
-  WaiverType: "Reverse Standings",
-};
-
 const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
-  saveLeagueSettings
-}) => {
-
+    saveLeagueSettings
+  }) => {
     const { leagueId } = useParams<string>();
-
+    const isEditMode = Boolean(leagueId);
+  
     const [currentTab, setCurrentTab] = useState<string>("Draft");
-
-    const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague)
-
-    const dispatch = useDispatch<AppDispatch>();
-
-    const [settings, setSettings] = useState<LeagueSettings | undefined>(defaultSettings);
+    const [settings, setSettings] = useState<LeagueSettings | undefined>();
     const [isCommissioner, setIsCommissioner] = useState<boolean>(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
     const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+    const dispatch = useDispatch<AppDispatch>();
+  
+    useEffect(() => {
+      if (isEditMode && !selectedLeague) {
+        dispatch(getLeague(leagueId!));
+      };
+    }, [leagueId]);
+  
+    useEffect(() => {
+      if (isEditMode && selectedLeague) {
+        setSettings(selectedLeague.LeagueSettings);
+      };
+    }, [selectedLeague]);
 
     useEffect(() => {
-
-        if (!selectedLeague && leagueId) {
-            dispatch(getLeague(leagueId));
-        };
-
-    }, [leagueId])
-
-    useEffect(() => {
-        if (selectedLeague) {
-            setSettings(selectedLeague?.LeagueSettings)
-            
+        if (!isEditMode) {
+            axios.get('')
         }
-       
-    }, [selectedLeague])
+      }, [isEditMode]);
 
     const handleInputChange = (field: keyof LeagueSettings, value: any) => {
         if (!settings) return;
@@ -192,7 +150,11 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             />
           </div>
         );
-      };
+    };
+
+    if (!settings) {
+        return <LoadingScreen />
+    };
     
     return (
     <div className="w-full min-h-screen bg-gradient-to-b from-dark to-middle text-light flex flex-col items-center px-6 py-10 shadow-2xl font-PTSans min-w-[750px]">
@@ -260,7 +222,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 !isCommissioner
                 )}
                 {settings?.PointsType === "Points per Score" &&
-                Object.entries(settings?.PointsPerScore || defaultSettings.PointsPerScore).map(([scoreType, points]) =>
+                Object.entries(settings?.PointsPerScore).map(([scoreType, points]) =>
                     renderInput(`Points for ${scoreType}`, `PointsPerScore.${scoreType}`, "number", points, null, !isCommissioner)
                 )}
 

@@ -6,7 +6,7 @@ export interface TournamentDetailsResponse {
     tournaments: Tournament[];
 }
 
-const fetchTournamentScheudule = async (fantasy_league_season_id: string) => {
+const fetchTournamentSchedule = async (fantasy_league_season_id: string) => {
     const response = await axios.get(`/api/fantasy_league_seasons/${fantasy_league_season_id}/tournaments/tournament_schedule`);
     return response.data;
 };
@@ -14,7 +14,7 @@ const fetchTournamentScheudule = async (fantasy_league_season_id: string) => {
 export const useFetchTournamentDetails = (fantasy_league_season_id?: string) => {
     return useQuery<TournamentDetailsResponse>({
         queryKey: ['tournaments', fantasy_league_season_id],
-        queryFn: () => fetchTournamentScheudule(fantasy_league_season_id!),
+        queryFn: () => fetchTournamentSchedule(fantasy_league_season_id!),
         enabled: !!fantasy_league_season_id // Only enable query if golferId is valid
     });
 };

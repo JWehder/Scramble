@@ -55,3 +55,22 @@ def update_leagues_settings(leagues_settings_id):
             return jsonify({"error": str(e)}), 400
     else:
         return abort(404, description="League settings not found.")
+
+@league_settings_bp.route('/leagues_settings/fantasy_games/<sport_str>', methods=['GET'])
+def get_leagues_settings_by_game_str(sport_str):
+    """
+    Get default league settings for a given fantasy game.
+    :param game_str: The string representing the fantasy game (e.g., 'golf').
+    :return: JSON response containing the default settings for the game.
+    """
+    try:
+        fantasy_game = db.fantasySportsGames.find_one({"sport": sport_str})
+        default_settings = LeagueSettings(fantasy_game["defaultSettings"]).to_dict()
+
+        if not default_settings:
+            return jsonify({'error': f'No default settings found for game: {sport_str}'}), 404
+
+        return jsonify(default_settings), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
