@@ -17,6 +17,8 @@ from config import db
 class LeagueSettings(Base):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias='_id')
     created_at: Optional[datetime] = None
+    Sport: str = Field(default="Golf", description="Type of fantasy sports league.")
+    SeasonId: str = Field(default="PGA Tour", description="Professional league season the league is participating in.")
     CutPenalty: int = Field(default=0, description="Default points for players finishing outside the defined placements")
     DraftingFrequency: int = Field(default=0, description="The number of times the league drafts in between tournaments.")
     DraftStartDayOfWeek: Optional[str] = Field(default="Monday", description="Day of the week in which the draft starts before a tournament or season.")

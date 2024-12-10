@@ -2,25 +2,18 @@ import React, { useState } from "react";
 import TableRow from "../../../Utils/components/TableRow";
 import { Tournament } from "../../../../types/tournaments";
 import TableHeaders from "../../../Utils/components/TableHeaders";
-import { useFetchTournamentDetails } from "../../../../hooks/tournaments";
-import SkeletonTable from "../../../Utils/components/SkeletonTable";
 import { useSettings } from "../../../Leagues/settingsContext";
 
 interface TournamentScheduleTableProps {
     setSelectedTournament: (selectedTournament: Tournament) => void;
-    currentFantasyLeagueSeasonId: string;
+    tournaments: Tournament[];
+    
 }
 
 export default function TournamentScheduleTable({
     setSelectedTournament,
-    currentFantasyLeagueSeasonId
+    tournaments
 }: TournamentScheduleTableProps) {
-
-    const { data,
-        isFetching,
-        isSuccess,
-        isError
-    } = useFetchTournamentDetails(currentFantasyLeagueSeasonId);
 
     const { settings, disabled, handleCheckboxChange, selectedTournaments } = useSettings();
 
@@ -40,7 +33,7 @@ export default function TournamentScheduleTable({
                 <TableHeaders headers={headers} />
             </div>
 
-            { isSuccess && data?.tournaments.map((tournament: Tournament, idx) => {
+            { tournaments?.map((tournament: Tournament, idx) => {
                 let newDesiredKeysSet = {};
                 // Replace "PreviousWinner" with "Winner"
                 if (desiredKeysSet.has("PreviousWinner")) {
@@ -77,12 +70,11 @@ export default function TournamentScheduleTable({
                             columns={desiredKeysSet}
                             brightness={idx % 2 === 0 ? "brightness-125" : ""}
                             onClick={() => setSelectedTournament(tournament)}
+                            disabled={false}
                         />
                     </div>
                 )
             })}
-            { isError && <div>Error loading tournament details.</div> }
-            { isFetching && <SkeletonTable /> }
         </>
     )
 }

@@ -6,18 +6,26 @@ type TableRowProps = {
     data: Record<string, any>;
     columns: Set<string>;
     onClick: () => void;
-    brightness: string
+    brightness: string;
+    disabled: boolean;
 };
 
-const TableRow: React.FC<TableRowProps> = ({ firstTwoDatapoints, data, columns, onClick, brightness }) => (
-
+const TableRow: React.FC<TableRowProps> = ({ 
+    firstTwoDatapoints, 
+    data, 
+    columns, 
+    onClick, 
+    brightness, 
+    disabled 
+}) => (
     <div 
-        onClick={onClick}
-        className={`w-full flex bg-middle h-10 justify-center items-center hover:z-20 cursor-pointer hover:shadow-lg shadow-middle flex-row border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm truncate hover:b-1 my-0.5 overflow-visible border-x-2 border-middle font-PTSans`}
+        onClick={!disabled ? onClick : undefined} // Disable click when disabled is true
+        className={`w-full flex bg-middle h-10 justify-center items-center flex-row border-box ${brightness} text-sm md:text-sm lg:text-md sm:text-sm truncate my-0.5 overflow-visible border-x-2 border-middle font-PTSans 
+            ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:z-20 hover:shadow-lg hover:b-1'}`} // Apply styles based on disabled
     >
         {/* Left side: Start date and tournament name */}
         <div className="flex w-1/2 items-center">
-            <div className=" flex w-1/6 px-2 text-left text-sm md:text-sm sm:text-sm">
+            <div className="flex w-1/6 px-2 text-left text-sm md:text-sm sm:text-sm">
                 {firstTwoDatapoints[0]}
             </div>
             <div className="w-5/6 text-left flex items-center pl-6">

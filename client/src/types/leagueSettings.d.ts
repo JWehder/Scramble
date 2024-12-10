@@ -36,4 +36,6 @@ export interface LeagueSettings {
     WaiverDeadline?: string;
     WaiverType: string;
     DefaultPointsForNonPlacers: number;
+    Sport: string;
+    SeasonId: string;
   }

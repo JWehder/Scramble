@@ -10,12 +10,18 @@ import Tourney from "../../User/components/home/Tourney";
 import BackButton from "../../Utils/components/BackButton";
 import GolferTournamentDetailsTable from "../../Golfers/components/GolferTournamentDetailsTable";
 import { SettingsProvider } from "../settingsContext";
-import Button from "../../Utils/components/Button";
 import LoadingScreen from "../../Utils/components/LoadingScreen";
 import axios from "axios";
+import EditTournamentsButtons from "./EditTournamentsButtons";
 
 interface LeagueSettingsProps {
   saveLeagueSettings: (settings: LeagueSettings) => void;
+}
+
+interface FantasyLeagueTournamentsResponse {
+    pastFantasyLeagueTournaments: Tournament[],
+    upcomingFantasyLeagueTournaments: Tournament[],
+    upcomingProSeasonTournaments: Tournament[]
 }
 
 const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
@@ -30,23 +36,47 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
     const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+    const [tournaments, setTournaments] = useState<FantasyLeagueTournamentsResponse | []>();
+
     const dispatch = useDispatch<AppDispatch>();
   
     useEffect(() => {
-      if (isEditMode && !selectedLeague) {
-        dispatch(getLeague(leagueId!));
-      };
-    }, [leagueId]);
-  
-    useEffect(() => {
-      if (isEditMode && selectedLeague) {
-        setSettings(selectedLeague.LeagueSettings);
-      };
-    }, [selectedLeague]);
-
-    useEffect(() => {
+        if (isEditMode && !selectedLeague) {
+          dispatch(getLeague(leagueId!));
+        }
+      }, [leagueId, isEditMode, dispatch, selectedLeague]);
+      
+      useEffect(() => {
+        if (isEditMode && selectedLeague) {
+          setSettings(selectedLeague.LeagueSettings);
+      
+          // Fetch associated tournaments
+          const fetchTournaments = async () => {
+            try {
+              const response = await axios.get(
+                `/fantasy_league_seasons/${selectedLeague.CurrentFantasyLeagueSeasonId}/pro_season/competition_schedule`
+              );
+              setTournaments(response.data); // Assuming `setTournaments` exists for tournament state
+            } catch (error) {
+              console.error("Error fetching tournaments:", error);
+            }
+          };
+          fetchTournaments();
+        } 
+      }, [isEditMode, selectedLeague]);
+      
+      useEffect(() => {
         if (!isEditMode) {
-            axios.get('')
+          const fetchInitialSettings = async () => {
+            try {
+              const response = await axios.get('/default_league_settings');
+              setSettings(response.data);
+              const tournamentsResponse = await axios.get()
+            } catch (error) {
+              console.error("Error fetching default settings:", error);
+            }
+          };
+          fetchInitialSettings();
         }
       }, [isEditMode]);
 
@@ -179,6 +209,30 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
 
         {/* Content */}
         <div className="bg-middle p-6 rounded-b-lg text-light">
+        {currentTab === "General" && (
+            <div className="space-y-6">
+                {renderInput(
+                "Sport",
+                "Sport",
+                "number",
+                settings?.Sport,
+                ["Golf"],
+                !isCommissioner
+                )}
+                { renderInput(
+                "Sport",
+                "Pro Season",
+                "number",
+                settings?.SeasonId,
+                ["PGA Tour"],
+                !isCommissioner
+                )}
+            </div>
+        )}
+        </div>
+
+        {/* Content */}
+        <div className="bg-middle p-6 rounded-b-lg text-light">
             {currentTab === "Draft" && (
             <div className="space-y-6">
                 {renderInput(
@@ -268,33 +322,6 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             </div>
             )}
 
-
-            { /* buttons for editing tournament list */}
-            { currentTab === "Tournaments" ?
-            <div className="flex items-center justify-end space-x-2 p-1">
-                <Button
-                type= "submit"
-                onClick= {null}
-                size='md'
-                variant= 'secondary'
-                disabled={false}
-                >
-                    Add
-                </Button>
-                <Button
-                type= "submit"
-                onClick= {null}
-                size='md'
-                variant= 'primary'
-                disabled={false}
-                >
-                    Remove
-                </Button>
-            </div>
-            :
-            null
-            }
-
             <div className="bg-middle rounded-b-lg text-light">
                 {currentTab === "Tournaments" && (
                     
@@ -316,9 +343,13 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                     ) : (
                     <>
                         <SettingsProvider>
+                            <EditTournamentsButtons 
+                            setTournaments={setTournaments}
+                            fantasyLeagueSeasonId={selectedLeague?.CurrentFantasyLeagueSeasonId}
+                            />
                             <TournamentScheduleTable
                             setSelectedTournament={setSelectedTournament}
-                            currentFantasyLeagueSeasonId={selectedLeague?.CurrentFantasyLeagueSeasonId!}
+                            tournaments={tournaments}
                             />
                         </SettingsProvider>
                     </>

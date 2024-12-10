@@ -38,7 +38,7 @@ def convert_to_tournament_dicts(tournaments):
                 tournament_dict["Purse"] = "$" + str(tournament_dict["Purse"]) + "M"
         return tournament_dicts
 
-@fantasy_league_seasons_bp.route('/<fantasy_league_season_id>/tournaments/tournament_schedule')
+@fantasy_league_seasons_bp.route('/<fantasy_league_season_id>/tournaments/tournament_schedule', methods=['GET'])
 def get_league_tournament_schedule(fantasy_league_season_id):
     # Find the league season and get its associated tournaments
     league_season = db.fantasyLeagueSeasons.find_one({"_id": ObjectId(fantasy_league_season_id)})
@@ -75,7 +75,6 @@ def get_league_tournament_schedule(fantasy_league_season_id):
             if tournament_dict["Purse"] and tournament_dict["Purse"] > 0:
                 tournament_dict["Purse"] = tournament_dict["Purse"] // 1000000
                 tournament_dict["Purse"] = "$" + str(tournament_dict["Purse"]) + "M"
-            
 
         # Respond with the tournaments, or an empty array if none found
         return jsonify({"tournaments": tournament_dicts})
@@ -85,7 +84,7 @@ def get_league_tournament_schedule(fantasy_league_season_id):
 @fantasy_league_seasons_bp.route('/<fantasy_league_season_id>/pro_season/competition_schedule')
 def get_pro_season_schedule(fantasy_league_season_id):
     page = request.args.get('page', default=0, type=int)
-    limit = 15  # Number of golfers per page
+    limit = 15  # Number of tournaments per page
 
     # Find the fantasy league season by ID
     fantasy_league_season = db.fantasyLeagueSeasons.find_one({
@@ -102,25 +101,39 @@ def get_pro_season_schedule(fantasy_league_season_id):
 
     current_date_time = datetime.utcnow()
 
+    # Separate past and upcoming fantasy league tournaments
+    past_fantasy_league_tournaments = []
+    upcoming_fantasy_league_tournaments = []
+
+    for tournament in fantasy_league_tournaments:
+        if tournament["EndDate"] < current_date_time:
+            past_fantasy_league_tournaments.append(tournament)
+        else:
+            upcoming_fantasy_league_tournaments.append(tournament)
+
     offset = page * limit
 
-    pro_season_tournaments = db.tournaments.find(
-        {"_id": {"$nin": [ObjectId(t_id) for t_id in tournament_ids]}},
-        {"StartDate": {"$gt": current_date_time}}
-    ).sort("StartDate").skip(offset).limit(limit=limit)
+    # Find upcoming pro season tournaments not in the fantasy league season
+    upcoming_pro_season_tournaments = db.tournaments.find(
+        {
+            "_id": {"$nin": [ObjectId(t_id) for t_id in tournament_ids]},
+            "StartDate": {"$gt": current_date_time}
+        }
+    ).sort("StartDate").skip(offset).limit(limit)
 
-    if pro_season_tournaments and fantasy_league_tournaments:
-        pro_season_tournaments_dicts = convert_to_tournament_dicts(pro_season_tournaments)
-        fantasy_league_tournaments_dicts = convert_to_tournament_dicts(fantasy_league_tournaments)
-
+    if fantasy_league_tournaments or upcoming_pro_season_tournaments:
         return jsonify({
-            "fantasyLeagueSeasonTournaments": fantasy_league_tournaments_dicts,
-            "proSeasonTournaments": pro_season_tournaments_dicts
+            "pastFantasyLeagueTournaments": convert_to_tournament_dicts(past_fantasy_league_tournaments),
+            "upcomingFantasyLeagueTournaments": convert_to_tournament_dicts(upcoming_fantasy_league_tournaments),
+            "upcomingProSeasonTournaments": convert_to_tournament_dicts(upcoming_pro_season_tournaments)
         }), 200
 
     return jsonify({"error": "Sorry, we could not find the tournaments you are looking for."}), 404
 
 
+@fantasy_league_seasons_bp.route('/<fantasy_league_season_id>/pro_season/competition_schedule')
+def get_pro_season_schedule(fantasy_league_season_id):
+    pass
 
 
     

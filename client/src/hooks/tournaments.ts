@@ -18,3 +18,4 @@ export const useFetchTournamentDetails = (fantasy_league_season_id?: string) => 
         enabled: !!fantasy_league_season_id // Only enable query if golferId is valid
     });
 };
+
