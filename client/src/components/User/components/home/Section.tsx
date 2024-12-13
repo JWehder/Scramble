@@ -1,7 +1,13 @@
-import PropTypes from 'prop-types';
+import React from "react";
 import { motion } from "framer-motion";
 
-export default function Section({ desc, img, title }) {
+export default function Section({ desc, img, title }
+    :
+    {
+        desc: string,
+        img: string,
+        title: string
+    }) {
 
     return (
         <motion.div 
@@ -27,10 +33,4 @@ export default function Section({ desc, img, title }) {
             </div>
         </motion.div>
     )
-}
-
-Section.propTypes = {
-    desc: PropTypes.string.isRequired,
-    img: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired
 }

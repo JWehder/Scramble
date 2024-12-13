@@ -6,7 +6,7 @@ import Golfers from '../../Golfers/components/Golfers';
 import SquigglyUnderline from "../../Utils/components/SquigglyLine"
 import Schedule from '../../User/components/home/Schedule';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../Utils/components/Button';
 import BackButton from '../../Utils/components/BackButton';
 import NextButton from '../../Utils/components/NextButton';
@@ -24,6 +24,8 @@ export default function LeagueDashboard() {
     const dispatch = useDispatch<AppDispatch>();
     const { leagueId } = useParams<string>();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const [activeComponent, setActiveComponent] = useState<string>("Schedule");
     const [userSelectedTeam, setUserSelectedTeam] = useState<Team | null>(null);
@@ -52,6 +54,11 @@ export default function LeagueDashboard() {
             dispatch(setSelectedTeam(leagueId))
         }
     }, [leagueTeams, user])
+
+    const goToSettings = () => {
+        // Append "/settings" to the current path
+        navigate(`${location.pathname}/settings`);
+    };
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[950px]'>
@@ -91,7 +98,7 @@ export default function LeagueDashboard() {
                     type="null"
                     disabled={false}
                     size="md"
-                    onClick={() => console.log("Clicked me")}
+                    onClick={goToSettings}
                     >
                         Settings
                     </Button>

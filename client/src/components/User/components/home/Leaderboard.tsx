@@ -45,10 +45,12 @@ export default function Leaderboard() {
                 <>
                     { isError && <div>Error loading tournament details.</div> }
                     { isFetching && <SkeletonTable /> }
+                    { isSuccess && 
                     <TournamentScheduleTable 
                     setSelectedTournament={setSelectedTournament!}
                     tournaments={data?.tournaments!}
                     />
+                    }
                 </>
             }
         </div>

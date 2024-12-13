@@ -2,7 +2,7 @@ from flask import jsonify, abort, request, Blueprint
 import sys
 import os
 from bson.objectid import ObjectId
-import datetime
+from datetime import datetime
 
 # Adjust the paths for MacOS to get the flask_app directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -39,7 +39,7 @@ def convert_to_tournament_dicts(tournaments):
         return tournament_dicts
 
 @fantasy_league_seasons_bp.route('/<fantasy_league_season_id>/tournaments/tournament_schedule', methods=['GET'])
-def get_league_tournament_schedule(fantasy_league_season_id):
+def get_fantasy_league_tournament_schedule(fantasy_league_season_id):
     # Find the league season and get its associated tournaments
     league_season = db.fantasyLeagueSeasons.find_one({"_id": ObjectId(fantasy_league_season_id)})
 
@@ -82,7 +82,7 @@ def get_league_tournament_schedule(fantasy_league_season_id):
         return jsonify({"error": "Sorry, we could not find any tournaments for the league season you have selected."})
     
 @fantasy_league_seasons_bp.route('/<fantasy_league_season_id>/pro_season/competition_schedule')
-def get_pro_season_schedule(fantasy_league_season_id):
+def get_full_fantasy_competition_schedule(fantasy_league_season_id):
     page = request.args.get('page', default=0, type=int)
     limit = 15  # Number of tournaments per page
 
@@ -129,11 +129,6 @@ def get_pro_season_schedule(fantasy_league_season_id):
         }), 200
 
     return jsonify({"error": "Sorry, we could not find the tournaments you are looking for."}), 404
-
-
-@fantasy_league_seasons_bp.route('/<fantasy_league_season_id>/pro_season/competition_schedule')
-def get_pro_season_schedule(fantasy_league_season_id):
-    pass
 
 
     

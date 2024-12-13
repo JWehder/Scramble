@@ -29,7 +29,7 @@ class Tournament(Base):
     IsCompleted: bool = False
     InProgress: bool = False
     ProSeasonId: Optional[PyObjectId]
-    Holes: Optional[List[Dict[str, Union[str, int]]]]
+    Holes: Optional[List[Dict[str, Union[str, int]]]] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

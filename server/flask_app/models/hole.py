@@ -26,6 +26,7 @@ class Hole(Base):
     Albatross: bool
     DoubleBogey: bool
     WorseThanDoubleBogey: bool
+    NoScore: None
     GolferTournamentDetailsId: PyObjectId
     RoundId: PyObjectId
     created_at: Optional[datetime] = None

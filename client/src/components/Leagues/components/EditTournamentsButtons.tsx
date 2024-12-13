@@ -3,9 +3,10 @@ import Button from "../../Utils/components/Button";
 import { Tournament } from "../../../types/tournaments";
 import axios from "axios";
 import { useSettings } from "../settingsContext";
+import { FantasyLeagueTournamentsResponse } from "../../../types/fantasyLeagueTournamentsResponse";
 
 interface EditTournamentsButtonsProps {
-    setTournaments: React.Dispatch<React.SetStateAction<Tournament[]>>;
+    setTournaments: React.Dispatch<SetStateAction<FantasyLeagueTournamentsResponse | Tournament[] | undefined>>;
     fantasyLeagueSeasonId: string;
   }
   

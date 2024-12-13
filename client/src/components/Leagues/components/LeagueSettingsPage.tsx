@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store";
 import { getLeague } from "../state/leagueSlice";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { LeagueSettings } from "../../../types/leagueSettings";
 import TournamentScheduleTable from "../../User/components/home/TournamentScheduleTable";
 import { Tournament } from "../../../types/tournaments";
@@ -13,188 +13,208 @@ import { SettingsProvider } from "../settingsContext";
 import LoadingScreen from "../../Utils/components/LoadingScreen";
 import axios from "axios";
 import EditTournamentsButtons from "./EditTournamentsButtons";
+import { FantasyLeagueTournamentsResponse } from "../../../types/fantasyLeagueTournamentsResponse";
 
 interface LeagueSettingsProps {
   saveLeagueSettings: (settings: LeagueSettings) => void;
 }
 
-interface FantasyLeagueTournamentsResponse {
-    pastFantasyLeagueTournaments: Tournament[],
-    upcomingFantasyLeagueTournaments: Tournament[],
-    upcomingProSeasonTournaments: Tournament[]
-}
-
 const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
     saveLeagueSettings
   }) => {
-    const { leagueId } = useParams<string>();
-    const isEditMode = Boolean(leagueId);
-  
-    const [currentTab, setCurrentTab] = useState<string>("Draft");
-    const [settings, setSettings] = useState<LeagueSettings | undefined>();
-    const [isCommissioner, setIsCommissioner] = useState<boolean>(false);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
-    const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
-    const [tournaments, setTournaments] = useState<FantasyLeagueTournamentsResponse | []>();
+  const navigate = useNavigate();
+  const { leagueId } = useParams<string>();
+  const isEditMode = Boolean(leagueId);
 
-    const dispatch = useDispatch<AppDispatch>();
-  
+  const [currentTab, setCurrentTab] = useState<string>("General");
+  const [settings, setSettings] = useState<LeagueSettings | undefined>();
+  const [isCommissioner, setIsCommissioner] = useState<boolean>(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
+  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [tournaments, setTournaments] = useState<FantasyLeagueTournamentsResponse | Tournament[]>();
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+      if (isEditMode && !selectedLeague) {
+        dispatch(getLeague(leagueId!));
+      }
+    }, [leagueId, isEditMode, dispatch, selectedLeague]);
+    
     useEffect(() => {
-        if (isEditMode && !selectedLeague) {
-          dispatch(getLeague(leagueId!));
-        }
-      }, [leagueId, isEditMode, dispatch, selectedLeague]);
-      
-      useEffect(() => {
-        if (isEditMode && selectedLeague) {
-          setSettings(selectedLeague.LeagueSettings);
-      
-          // Fetch associated tournaments
-          const fetchTournaments = async () => {
-            try {
-              const response = await axios.get(
-                `/fantasy_league_seasons/${selectedLeague.CurrentFantasyLeagueSeasonId}/pro_season/competition_schedule`
-              );
-              setTournaments(response.data); // Assuming `setTournaments` exists for tournament state
-            } catch (error) {
-              console.error("Error fetching tournaments:", error);
-            }
-          };
-          fetchTournaments();
-        } 
-      }, [isEditMode, selectedLeague]);
-      
-      useEffect(() => {
-        if (!isEditMode) {
-          const fetchInitialSettings = async () => {
-            try {
-              const response = await axios.get('/default_league_settings');
-              setSettings(response.data);
-              const tournamentsResponse = await axios.get()
-            } catch (error) {
-              console.error("Error fetching default settings:", error);
-            }
-          };
-          fetchInitialSettings();
-        }
-      }, [isEditMode]);
-
-    const handleInputChange = (field: keyof LeagueSettings, value: any) => {
-        if (!settings) return;
+      if (isEditMode && selectedLeague) {
+        setSettings(selectedLeague.LeagueSettings);
     
-        // Validation logic
-        let errorMessage = "";
-        if (field === "NumOfStarters" && value > settings.MaxGolfersPerTeam) {
-          errorMessage = "Number of starters cannot exceed max golfers per team.";
-        } else if (field === "NumOfBenchGolfers" && value > settings.MaxGolfersPerTeam) {
-            errorMessage = "Number of bench golfers cannot exceed max golfers per team.";
-        } else if (field === "NumberOfTeams" && value % 2 !== 0 && settings.ScoreType === "Match Play") {
-            errorMessage
-        }
+        // Fetch associated tournaments
+        const fetchTournaments = async () => {
+          try {
+            const response = await axios.get(
+              `/api/fantasy_league_seasons/${selectedLeague.CurrentFantasyLeagueSeasonId}/pro_season/competition_schedule`
+            );
+            setTournaments(response.data); // Assuming `setTournaments` exists for tournament state
+          } catch (error) {
+            console.error("Error fetching tournaments:", error);
+          }
+        };
+        fetchTournaments();
+      } 
+    }, [isEditMode, selectedLeague]);
     
-        // Set error if validation fails
-        if (errorMessage) {
-          setErrors((prev) => ({ ...prev, [field]: errorMessage }));
-          return;
-        }
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const settingsResponse = isEditMode
+            ? selectedLeague?.LeagueSettings
+            : await axios.get('/default_league_settings').then((res) => res.data);
     
-        // Clear error for valid input and update state
-        setErrors((prev) => ({ ...prev, [field]: "" }));
-        setSettings((prev) => ({ ...prev!, [field]: value }));
-    };
-
-    const handleSave = () => {
-        if (settings) saveLeagueSettings(settings);
-    };
-
-    const timePerDraftPickObj = {
-        "30 secs": 30, 
-        "1 min": 60, 
-        "1 min 30 secs": 90, 
-        "2 mins": 120, 
-        "1 hour": 3600, 
-        "3 hours": 10800, 
-        "6 hours": 21600
-    }
-
-    const cutsObj = {
-        "+1": 1,
-        "+2": 2,
-        "+3": 3,
-        "+4": 4
-    }
-
-    const displayStarters = () => {
-        const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;
-        const numBench = settings?.NumOfBenchGolfers ?? 0;
-
-        return  Array.from(
-            { length: Math.max(0, maxGolfers - numBench - 2 + 1) }, 
-            (_, i) => i + 2
-        );
-    }
-
-    const displayBenchGolfers = () => {
-        const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;
-        const numStarters = settings?.NumOfStarters ?? 0;
-
-        return  Array.from(
-            { length: Math.max(0, (maxGolfers - numStarters) - 1 + 1) }, 
-            (_, i) => i + 1
-        );
-    }
-
-    const renderInput = (label, name, type, value, options: Array<string> | Array<number> | null, disabled = false, obj: Object | undefined = undefined) => {
-        if (options) {
-          return (
-            <div className="space-y-2">
-              <label className="text-sm font-semibold">{label}</label>
-              <div className="flex flex-wrap gap-2">
-                {options.map((option) => ( 
-                  <button
-                    key={option}
-                    onClick={() => handleInputChange(name, (obj ? obj[option] : option))}
-                    className={`px-4 py-2 rounded ${
-                      value === (obj ? obj[option] : option) ? "bg-highlightBlue text-light" : "bg-light text-dark"
-                    } ${isCommissioner ? "cursor-not-allowed opacity-50" : "hover:brightness-110"}`}
-                    disabled={disabled}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
+          const tournamentsResponse = await axios.get(
+            isEditMode
+              ? `/api/fantasy_league_seasons/${selectedLeague?.CurrentFantasyLeagueSeasonId}/pro_season/competition_schedule`
+              : `/api/pro_seasons/${settingsResponse.ProSeasonId}/competition_schedule`
           );
-        }
     
+          setSettings(settingsResponse);
+          setTournaments(tournamentsResponse.data);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+    
+      fetchData();
+    }, [isEditMode, selectedLeague]);
+
+  const handleInputChange = (field: keyof LeagueSettings, value: any) => {
+      if (!settings) return;
+  
+      // Validation logic
+      let errorMessage = "";
+      if (field === "NumOfStarters" && value > settings.MaxGolfersPerTeam) {
+        errorMessage = "Number of starters cannot exceed max golfers per team.";
+      } else if (field === "NumOfBenchGolfers" && value > settings.MaxGolfersPerTeam) {
+          errorMessage = "Number of bench golfers cannot exceed max golfers per team.";
+      } else if (field === "NumberOfTeams" && value % 2 !== 0 && settings.ScoreType === "Match Play") {
+          errorMessage
+      }
+  
+      // Set error if validation fails
+      if (errorMessage) {
+        setErrors((prev) => ({ ...prev, [field]: errorMessage }));
+        return;
+      }
+  
+      // Clear error for valid input and update state
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setSettings((prev) => ({ ...prev!, [field]: value }));
+  };
+
+  const handleSave = () => {
+      if (settings) saveLeagueSettings(settings);
+  };
+
+  const timePerDraftPickObj = {
+      "30 secs": 30, 
+      "1 min": 60, 
+      "1 min 30 secs": 90, 
+      "2 mins": 120, 
+      "1 hour": 3600, 
+      "3 hours": 10800, 
+      "6 hours": 21600
+  }
+
+  const cutsObj = {
+      "+1": 1,
+      "+2": 2,
+      "+3": 3,
+      "+4": 4
+  }
+
+  const displayStarters = useMemo(() => {
+    const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;
+    const numBench = settings?.NumOfBenchGolfers ?? 0;
+  
+    return Array.from(
+      { length: Math.max(0, maxGolfers - numBench - 2 + 1) },
+      (_, i) => i + 2
+    );
+  }, [settings]);
+  
+  const displayBenchGolfers = useMemo(() => {
+    const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;
+    const numStarters = settings?.NumOfStarters ?? 0;
+  
+    return Array.from(
+      { length: Math.max(0, maxGolfers - numStarters - 1 + 1) },
+      (_, i) => i + 1
+    );
+  }, [settings]);
+
+  const renderInput = (label: string, name: keyof LeagueSettings, type: string, value: any, options: Array<string> | Array<number> | null, disabled = false, obj: Record<string, number> | undefined = undefined) => {
+      if (options) {
+        console.log(disabled)
         return (
           <div className="space-y-2">
             <label className="text-sm font-semibold">{label}</label>
-            <input
-              type={type}
-              value={value}
-              onChange={(e) => handleInputChange(name, type === "number" ? parseInt(e.target.value) : e.target.value)}
-              className="w-full p-2 rounded bg-light text-dark focus:ring focus:ring-highlightBlue"
-              disabled={disabled}
-            />
+            <div className="flex flex-wrap gap-2">
+              {options.map((option) => ( 
+                <button
+                  key={option}
+                  onClick={() => handleInputChange(name, (obj ? obj[option] : option))}
+                  className={`px-4 py-2 rounded ${
+                    value === (obj ? obj[option] : option) ? "bg-highlightBlue text-light" : "bg-light text-dark"
+                  } ${disabled ? "cursor-not-allowed opacity-50" : "hover:brightness-110"}`}
+                  disabled={disabled}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
         );
-    };
+      }
+  
+      return (
+        <div className="space-y-2">
+          <label className="text-sm font-semibold">{label}</label>
+          <input
+            type={type}
+            value={value}
+            onChange={(e) => handleInputChange(name, type === "number" ? parseInt(e.target.value) : e.target.value)}
+            className="w-full p-2 rounded bg-light text-dark focus:ring focus:ring-highlightBlue"
+            disabled={disabled}
+          />
+        </div>
+      );
+  };
 
-    if (!settings) {
-        return <LoadingScreen />
-    };
-    
-    return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-dark to-middle text-light flex flex-col items-center px-6 py-10 shadow-2xl font-PTSans min-w-[750px]">
-        <div className="w-full max-w-4xl bg-middle p-6 rounded-lg shadow-xl font-PTSans">
+  if (!settings) {
+      return <LoadingScreen />
+  };
+  
+  return (
+  <div className="w-full min-h-screen bg-gradient-to-b from-dark to-middle text-light flex flex-col items-center px-6 py-10 shadow-2xl font-PTSans min-w-[750px]">
+      <div className="w-full max-w-4xl bg-middle p-6 rounded-lg shadow-xl font-PTSans">
 
-        <h1 className="text-3xl font-bold mb-6 text-center text-light">League Settings</h1>
+      <div className="flex flex-row items-center p-4 w-full">
+        <div className="flex justify-start w-1/3">
+          <BackButton
+            size="8"
+            color="stroke-light"
+            handleBackClick={() => navigate(`/leagues/${leagueId}`)}
+          />
+        </div>
+        <div className="flex justify-center w-1/3">
+          <h1 className="text-3xl font-bold text-center text-light">
+            league settings
+          </h1>
+        </div>
+        <div className="w-1/3"></div>
+      </div>
+
 
         {/* Tabs for Navigation */}
         <div className="flex justify-center mb-6 text-light space-x-2">
-            {["Draft", "Scoring", "Team Management", "Tournaments"].map((tab) => (
+            {["General", "Draft", "Scoring", "Team Management", "Tournaments"].map((tab) => (
             <button
                 key={tab}
                 onClick={() => setCurrentTab(tab)}
@@ -208,32 +228,30 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
         </div>
 
         {/* Content */}
-        <div className="bg-middle p-6 rounded-b-lg text-light">
         {currentTab === "General" && (
             <div className="space-y-6">
                 {renderInput(
                 "Sport",
                 "Sport",
-                "number",
+                "text",
                 settings?.Sport,
                 ["Golf"],
                 !isCommissioner
                 )}
                 { renderInput(
-                "Sport",
                 "Pro Season",
+                "ProSeason",
                 "number",
-                settings?.SeasonId,
+                settings?.ProSeason,
                 ["PGA Tour"],
                 !isCommissioner
                 )}
+                {renderInput("Number of Teams", "NumberOfTeams", "number", settings?.NumberOfTeams, [8, 9, 10, 12, 14, 16], !isCommissioner)}
             </div>
         )}
-        </div>
 
         {/* Content */}
-        <div className="bg-middle p-6 rounded-b-lg text-light">
-            {currentTab === "Draft" && (
+        {currentTab === "Draft" && (
             <div className="space-y-6">
                 {renderInput(
                 "Draft Frequency (Free Agent Draft every X amount of tournaments after first draft)",
@@ -251,7 +269,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
                 !isCommissioner
                 )}
-                 {renderInput(
+                {renderInput(
                 "Time Per Draft Pick",
                 "SecondsPerDraftPick",
                 "text",
@@ -276,9 +294,19 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 !isCommissioner
                 )}
                 {settings?.PointsType === "Points per Score" &&
-                Object.entries(settings?.PointsPerScore).map(([scoreType, points]) =>
-                    renderInput(`Points for ${scoreType}`, `PointsPerScore.${scoreType}`, "number", points, null, !isCommissioner)
-                )}
+                  settings?.PointsPerScore &&
+                  Object.keys(settings.PointsPerScore).length > 0 &&
+                  Object.keys(settings.PointsPerScore).map((scoreType) =>
+                    renderInput(
+                      `Points for ${scoreType}`,
+                      `PointsPerScore[${scoreType}]` as keyof LeagueSettings,
+                      "number",
+                      [1, 2, 3, 4, 5, 6],
+                      null,
+                      !isCommissioner
+                    )
+                  )}
+
 
                 {renderInput("Game", "ScoreType", "text", settings?.DefaultPointsForNonPlacers, ["Match Play", "Standard", "Customized Scoring"], !isCommissioner)}
                 {renderInput("Default Points for Non-Placers (Withdrawals or something else)", "DefaultPointsForNonPlacers", "number", settings?.DefaultPointsForNonPlacers, [0, 1, 2, 3, 4], !isCommissioner)}
@@ -289,9 +317,8 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             {currentTab === "Team Management" && (
             <div className="space-y-6 ">
                 {renderInput("Cut Penalty (Strokes added for missing the cut)", "CutPenalty", "number", settings?.CutPenalty, [0, 1, 2, 3], !isCommissioner)}
-                {renderInput("Number of Teams", "NumberOfTeams", "number", settings?.NumberOfTeams, [8, 9, 10, 12, 14, 16], !isCommissioner)}
-                {renderInput("Number of Bench Golfers", "NumOfBenchGolfers", "number", settings?.NumOfBenchGolfers, displayBenchGolfers(), !isCommissioner)}
-                {renderInput("Number of Starters", "NumOfStarters", "number", settings?.NumOfStarters, displayStarters(), !isCommissioner)}
+                {renderInput("Number of Bench Golfers", "NumOfBenchGolfers", "number", settings?.NumOfBenchGolfers, displayBenchGolfers, !isCommissioner)}
+                {renderInput("Number of Starters", "NumOfStarters", "number", settings?.NumOfStarters, displayStarters, !isCommissioner)}
                 {renderInput("Force Drops", 
                 "ForceDrops", 
                 "number", 
@@ -322,56 +349,115 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             </div>
             )}
 
-            <div className="bg-middle rounded-b-lg text-light">
-                {currentTab === "Tournaments" && (
-                    
-                    selectedTournament ? (
-                    <>
-                        <span className="inline-flex items-center">
-                        <BackButton
-                            size="8"
-                            color="stroke-light"
-                            handleBackClick={() => setSelectedTournament(null)}
-                        />
-                        </span>
-                        <Tourney tournament={selectedTournament} />
-                        <GolferTournamentDetailsTable
-                        tournamentId={selectedTournament.id}
-                        holeData={selectedTournament.Holes}
-                        />
-                    </>
-                    ) : (
-                    <>
-                        <SettingsProvider>
-                            <EditTournamentsButtons 
-                            setTournaments={setTournaments}
-                            fantasyLeagueSeasonId={selectedLeague?.CurrentFantasyLeagueSeasonId}
-                            />
-                            <TournamentScheduleTable
-                            setSelectedTournament={setSelectedTournament}
-                            tournaments={tournaments}
-                            />
-                        </SettingsProvider>
-                    </>
-                    )
-                )}
-            </div>
+            {currentTab === "Tournaments" && tournaments &&
+            (
+                
+                selectedTournament ? (
+                <>
+                    <span className="inline-flex items-center">
+                    <BackButton
+                        size="8"
+                        color="stroke-light"
+                        handleBackClick={() => setSelectedTournament(null)}
+                    />
+                    </span>
+                    <Tourney tournament={selectedTournament} />
+                    <GolferTournamentDetailsTable
+                    tournamentId={selectedTournament.id}
+                    holeData={selectedTournament.Holes}
+                    />
+                </>
+                ) : (
+                tournaments ?
+                <>
+                    <SettingsProvider>
+                        { !isEditMode ?
+                          <TournamentScheduleTable
+                          setSelectedTournament={setSelectedTournament}
+                          tournaments={tournaments as Tournament[]}
+                          />
+                          :
+                          <EditTournamentsButtons 
+                          setTournaments={setTournaments}
+                          fantasyLeagueSeasonId={selectedLeague?.CurrentFantasyLeagueSeasonId!}
+                          />
+                        }
+
+                        {
+                          tournaments && 
+                          typeof tournaments === "object" && 
+                          "pastFantasyLeagueTournaments" in tournaments &&
+                          tournaments?.pastFantasyLeagueTournaments.length > 0 && (
+                            // Render your tournamentScheduleTable here
+                            <>
+                              <h1 className="text-2xl font-bold p-4 text-center text-light">
+                                past fantasy league events
+                              </h1>
+                              <TournamentScheduleTable 
+                              setSelectedTournament={setSelectedTournament}
+                              tournaments={tournaments?.pastFantasyLeagueTournaments}
+                              />
+                            </>
+                          )
+                        }
+                        {
+                          tournaments && 
+                          typeof tournaments === "object" && 
+                          "upcomingFantasyLeagueTournaments" in tournaments &&
+                          tournaments?.upcomingFantasyLeagueTournaments.length > 0 && (
+                            // Render your tournamentScheduleTable here
+                            <>
+                              <h1 className="text-2xl font-bold p-4 text-center text-light">
+                                upcoming fantasy league events
+                              </h1>
+                              
+                              <TournamentScheduleTable 
+                              setSelectedTournament={setSelectedTournament}
+                              tournaments={tournaments?.upcomingFantasyLeagueTournaments}
+                              />
+                            </>
+                          )
+                        }
+                        {
+                          tournaments && 
+                          typeof tournaments === "object" && 
+                          "upcomingProSeasonTournaments" in tournaments &&
+                          tournaments?.upcomingProSeasonTournaments.length > 0 && (
+                            // Render your tournamentScheduleTable here
+                            <>
+                              <h1 className="text-2xl font-bold p-4 text-center text-light">
+                                upcoming pro events
+                              </h1>
+                              <TournamentScheduleTable 
+                              setSelectedTournament={setSelectedTournament}
+                              tournaments={tournaments?.upcomingProSeasonTournaments}
+                              />
+                            </>
+
+                          )
+                        }
+
+                    </SettingsProvider>
+                </>
+                :
+                <LoadingScreen />
+                )
+            )}
         </div>
 
 
-            {/* Save Button */}
-            <div className="flex justify-center mt-6">
-                <button
-                onClick={handleSave}
-                className="bg-light text-dark px-6 py-3 rounded-lg shadow-2xl"
-                disabled={!isCommissioner}
-                >
-                Save Settings
-                </button>
-            </div>
+        {/* Save Button */}
+        <div className="flex justify-center mt-6">
+            <button
+            onClick={handleSave}
+            className="bg-light text-dark px-6 py-3 rounded-lg shadow-2xl"
+            disabled={!isCommissioner}
+            >
+            Save Settings
+            </button>
         </div>
-    </div>
-    );
+      </div>
+  );
 };
 
 export default LeagueSettingsPage;

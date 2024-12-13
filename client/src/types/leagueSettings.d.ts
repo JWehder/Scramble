@@ -18,13 +18,13 @@ export interface LeagueSettings {
     NumberOfTeams?: number;
     PointsPerPlacing?: number[];  // List[int] to number array
     PointsPerScore?: {  // dictionary type
-      Birdies: number;
-      Eagles: number;
-      Pars: number;
-      Albatross: number;
-      Bogeys: number;
-      DoubleBogeys: number;
-      WorseThanDoubleBogeys: number;
+      Birdies?: number;
+      Eagles?: number;
+      Pars?: number;
+      Albatross?: number;
+      Bogeys?: number;
+      DoubleBogeys?: number;
+      WorseThanDoubleBogeys?: number;
     };
     ScoreType: "Total Standings" | "Head to Head" | "Match Play";
     PointsType: "Strokes" | "Points per Score" | "Matchup Win";
@@ -37,5 +37,6 @@ export interface LeagueSettings {
     WaiverType: string;
     DefaultPointsForNonPlacers: number;
     Sport: string;
-    SeasonId: string;
+    ProSeasonId: string;
+    ProSeason: string;
   }
