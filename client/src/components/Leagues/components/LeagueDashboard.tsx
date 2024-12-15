@@ -61,7 +61,7 @@ export default function LeagueDashboard() {
     };
 
     return (
-        <div className='flex justify-center items-center w-full flex-col min-w-[950px]'>
+        <div className='flex justify-center items-center w-full flex-col min-w-[950px] bg-dark'>
             <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans pt-3 min-w-[850px]'>
                 <div className='flex flex-col w-1/3'>
                     <div className='flex justify-center items-center flex-row'>

@@ -43,10 +43,10 @@ class LeagueSettings(Base):
         'DoubleBogeys': -5,
         'WorseThanDoubleBogeys': -7
     }, description="Points awarded per round performance")
-    ScoreType: Literal["Stroke Play", "Head to Head", "Match Play"] = Field(default="Stroke Play", description="Decide whether to score by the sum of strokes, points awarded via score under or over par, or match golfers up and give out points per round won.")
+    Game: Literal["Standard", "Head to Head", "Match Play"] = Field(default="Stroke Play", description="Decide whether to score by the sum of strokes, points awarded via score under or over par, or match golfers up and give out points per round won.")
     PointsType: Literal["Strokes", "Points per Score", "Matchup Win"] = Field(default="Strokes", description="Choose whether to award points via strokes, a number of points based on how the league agrees to hand out points, or based on who wins a matchup.")
     SecondsPerDraftPick: Optional[int] = Field(default=3600, description="Time to draft in seconds, default is 3600 seconds (1 hour)")
-    SnakeDraft: bool = Field(default=True, description="The order of picks reverses with each round.")
+    DraftType: Literal["Snake Draft", "Standard"] = Field(default="Snake Draft", description="The order of picks reverses with each round.")
     TimeZone: str = "UTC"
     updated_at: Optional[datetime] = None
     WaiverDeadline: Optional[str] = Field(default="Wednesday", description="Day of the week where players on waivers are distributed.")

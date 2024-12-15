@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store";
 import { getLeague } from "../state/leagueSlice";
@@ -14,6 +14,7 @@ import LoadingScreen from "../../Utils/components/LoadingScreen";
 import axios from "axios";
 import EditTournamentsButtons from "./EditTournamentsButtons";
 import { FantasyLeagueTournamentsResponse } from "../../../types/fantasyLeagueTournamentsResponse";
+import TimeZoneSelector from "./TimeZoneSelector";
 
 interface LeagueSettingsProps {
   saveLeagueSettings: (settings: LeagueSettings) => void;
@@ -28,7 +29,6 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
 
   const [currentTab, setCurrentTab] = useState<string>("General");
   const [settings, setSettings] = useState<LeagueSettings | undefined>();
-  const [isCommissioner, setIsCommissioner] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const selectedLeague = useSelector((state: RootState) => state.leagues.selectedLeague);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -85,27 +85,29 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
     }, [isEditMode, selectedLeague]);
 
   const handleInputChange = (field: keyof LeagueSettings, value: any) => {
-      if (!settings) return;
-  
-      // Validation logic
-      let errorMessage = "";
-      if (field === "NumOfStarters" && value > settings.MaxGolfersPerTeam) {
-        errorMessage = "Number of starters cannot exceed max golfers per team.";
-      } else if (field === "NumOfBenchGolfers" && value > settings.MaxGolfersPerTeam) {
-          errorMessage = "Number of bench golfers cannot exceed max golfers per team.";
-      } else if (field === "NumberOfTeams" && value % 2 !== 0 && settings.ScoreType === "Match Play") {
-          errorMessage
-      }
-  
-      // Set error if validation fails
-      if (errorMessage) {
-        setErrors((prev) => ({ ...prev, [field]: errorMessage }));
-        return;
-      }
-  
-      // Clear error for valid input and update state
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-      setSettings((prev) => ({ ...prev!, [field]: value }));
+    if (!settings) return;
+
+    console.log(value);
+
+    // Validation logic
+    let errorMessage = "";
+    if (field === "NumOfStarters" && value > settings.MaxGolfersPerTeam) {
+      errorMessage = "Number of starters cannot exceed max golfers per team.";
+    } else if (field === "NumOfBenchGolfers" && value > settings.MaxGolfersPerTeam) {
+        errorMessage = "Number of bench golfers cannot exceed max golfers per team.";
+    } else if (field === "NumberOfTeams" && value % 2 !== 0 && settings.Game === "Match Play") {
+        errorMessage
+    }
+
+    // Set error if validation fails
+    if (errorMessage) {
+      setErrors((prev) => ({ ...prev, [field]: errorMessage }));
+      return;
+    }
+
+    // Clear error for valid input and update state
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+    setSettings((prev) => ({ ...prev!, [field]: value }));
   };
 
   const handleSave = () => {
@@ -149,9 +151,9 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
     );
   }, [settings]);
 
-  const renderInput = (label: string, name: keyof LeagueSettings, type: string, value: any, options: Array<string> | Array<number> | null, disabled = false, obj: Record<string, number> | undefined = undefined) => {
+  const renderInput = (
+    label: string, name: keyof LeagueSettings, type: string, value: any, options: Array<string> | Array<number> | null, disabled = false, obj: Record<string, number> | undefined = undefined) => {
       if (options) {
-        console.log(disabled)
         return (
           <div className="space-y-2">
             <label className="text-sm font-semibold">{label}</label>
@@ -174,15 +176,17 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
       }
   
       return (
-        <div className="space-y-2">
+        <div className="space-y-2 flex flex-col">
           <label className="text-sm font-semibold">{label}</label>
-          <input
-            type={type}
-            value={value}
-            onChange={(e) => handleInputChange(name, type === "number" ? parseInt(e.target.value) : e.target.value)}
-            className="w-full p-2 rounded bg-light text-dark focus:ring focus:ring-highlightBlue"
-            disabled={disabled}
-          />
+          <div className="flex flex-row">
+            <input
+              type={type}
+              value={value}
+              onChange={(e) => handleInputChange(name, type === "number" ? parseInt(e.target.value) : e.target.value)}
+              className="max-w-36 p-2 rounded bg-light text-dark focus:ring focus:ring-highlightBlue mr-2"
+              disabled={disabled}
+            />
+          </div>
         </div>
       );
   };
@@ -192,7 +196,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
   };
   
   return (
-  <div className="w-full min-h-screen bg-gradient-to-b from-dark to-middle text-light flex flex-col items-center px-6 py-10 shadow-2xl font-PTSans min-w-[750px]">
+  <div className="w-full min-h-screen bg-gradient-to-b from-dark to-middle text-light flex flex-col items-center font-PTSans min-w-[750px] p-2">
       <div className="w-full max-w-4xl bg-middle p-6 rounded-lg shadow-xl font-PTSans">
 
       <div className="flex flex-row items-center p-4 w-full">
@@ -236,7 +240,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "text",
                 settings?.Sport,
                 ["Golf"],
-                !isCommissioner
+                !selectedLeague?.IsCommish
                 )}
                 { renderInput(
                 "Pro Season",
@@ -244,9 +248,9 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "number",
                 settings?.ProSeason,
                 ["PGA Tour"],
-                !isCommissioner
+                !selectedLeague?.IsCommish
                 )}
-                {renderInput("Number of Teams", "NumberOfTeams", "number", settings?.NumberOfTeams, [8, 9, 10, 12, 14, 16], !isCommissioner)}
+                {renderInput("Number of Teams", "NumberOfTeams", "number", settings?.NumberOfTeams, [8, 9, 10, 12, 14, 16], !selectedLeague?.IsCommish)}
             </div>
         )}
 
@@ -259,7 +263,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "number",
                 settings?.DraftingFrequency,
                 [1, 2, 3, 4],
-                !isCommissioner
+                !selectedLeague?.IsCommish
                 )}
                 {renderInput(
                 "Draft Start Day",
@@ -267,7 +271,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "text",
                 settings?.DraftStartDayOfWeek,
                 ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                !isCommissioner
+                !selectedLeague?.IsCommish
                 )}
                 {renderInput(
                 "Time Per Draft Pick",
@@ -275,11 +279,21 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "text",
                 settings?.SecondsPerDraftPick,
                 Object.keys(timePerDraftPickObj),
-                !isCommissioner,
+                !selectedLeague?.IsCommish,
                 timePerDraftPickObj
                 )}
-                {renderInput("Draft Time", "DraftStartTime", "time", settings?.DraftStartTime, null, !isCommissioner)}
-                {renderInput("Snake Draft", "SnakeDraft", "checkbox", settings?.SnakeDraft, null, !isCommissioner)}
+                {renderInput("Draft Time", "DraftStartTime", "time", settings?.DraftStartTime, null, !selectedLeague?.IsCommish)}
+                {settings?.DraftStartTime && (
+                <p className="text-sm text-light">
+                  Draft Start Time: <span className="font-semibold">{settings?.DraftStartTime}</span>
+                </p>
+                )}
+                <TimeZoneSelector
+                onChange={(zone) => handleInputChange("TimeZone", zone)}
+                value={settings?.TimeZone}
+                disabled={!selectedLeague?.IsCommish}
+                />
+                {renderInput("Draft Type", "DraftType", "text", settings?.DraftType, ["Snake Draft", "Standard"], !selectedLeague?.IsCommish)}
             </div>
             )}
 
@@ -291,7 +305,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "text",
                 settings?.PointsType,
                 ["Strokes", "Points per Score", "Matchup Win"],
-                !isCommissioner
+                !selectedLeague?.IsCommish
                 )}
                 {settings?.PointsType === "Points per Score" &&
                   settings?.PointsPerScore &&
@@ -303,39 +317,39 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                       "number",
                       [1, 2, 3, 4, 5, 6],
                       null,
-                      !isCommissioner
+                      !selectedLeague?.IsCommish
                     )
                   )}
 
 
-                {renderInput("Game", "ScoreType", "text", settings?.DefaultPointsForNonPlacers, ["Match Play", "Standard", "Customized Scoring"], !isCommissioner)}
-                {renderInput("Default Points for Non-Placers (Withdrawals or something else)", "DefaultPointsForNonPlacers", "number", settings?.DefaultPointsForNonPlacers, [0, 1, 2, 3, 4], !isCommissioner)}
-                {renderInput("Cut Penalty", "CutPenalty", "text", settings?.CutPenalty, Object.keys(cutsObj), !isCommissioner, cutsObj)}
+                {renderInput("Game", "Game", "text", settings?.Game, ["Match Play", "Standard", "Head to Head"], !selectedLeague?.IsCommish)}
+                {renderInput("Default Points for Non-Placers (Withdrawals or something else)", "DefaultPointsForNonPlacers", "number", settings?.DefaultPointsForNonPlacers, [0, 1, 2, 3, 4], !selectedLeague?.IsCommish)}
+                {renderInput("Cut Penalty", "CutPenalty", "text", settings?.CutPenalty, Object.keys(cutsObj), !selectedLeague?.IsCommish, cutsObj)}
             </div>
             )}
 
             {currentTab === "Team Management" && (
             <div className="space-y-6 ">
-                {renderInput("Cut Penalty (Strokes added for missing the cut)", "CutPenalty", "number", settings?.CutPenalty, [0, 1, 2, 3], !isCommissioner)}
-                {renderInput("Number of Bench Golfers", "NumOfBenchGolfers", "number", settings?.NumOfBenchGolfers, displayBenchGolfers, !isCommissioner)}
-                {renderInput("Number of Starters", "NumOfStarters", "number", settings?.NumOfStarters, displayStarters, !isCommissioner)}
+                {renderInput("Cut Penalty (Strokes added for missing the cut)", "CutPenalty", "number", settings?.CutPenalty, [0, 1, 2, 3], !selectedLeague?.IsCommish)}
+                {renderInput("Number of Bench Golfers", "NumOfBenchGolfers", "number", settings?.NumOfBenchGolfers, displayBenchGolfers, !selectedLeague?.IsCommish)}
+                {renderInput("Number of Starters", "NumOfStarters", "number", settings?.NumOfStarters, displayStarters, !selectedLeague?.IsCommish)}
                 {renderInput("Force Drops", 
                 "ForceDrops", 
                 "number", 
                 settings?.ForceDrops, 
                 Array.from(
                     { length: Math.max(0, settings!.MaxGolfersPerTeam - 1 + 1) }, 
-                    (_, i) => i + 1
+                    (_, i) => i 
                 ), 
-                !isCommissioner)}
-                {renderInput("Max Golfers Per Team", "MaxGolfersPerTeam", "number", settings?.MaxGolfersPerTeam, [2, 3, 4, 5, 6], !isCommissioner)}
+                !selectedLeague?.IsCommish)}
+                {renderInput("Max Golfers Per Team", "MaxGolfersPerTeam", "number", settings?.MaxGolfersPerTeam, [2, 3, 4, 5, 6], !selectedLeague?.IsCommish)}
                 {renderInput(
                 "Waiver Type",
                 "WaiverType",
                 "text",
                 settings?.WaiverType,
                 ["Reverse Standings", "Rolling Waivers"],
-                !isCommissioner
+                !selectedLeague?.IsCommish
                 )}
 
                 {renderInput(
@@ -344,7 +358,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 "text",
                 settings?.WaiverDeadline,
                 ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                !isCommissioner
+                !selectedLeague?.IsCommish
                 )}
             </div>
             )}
@@ -450,8 +464,10 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
         <div className="flex justify-center mt-6">
             <button
             onClick={handleSave}
-            className="bg-light text-dark px-6 py-3 rounded-lg shadow-2xl"
-            disabled={!isCommissioner}
+            className={`bg-light text-dark px-6 py-3 rounded-lg shadow-2xl
+            ${!selectedLeague?.IsCommish ? "cursor-not-allowed opacity-50" : "hover:brightness-110"}
+            `}
+            disabled={!selectedLeague?.IsCommish}
             >
             Save Settings
             </button>

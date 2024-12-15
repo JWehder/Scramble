@@ -5,6 +5,7 @@ export interface LeagueSettings {
     DraftingFrequency: number;
     DraftStartDayOfWeek?: string;
     DraftStartTime?: string;
+    DraftType: string;
     DropDeadline?: string;
     ForceDrops?: number;
     HeadToHead: boolean;
@@ -26,10 +27,9 @@ export interface LeagueSettings {
       DoubleBogeys?: number;
       WorseThanDoubleBogeys?: number;
     };
-    ScoreType: "Total Standings" | "Head to Head" | "Match Play";
+    Game: "Standard" | "Head to Head" | "Match Play";
     PointsType: "Strokes" | "Points per Score" | "Matchup Win";
     SecondsPerDraftPick?: number;
-    SnakeDraft: boolean;
     StrokePlay: boolean;
     TimeZone: string;
     updated_at?: string;  // datetime to string
@@ -39,4 +39,5 @@ export interface LeagueSettings {
     Sport: string;
     ProSeasonId: string;
     ProSeason: string;
+    IsCommish: boolean;
   }

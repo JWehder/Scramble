@@ -84,12 +84,12 @@ const AnimatedTooltipStarters: React.FC<AnimatedTooltipStartersProps> = ({ playe
                     ref={(el) => (tooltipRefs.current[idx] = el)} // Attach ref to each tooltip dynamically
                     className="absolute flex text-xs flex-col items-center justify-center rounded-md bg-dark z-50 shadow-xl px-4 py-2"
                   >
-                    <div className="absolute inset-x-10 z-30 w-[20%] -bottom-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent h-px" />
-                    <div className="absolute left-10 w-[40%] z-30 -bottom-px bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px" />
-                    <div className="font-bold text-white relative z-30 text-base">
+                    <div className="absolute inset-x-10 z-30 w-[20%] -bottom-px bg-gradient-to-r from-transparent via-middle to-transparent h-px" />
+                    <div className="absolute left-10 w-[40%] z-30 -bottom-px bg-gradient-to-r from-transparent via-highlightBlue to-transparent h-px" />
+                    <div className="font-bold text-light relative z-30 text-base">
                       {`${player.FirstName} ${player.LastName}`}
                     </div>
-                    <div className="text-white text-xs">{player.Rank}</div>
+                    <div className="text-light text-xs">{player.Rank}</div>
                   </motion.div>
                 </Portal>
               )}

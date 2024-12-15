@@ -15,7 +15,6 @@ export default function Leaderboard() {
 
     const fantasyLeagueSeasonId = useSelector((state: RootState) => state.leagues.selectedLeague?.CurrentFantasyLeagueSeasonId)
 
-
     const { data,
         isFetching,
         isSuccess,
@@ -44,7 +43,7 @@ export default function Leaderboard() {
             :
                 <>
                     { isError && <div>Error loading tournament details.</div> }
-                    { isFetching && <SkeletonTable /> }
+                    {isFetching && !isSuccess && !data?.tournaments?.length && <SkeletonTable />}
                     { isSuccess && 
                     <TournamentScheduleTable 
                     setSelectedTournament={setSelectedTournament!}

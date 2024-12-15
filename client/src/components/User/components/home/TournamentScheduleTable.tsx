@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import TableRow from "../../../Utils/components/TableRow";
 import { Tournament } from "../../../../types/tournaments";
 import TableHeaders from "../../../Utils/components/TableHeaders";

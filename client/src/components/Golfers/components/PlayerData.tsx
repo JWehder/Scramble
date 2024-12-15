@@ -19,7 +19,7 @@ export default function PlayerData({
     const space = even ? 'my-2' : '';
 
 
-    const desiredKeys = ["AvgScore", "Top10s", "Wins", "Cuts", "FedexPts"]
+    const desiredKeys: (keyof Golfer)[]= ["AvgScore", "Top10s", "Wins", "Cuts", "FedexPts"]
 
     return (
         <div 
