@@ -2,9 +2,35 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios, { AxiosResponse } from "axios";
 import { League } from "../../../types/leagues";
 import { setLeagueTeams } from "../../Teams/state/teamsSlice"
+import { LeagueSettings } from "../../../types/leagueSettings";
 
 export const getLeague = createAsyncThunk<League, string>(
     "leagues/fetchLeagueById",
+    async (league_id, thunkAPI) => {
+        if (!league_id) {
+            return thunkAPI.rejectWithValue("League ID is undefined");
+        }
+        try {
+            const response: AxiosResponse<League> = await axios.get(`/api/leagues/${league_id!}`);
+            const data = response.data
+
+            // Destructure the data to pull out `Teams` and the rest of the league data
+            const { Teams, ...leagueWithoutTeams } = data;
+
+            // Dispatch teams to the teams slice
+            thunkAPI.dispatch(setLeagueTeams(Teams));
+
+            // Return the rest of the league data (without Teams) for the league slice
+            return leagueWithoutTeams;
+
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error);
+        }
+    }
+);
+
+export const updateLeagueSettings = createAsyncThunk<LeagueSettings, string>(
+    "leagues/updateLeagueSettings",
     async (league_id, thunkAPI) => {
         if (!league_id) {
             return thunkAPI.rejectWithValue("League ID is undefined");

@@ -35,13 +35,13 @@ class LeagueSettings(Base):
     NumberOfTeams: Optional[int] = Field(default=8, description="Number of the teams within the league.")
     PointsPerPlacing: Optional[List[int]] = Field(default=[], description="Points awarded for placements")
     PointsPerScore: Optional[dict] = Field(default_factory=lambda: {
-        'Birdies': 3,
-        'Eagles': 5,
-        'Pars': 1,
         'Albatross': 7,
-        'Bogeys': -3,
-        'DoubleBogeys': -5,
-        'WorseThanDoubleBogeys': -7
+        'Eagles': 5,
+        'Birdies': 3,
+        'Pars': 1,
+        'Bogeys': -1,
+        'DoubleBogeys': -3,
+        'WorseThanDoubleBogeys': -5
     }, description="Points awarded per round performance")
     Game: Literal["Standard", "Head to Head", "Match Play"] = Field(default="Stroke Play", description="Decide whether to score by the sum of strokes, points awarded via score under or over par, or match golfers up and give out points per round won.")
     PointsType: Literal["Strokes", "Points per Score", "Matchup Win"] = Field(default="Strokes", description="Choose whether to award points via strokes, a number of points based on how the league agrees to hand out points, or based on who wins a matchup.")
@@ -121,6 +121,15 @@ class LeagueSettings(Base):
             raise ValueError("The number of teams in your league must be even if you want to play a head-to-head league.")
 
         return values
+
+    @field_validator("PointsPerScore", mode="before")
+    def validate_points_per_score(cls, points):
+        for score_type, value in points.items():
+            if not isinstance(value, (int, float)):
+                raise ValueError(f"Points for {score_type} must be a number.")
+            if value < -9 or value > 9:
+                raise ValueError(f"Points for {score_type} must be between -9 and 9.")
+        return points
 
     @field_validator('NumberOfTeams')
     def num_of_teams_constraint(cls, v):

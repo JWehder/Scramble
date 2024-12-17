@@ -20,6 +20,11 @@ interface LeagueSettingsProps {
   saveLeagueSettings: (settings: LeagueSettings) => void;
 }
 
+interface PointsPerScoreArgs {
+  name: string;
+  subname: string;
+}
+
 const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
     saveLeagueSettings
   }) => {
@@ -35,6 +40,16 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
   const [tournaments, setTournaments] = useState<FantasyLeagueTournamentsResponse | Tournament[]>();
 
   const dispatch = useDispatch<AppDispatch>();
+
+  const defaultPointsPerScore = {
+    'Albatross': 7,
+    'Eagles': 5,
+    'Birdies': 3,
+    'Pars': 1,
+    'Bogeys': -1,
+    'DoubleBogeys': -3,
+    'WorseThanDoubleBogeys': -5,
+  };
 
   useEffect(() => {
       if (isEditMode && !selectedLeague) {
@@ -52,6 +67,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             const response = await axios.get(
               `/api/fantasy_league_seasons/${selectedLeague.CurrentFantasyLeagueSeasonId}/pro_season/competition_schedule`
             );
+            console.log(response.data)
             setTournaments(response.data); // Assuming `setTournaments` exists for tournament state
           } catch (error) {
             console.error("Error fetching tournaments:", error);
@@ -64,7 +80,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const settingsResponse = isEditMode
+          let settingsResponse = isEditMode
             ? selectedLeague?.LeagueSettings
             : await axios.get('/default_league_settings').then((res) => res.data);
     
@@ -73,8 +89,14 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
               ? `/api/fantasy_league_seasons/${selectedLeague?.CurrentFantasyLeagueSeasonId}/pro_season/competition_schedule`
               : `/api/pro_seasons/${settingsResponse.ProSeasonId}/competition_schedule`
           );
-    
-          setSettings(settingsResponse);
+
+          let newSettingsResponse = { ...settingsResponse }
+          
+          // Apply default PointsPerScore if undefined or empty
+          if (!settingsResponse?.PointsPerScore || Object.keys(settingsResponse.PointsPerScore).length === 0) {
+            newSettingsResponse.PointsPerScore = defaultPointsPerScore
+          }
+          setSettings(newSettingsResponse);
           setTournaments(tournamentsResponse.data);
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -84,10 +106,8 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
       fetchData();
     }, [isEditMode, selectedLeague]);
 
-  const handleInputChange = (field: keyof LeagueSettings, value: any) => {
+  const handleInputChange = (field: keyof LeagueSettings | PointsPerScoreArgs, value: any) => {
     if (!settings) return;
-
-    console.log(value);
 
     // Validation logic
     let errorMessage = "";
@@ -99,15 +119,31 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
         errorMessage
     }
 
-    // Set error if validation fails
-    if (errorMessage) {
-      setErrors((prev) => ({ ...prev, [field]: errorMessage }));
-      return;
-    }
+    if(typeof field === "object" && field.name === "PointsPerScore") {
+      setSettings((prev) => {
+        if (!prev) return undefined; // Handle undefined previous state
+        
+        return {
+          ...prev,
+          PointsPerScore: {
+            ...prev.PointsPerScore,
+            [field.subname]: value, // Update the specific score
+          },
+        };
+      });
+      
 
-    // Clear error for valid input and update state
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-    setSettings((prev) => ({ ...prev!, [field]: value }));
+    } else {
+      // Set error if validation fails
+      if (errorMessage) {
+        setErrors((prev) => ({ ...prev, [field as keyof LeagueSettings]: errorMessage }));
+        return;
+      }
+
+      // Clear error for valid input and update state
+      setErrors((prev) => ({ ...prev, [field as keyof LeagueSettings]: "" }));
+      setSettings((prev) => ({ ...prev!, [field as keyof LeagueSettings]: value }));
+    }
   };
 
   const handleSave = () => {
@@ -129,7 +165,16 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
       "+2": 2,
       "+3": 3,
       "+4": 4
-  }
+  };
+
+  function formatTimeTo12Hour(time: string): string {
+    if (!time) return "";
+  
+    const [hours, minutes] = time.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const adjustedHours = hours % 12 || 12; // Convert 0 to 12 for 12-hour format
+    return `${adjustedHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  };
 
   const displayStarters = useMemo(() => {
     const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;
@@ -140,6 +185,11 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
       (_, i) => i + 2
     );
   }, [settings]);
+
+  const renderSurroundingPoints = (field: keyof typeof defaultPointsPerScore) => {
+    return [defaultPointsPerScore[field] - 2, 
+    defaultPointsPerScore[field] - 1, defaultPointsPerScore[field], defaultPointsPerScore[field] + 1, defaultPointsPerScore[field] + 2];
+  }
   
   const displayBenchGolfers = useMemo(() => {
     const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;
@@ -152,7 +202,8 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
   }, [settings]);
 
   const renderInput = (
-    label: string, name: keyof LeagueSettings, type: string, value: any, options: Array<string> | Array<number> | null, disabled = false, obj: Record<string, number> | undefined = undefined) => {
+    label: string, key: keyof LeagueSettings | PointsPerScoreArgs, type: string, value: any, options: Array<string> | Array<number> | null, disabled = false, obj: Record<string, number> | undefined = undefined) => {
+
       if (options) {
         return (
           <div className="space-y-2">
@@ -161,7 +212,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
               {options.map((option) => ( 
                 <button
                   key={option}
-                  onClick={() => handleInputChange(name, (obj ? obj[option] : option))}
+                  onClick={() => handleInputChange(key, (obj ? obj[option] : option))}
                   className={`px-4 py-2 rounded ${
                     value === (obj ? obj[option] : option) ? "bg-highlightBlue text-light" : "bg-light text-dark"
                   } ${disabled ? "cursor-not-allowed opacity-50" : "hover:brightness-110"}`}
@@ -182,7 +233,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             <input
               type={type}
               value={value}
-              onChange={(e) => handleInputChange(name, type === "number" ? parseInt(e.target.value) : e.target.value)}
+              onChange={(e) => handleInputChange(key, type === "number" ? parseInt(e.target.value) : e.target.value)}
               className="max-w-36 p-2 rounded bg-light text-dark focus:ring focus:ring-highlightBlue mr-2"
               disabled={disabled}
             />
@@ -194,10 +245,10 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
   if (!settings) {
       return <LoadingScreen />
   };
-  
+
   return (
-  <div className="w-full min-h-screen bg-gradient-to-b from-dark to-middle text-light flex flex-col items-center font-PTSans min-w-[750px] p-2">
-      <div className="w-full max-w-4xl bg-middle p-6 rounded-lg shadow-xl font-PTSans">
+  <div className="w-full min-h-screen bg-gradient-to-b from-dark to-middle text-light flex flex-col items-center font-PTSans p-3 min-w-[570px]">
+      <div className="w-full max-w-4xl bg-middle p-6 rounded-lg shadow-xl font-PTSans items-center">
 
       <div className="flex flex-row items-center p-4 w-full">
         <div className="flex justify-start w-1/3">
@@ -208,7 +259,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
           />
         </div>
         <div className="flex justify-center w-1/3">
-          <h1 className="text-3xl font-bold text-center text-light">
+          <h1 className="text-2xl sm:text-xl md:text-xl lg:text-2xl font-bold text-center text-light">
             league settings
           </h1>
         </div>
@@ -222,7 +273,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             <button
                 key={tab}
                 onClick={() => setCurrentTab(tab)}
-                className={`px-6 py-2 rounded-t-lg ${
+                className={`px-4 py-2 rounded-t-lg text-sm sm:text-xs md:text-sm lg:text-sm  ${
                 currentTab === tab ? "bg-dark text-light" : "bg-light text-dark hover:brightness-125"
                 }`}
             >
@@ -233,7 +284,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
 
         {/* Content */}
         {currentTab === "General" && (
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-[700px]">
                 {renderInput(
                 "Sport",
                 "Sport",
@@ -283,11 +334,6 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
                 timePerDraftPickObj
                 )}
                 {renderInput("Draft Time", "DraftStartTime", "time", settings?.DraftStartTime, null, !selectedLeague?.IsCommish)}
-                {settings?.DraftStartTime && (
-                <p className="text-sm text-light">
-                  Draft Start Time: <span className="font-semibold">{settings?.DraftStartTime}</span>
-                </p>
-                )}
                 <TimeZoneSelector
                 onChange={(zone) => handleInputChange("TimeZone", zone)}
                 value={settings?.TimeZone}
@@ -298,32 +344,32 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
             )}
 
             {currentTab === "Scoring" && (
-            <div className="space-y-6">
-                {renderInput(
-                "Points Type",
-                "PointsType",
-                "text",
-                settings?.PointsType,
-                ["Strokes", "Points per Score", "Matchup Win"],
-                !selectedLeague?.IsCommish
-                )}
-                {settings?.PointsType === "Points per Score" &&
-                  settings?.PointsPerScore &&
-                  Object.keys(settings.PointsPerScore).length > 0 &&
-                  Object.keys(settings.PointsPerScore).map((scoreType) =>
+            <div className="space-y-6 flex flex-col">
+              {renderInput(
+              "Points Type",
+              "PointsType",
+              "text",
+              settings?.PointsType,
+              ["Strokes", "Points per Score", "Matchup Win"],
+              !selectedLeague?.IsCommish
+              )}
+              {settings?.PointsType === "Points per Score" &&
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.keys(settings?.PointsPerScore || {}).map((scoreType: string) =>
                     renderInput(
                       `Points for ${scoreType}`,
-                      `PointsPerScore[${scoreType}]` as keyof LeagueSettings,
+                      {name: 'PointsPerScore', subname: scoreType},
                       "number",
-                      [1, 2, 3, 4, 5, 6],
-                      null,
+                      settings?.PointsPerScore[scoreType as keyof typeof settings.PointsPerScore],
+                      renderSurroundingPoints(scoreType as keyof typeof defaultPointsPerScore)
+                      ,
                       !selectedLeague?.IsCommish
                     )
                   )}
-
-
+                </div>
+                }
                 {renderInput("Game", "Game", "text", settings?.Game, ["Match Play", "Standard", "Head to Head"], !selectedLeague?.IsCommish)}
-                {renderInput("Default Points for Non-Placers (Withdrawals or something else)", "DefaultPointsForNonPlacers", "number", settings?.DefaultPointsForNonPlacers, [0, 1, 2, 3, 4], !selectedLeague?.IsCommish)}
+                {renderInput("Default Points for Non-Placers (How many points a player who withdrawals receives)", "DefaultPointsForNonPlacers", "number", settings?.DefaultPointsForNonPlacers, [0, 1, 2, 3, 4], !selectedLeague?.IsCommish)}
                 {renderInput("Cut Penalty", "CutPenalty", "text", settings?.CutPenalty, Object.keys(cutsObj), !selectedLeague?.IsCommish, cutsObj)}
             </div>
             )}

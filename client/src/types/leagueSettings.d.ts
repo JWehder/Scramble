@@ -18,7 +18,7 @@ export interface LeagueSettings {
     NumOfStarters: number;
     NumberOfTeams?: number;
     PointsPerPlacing?: number[];  // List[int] to number array
-    PointsPerScore?: {  // dictionary type
+    PointsPerScore: {  // dictionary type
       Birdies?: number;
       Eagles?: number;
       Pars?: number;

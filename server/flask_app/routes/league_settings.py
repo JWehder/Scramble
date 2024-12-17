@@ -42,14 +42,10 @@ def update_leagues_settings(leagues_settings_id):
         try:
             league_settings_instance = LeagueSettings(**updated_data)
             # If validation passes, proceed with the database update
-            leagues_settings_collection.update_one(
-                {"_id": ObjectId(leagues_settings_id)}, 
-                {"$set": data}  # Only update the fields provided in 'data'
-            )
-
+            league_settings_instance.save()
 
             # Return the validated, updated instance
-            return jsonify(league_settings_instance.dict()), 200
+            return jsonify(league_settings_instance.to_dict()), 200
         except ValidationError as e:
             # If validation fails, return an error response
             return jsonify({"error": str(e)}), 400

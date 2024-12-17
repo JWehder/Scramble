@@ -12,8 +12,6 @@ import LeagueDashboard from './components/Leagues/components/LeagueDashboard.js'
 import ErrorPage from './components/Utils/components/ErrorPage.jsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LeagueSettingsPage from './components/Leagues/components/LeagueSettingsPage';
-import LeagueSettings from './types/leagueSettings';
-import axios from 'axios';
 
 // import { ApolloServer } from '@apollo/server';
 // import { startStandaloneServer } from '@apollo/server/standalone';
