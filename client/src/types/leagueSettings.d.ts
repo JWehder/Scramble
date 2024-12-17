@@ -30,7 +30,6 @@ export interface LeagueSettings {
     Game: "Standard" | "Head to Head" | "Match Play";
     PointsType: "Strokes" | "Points per Score" | "Matchup Win";
     SecondsPerDraftPick?: number;
-    StrokePlay: boolean;
     TimeZone: string;
     updated_at?: string;  // datetime to string
     WaiverDeadline?: string;

@@ -162,6 +162,8 @@ export const getUser = createAsyncThunk<UsersData, void, { rejectValue: ErrorPay
         const response = await axios.get('/api/auth/me');
         const data = response.data;
 
+        console.log(data)
+
         // Break down the response data into relevant parts
         const { user, leagues, teams } = normalizeUserData(data);
 
@@ -357,7 +359,6 @@ const userSlice = createSlice({
         })
         .addCase(getUser.fulfilled, (state, action) => {
             state.status = "idle";
-            console.log(action.payload)
             state.user = action.payload;
         })
         .addCase(getUser.rejected, (state, action) => {

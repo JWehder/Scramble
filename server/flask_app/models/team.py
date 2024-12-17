@@ -233,11 +233,13 @@ class Team(Base):
         return sum(1 for golfer in self.Golfers.values() if golfer.CurrentlyOnTeam)
 
     def get_all_current_golfers(self) -> List[Dict]:
+        from models import Golfer
+
         """Gets all current golfers on the team."""
         return [
-            golfer.to_dict()
-            for golfer in self.Golfers.values()
-            if golfer.CurrentlyOnTeam
+            Golfer(**(db.golfers.find_one({"_id": ObjectId(golfer_id)}))).to_dict()
+            for golfer_id, golfer_data in self.Golfers.items()
+            if golfer_data and golfer_data.CurrentlyOnTeam
         ]
 
     def get_all_golfers(self, db) -> list:

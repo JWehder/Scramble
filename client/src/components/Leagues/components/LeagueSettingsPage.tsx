@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store";
-import { getLeague } from "../state/leagueSlice";
+import { getLeague, updateLeagueSettings } from "../state/leagueSlice";
 import { useParams, useNavigate } from "react-router-dom";
 import { LeagueSettings } from "../../../types/leagueSettings";
 import TournamentScheduleTable from "../../User/components/home/TournamentScheduleTable";
@@ -147,7 +147,8 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
   };
 
   const handleSave = () => {
-      if (settings) saveLeagueSettings(settings);
+      if (isEditMode && settings) dispatch(updateLeagueSettings({ leagueSettings: settings }));
+      else if (!isEditMode && settings) null;
   };
 
   const timePerDraftPickObj = {
@@ -167,15 +168,6 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
       "+4": 4
   };
 
-  function formatTimeTo12Hour(time: string): string {
-    if (!time) return "";
-  
-    const [hours, minutes] = time.split(":").map(Number);
-    const period = hours >= 12 ? "PM" : "AM";
-    const adjustedHours = hours % 12 || 12; // Convert 0 to 12 for 12-hour format
-    return `${adjustedHours}:${minutes.toString().padStart(2, "0")} ${period}`;
-  };
-
   const displayStarters = useMemo(() => {
     const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;
     const numBench = settings?.NumOfBenchGolfers ?? 0;
@@ -189,7 +181,7 @@ const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
   const renderSurroundingPoints = (field: keyof typeof defaultPointsPerScore) => {
     return [defaultPointsPerScore[field] - 2, 
     defaultPointsPerScore[field] - 1, defaultPointsPerScore[field], defaultPointsPerScore[field] + 1, defaultPointsPerScore[field] + 2];
-  }
+  };
   
   const displayBenchGolfers = useMemo(() => {
     const maxGolfers = settings?.MaxGolfersPerTeam ?? 0;

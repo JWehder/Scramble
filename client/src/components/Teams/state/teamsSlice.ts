@@ -22,14 +22,18 @@ const teamsSlice = createSlice({
     initialState,
     reducers: {
         setTeams(state, action) {
+            console.log(action.payload)
             state.userTeams = action.payload;
         },        
         clearSelectedTeam(state) {
             state.userSelectedTeam = null;  // Optionally, clear selected team
         },
         setSelectedTeam(state, action) {
+
             // Find the team based on the LeagueId
             const selectedTeam = state.userTeams.find(team => team.LeagueId === action.payload);
+
+            console.log(selectedTeam)
 
             // If a team is found, set it as the selected team and filter it out from the teams array
             if (selectedTeam) {

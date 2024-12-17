@@ -31,10 +31,6 @@ def returnable_user_dict(user: User):
 
         # Query to find all teams in the user's teams list
         teams = db.teams.find({"_id": {"$in": user.Teams}})
-        for team in teams:
-            print(team)
-
-        teams_dicts = []  # Store the dictionaries of teams
 
         for team in teams:
             team = Team(**team) 
@@ -52,7 +48,7 @@ def returnable_user_dict(user: User):
             associated_leagues.append({
                 "id": str(league["_id"]),
                 "Name": league["Name"],
-                "ScoreType": league["LeagueSettings"]["ScoreType"]
+                "Game": league["LeagueSettings"]["Game"]
             })
 
     session['user_id'] = str(user.id)

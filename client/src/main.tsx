@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { App } from './App'
 import './index.css'
 import store from './store.jsx';
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import SignedOutHome from './components/User/components/home/SignedOutHome.jsx'
 import { SignedInHome } from './components/User/components/home/SignedInHome.jsx';
@@ -12,6 +12,8 @@ import LeagueDashboard from './components/Leagues/components/LeagueDashboard.js'
 import ErrorPage from './components/Utils/components/ErrorPage.jsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LeagueSettingsPage from './components/Leagues/components/LeagueSettingsPage';
+import { UseDispatch } from 'react-redux';
+import { updateLeagueSettings } from './components/Leagues/state/leagueSlice';
 
 // import { ApolloServer } from '@apollo/server';
 // import { startStandaloneServer } from '@apollo/server/standalone';
@@ -52,9 +54,7 @@ const router = createBrowserRouter([
           },
           {
             path: "/leagues/:leagueId/settings",
-            element: <LeagueSettingsPage 
-            onSave={() => null}
-            />,
+            element: <LeagueSettingsPage />,
           }
       ]
       },

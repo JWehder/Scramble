@@ -5,9 +5,9 @@ interface League {
     id: string;
     Name: string;
     CommissionerId?: string;
-    ScoreType: string;
+    Game: string;
     Teams?: Team[];
-    LeagueSettings?: LeagueSettings;
+    LeagueSettings: LeagueSettings;
     FantasyLeagueSeasons?: string[];
     CurrentFantasyLeagueSeasonId?: string;
     WaiverOrder?: string[];

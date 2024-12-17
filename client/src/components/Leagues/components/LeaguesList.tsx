@@ -5,7 +5,7 @@ import { RootState } from "../../../store";
 import { League } from "../../../types/leagues";
 import { Team } from "../../../types/teams";
 import { cn } from "../lib/utils";
-import AnimatedTooltipStarters from "../../Utils/components/StartersNew";
+import AnimatedTooltipStarters from "../../Golfers/components/StartersNew";
  
 export const BentoGrid = ({
   className,
@@ -83,7 +83,7 @@ const TeamData: React.FC<{ team: Team | undefined; rank: number | undefined }> =
 const MatchPlayQuickView: React.FC<{ league: League }> = ({ league }) => (
   <div className="w-full max-w-screen-md font-PTSans text-light flex-col flex justify-center items-center p-4 bg-middle rounded-xl shadow-md m-0">
     <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">{league.Name}</h1>
-    <h2 className="text-sm md:text-lg lg:text-xl text-light/80">{league.ScoreType}</h2>
+    <h2 className="text-sm md:text-lg lg:text-xl text-light/80">{league.Game}</h2>
     <div className="flex justify-center items-center mt-4 bg-dark shadow-inner p-4 rounded-xl">
       <Link to="/leagues/4" className="flex w-full items-center">
         <div className="flex-1 flex flex-col text-center items-center p-4 bg-middle rounded-xl">
@@ -113,7 +113,7 @@ const StrokePlayQuickView: React.FC<{ league: League; myTeam: Team | undefined, 
         className
       )}>
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold group-hover/bento:translate-x-2 transition duration-200 font-PTSans text-light">{league.Name}</h1>
-        <h2 className="text-sm md:text-lg lg:text-xl text-light/80 mb-1 group-hover/bento:translate-x-2 transition duration-200">{league.ScoreType}</h2>
+        <h2 className="text-sm md:text-lg lg:text-xl text-light/80 mb-1 group-hover/bento:translate-x-2 transition duration-200">{league.Game}</h2>
         <AnimatedTooltipStarters players={myTeam?.Golfers} />
         <h2 className="text-sm md:text-lg lg:text-xl text-light">{myTeam?.TeamName}</h2>
         <div className="w-full bg-middle p-4 rounded-xl m-0">
@@ -135,7 +135,7 @@ const LeaguesList: React.FC = () => {
         {leagues.map((league, idx) => {
           const myTeam = teams.find((team) => team.LeagueId === league.id);
 
-          return league.ScoreType === "Match Play" ? (
+          return league.Game === "Match Play" ? (
             <MatchPlayQuickView key={idx} league={league} />
           ) : (
             <StrokePlayQuickView key={idx} league={league} myTeam={myTeam} />

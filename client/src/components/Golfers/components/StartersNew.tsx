@@ -8,7 +8,7 @@ import {
 } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../store";
-import { setSelectedGolfer } from "../../Golfers/state/golferSlice";
+import { setSelectedGolfer } from "../state/golferSlice";
 import { Golfer } from "../../../types/golfers";
 import { Portal } from "react-portal";
 
