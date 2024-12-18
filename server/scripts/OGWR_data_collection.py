@@ -56,7 +56,7 @@ with open(csv_file_path, newline='') as csvfile:
             # Update the document in the collection
             db.golfers.update_one(
                 { "_id": found_golfer["_id"] },  # Match the golfer by their ID
-                { "$set": { "OWGR": rank } }     # Update the OWGR field with the new rank
+                { "$set": { "OWGR": int(rank) } }     # Update the OWGR field with the new rank
             )
             print(found_golfer["FirstName"] + " " + found_golfer["LastName"])
 

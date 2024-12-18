@@ -65,7 +65,7 @@ export default function Header() {
     };
 
     return (
-        <div className="fixed top-0 w-full z-35 mb-1 bg-dark shadow-lg">
+        <div className="fixed top-0 w-full z-50 mb-1 bg-dark shadow-lg">
         <div className="p-0.5 bg-custom-gradient" />
             <div className="flex justify-center p-2">
                 <div className="flex justify-between items-center w-full px-4">
@@ -126,7 +126,7 @@ export default function Header() {
                     <div className='flex justify-end items-center w-1/3'>
                         <Button
                         handleClick={handleGetTheAppClick}
-                        size="sm"
+                        size="md"
                         variant="secondary"
                         >
                             Get the App

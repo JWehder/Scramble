@@ -1,12 +1,12 @@
 import { useDispatch } from 'react-redux';
-import { setLoginModal } from '../../state/userSlice';
+import { logout } from '../../state/userSlice';
 import { googleLogout } from '@react-oauth/google';
 
 export default function User() {
     const dispatch = useDispatch();
 
-    function logout() {
-        dispatch(setLoginModal(true));
+    function handleLogoutClick() {
+        dispatch(logout());
         googleLogout();
     };
 
@@ -25,7 +25,7 @@ export default function User() {
             
             <div 
             className="hover:bg-gray-700 text-center p-2 rounded-lg"
-            onClick={() => logout()}
+            onClick={() => handleLogoutClick()}
             >
                 Logout
             </div>
