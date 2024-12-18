@@ -10,6 +10,7 @@ import { AppDispatch, RootState } from '../../../store';
 import Modal from '../../Utils/components/Modal';
 import { resetSelectedGolfer } from '../../Golfers/state/golferSlice';
 import { useQueryClient } from '@tanstack/react-query';
+import { useFetchUpcomingUserPeriods } from '../../../hooks/periods';
 
 export default function Dashboard() {
     const queryClient = useQueryClient();
@@ -25,8 +26,17 @@ export default function Dashboard() {
         queryClient.invalidateQueries({ queryKey: ['golferTournamentDetails'] });
     };
 
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isError,
+        error,
+      } = useFetchUpcomingUserPeriods();
+
     return (
-        <div className='flex justify-center items-center w-full flex-col min-w-[700px]'>
+        <div className='flex justify-center items-center w-full flex-col min-w-[950px]'>
             <div className='flex-row h-16 w-11/12 mb-5 flex items-center text-light font-PTSans'>
                 <div className='w-1/3 flex items-center justify-center'>
                     <h1 className='text-xl lg:text-4xl md:text-2xl sm:text-xl'>
@@ -58,7 +68,14 @@ export default function Dashboard() {
 
                     { activeComponent === "Schedule" && 
                         <div className='flex items-center justify-center'>
-                            <Schedule />
+                            <Schedule
+                            data={data}
+                            fetchNextPage={fetchNextPage}
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
+                            isError={isError}
+                            error={error}
+                            />
                         </div>
                     }
                     { activeComponent === "Leagues" && 

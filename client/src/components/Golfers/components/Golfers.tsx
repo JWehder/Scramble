@@ -47,7 +47,6 @@ export default function Golfers() {
         <div className="w-full h-full overflow-auto text-light font-PTSans break-all bg-middle p-2">
 
             <div>
-                <DashboardTitle avatar={undefined} title="Golfers" />
                 <TableHeaders headers={headers} />
             </div>
             {data?.pages.map((page, pageIndex) => (

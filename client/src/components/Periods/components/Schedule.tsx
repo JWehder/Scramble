@@ -10,6 +10,21 @@ type EventItemProps = {
     event: Event;
 };
 
+interface ScheduleProps {
+  data: {
+    pages: {
+      events: Event[];
+    }[];
+  } | undefined;
+  fetchNextPage: () => void;
+  hasNextPage: boolean | undefined;
+  isFetchingNextPage: boolean;
+  isError: boolean;
+  error: {
+    message: string;
+  } | null;
+}
+
 const formatDate = (date: string) => format(parseISO(date), 'MMMM d, yyyy');
 
 const formatDateRange = (startDate: string, endDate: string) => {
@@ -24,24 +39,30 @@ const formatDateRange = (startDate: string, endDate: string) => {
   return `${format(start, 'MMMM d, yyyy')} – ${format(end, 'MMMM d, yyyy')}`;
 };
 
-// Component to render individual events
 const EventItem: React.FC<EventItemProps> = ({ event }) => (
     <div className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-middle to-dark mb-6 transform hover:scale-105 transition-transform duration-200">
-        <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
-            <FaFlagCheckered /> {event.TournamentName}
-        </h3>
+        {/* Tournament Name and Dates in the same line */}
+        <div className="flex justify-between items-center mb-3">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+                <FaFlagCheckered /> {event.TournamentName}
+            </h3>
+            <p className="text-sm flex items-center gap-2 text-light">
+                <FaCalendarAlt /> {formatDateRange(event.TournamentStartDate, event.TournamentEndDate)}
+            </p>
+        </div>
+
+        {/* Venue */}
         <p className="mb-2 flex items-center gap-2">
             <FaMapMarkerAlt />
             <strong>Venue:</strong> {event.TournamentVenue}
         </p>
+
+        {/* Location */}
         <p className="mb-2">
             <strong>Location:</strong> {event.TournamentLocation}
         </p>
-        <p className="mb-2 flex items-center gap-2">
-            <FaCalendarAlt />
-            <strong>Tournament Dates:</strong>{' '}
-            {formatDateRange(event.TournamentStartDate, event.TournamentEndDate)}
-        </p>
+
+        {/* Additional Details */}
         <div className="mt-4 border-t border-white/40 pt-3">
             <p>
                 <strong>Draft Start:</strong> {formatDate(event.DraftStartDate)}
@@ -54,20 +75,18 @@ const EventItem: React.FC<EventItemProps> = ({ event }) => (
 );
 
 
-const Schedule: React.FC = () => {
-    const { leagueId } = useParams();
-  
-    const {
-      data,
-      fetchNextPage,
-      hasNextPage,
-      isFetchingNextPage,
-      isError,
-      error,
-    } = useFetchUpcomingPeriods(leagueId!);
+
+const Schedule: React.FC<ScheduleProps> = ({
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    error
+}) => {  
   
     return (
-      <div className="w-full p-12 bg-dark text-light">
+      <div className="w-full py-4 px-24 bg-dark text-light font-PTSans">
         <h1 className="text-4xl font-extrabold text-center text-primary mb-10">
           Upcoming Events
         </h1>

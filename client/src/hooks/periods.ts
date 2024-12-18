@@ -22,3 +22,19 @@ export const useFetchUpcomingPeriods = (leagueId: string ) => {
         getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
     });
 };
+
+// Fetch golfers with pagination
+const fetchUpcomingUserPeriods = async ({ pageParam = 0 }: { pageParam?: number; }): Promise<EventsResponse> => {
+    const response = await axios.post<EventsResponse>(`/api/periods/user_events?page=${pageParam}`);
+    return response.data;
+};
+
+// Custom hook for fetching golfers with infinite pagination
+export const useFetchUpcomingUserPeriods = () => {
+    return useInfiniteQuery<EventsResponse>({
+        queryKey: ['periods'],
+        queryFn: ({ pageParam }) => fetchUpcomingUserPeriods({ pageParam: pageParam as number }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
+    });
+};

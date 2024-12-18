@@ -19,7 +19,7 @@ import { getLeague } from '../state/leagueSlice';
 import NewStandings from "./NewStandings"
 import { setSelectedTeam } from '../../Teams/state/teamsSlice';
 import { Team } from '../../../types/teams';
-import LoadingScreen from '../../Utils/components/LoadingScreen';
+import { useFetchUpcomingPeriods } from '../../../hooks/periods';
 
 export default function LeagueDashboard() {
     const dispatch = useDispatch<AppDispatch>();
@@ -48,20 +48,27 @@ export default function LeagueDashboard() {
             dispatch(getLeague(leagueId))
         };
 
-    }, [leagueId])
+    }, [leagueId]);
 
     useEffect(() => {
         if (leagueTeams) {
             dispatch(setSelectedTeam(leagueId))
         }
-    }, [leagueTeams, user])
+    }, [leagueTeams, user]);
 
     const goToSettings = () => {
         // Append "/settings" to the current path
         navigate(`${location.pathname}/settings`);
     };
 
-    console.log(selectedLeague);
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isError,
+        error,
+      } = useFetchUpcomingPeriods(leagueId!);
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[950px] bg-dark'>
@@ -131,7 +138,14 @@ export default function LeagueDashboard() {
                     <Golfers />
                 }
                 { activeComponent === "Schedule" && 
-                    <Schedule />
+                    <Schedule
+                    data={data}
+                    fetchNextPage={fetchNextPage}
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    isError={isError}
+                    error={error}
+                    />
                 }
             </div>
             { selectedGolfer ?

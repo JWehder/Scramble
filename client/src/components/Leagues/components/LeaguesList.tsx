@@ -5,7 +5,7 @@ import { RootState } from "../../../store";
 import { League } from "../../../types/leagues";
 import { Team } from "../../../types/teams";
 import { cn } from "../lib/utils";
-import AnimatedTooltipStarters from "../../Golfers/components/StartersNew";
+import AnimatedTooltipStarters from "../../Golfers/components/AnimatedTooltipStarters";
  
 export const BentoGrid = ({
   className,
@@ -115,7 +115,7 @@ const StrokePlayQuickView: React.FC<{ league: League; myTeam: Team | undefined, 
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold group-hover/bento:translate-x-2 transition duration-200 font-PTSans text-light">{league.Name}</h1>
         <h2 className="text-sm md:text-lg lg:text-xl text-light/80 mb-1 group-hover/bento:translate-x-2 transition duration-200">{league.Game}</h2>
         <AnimatedTooltipStarters players={myTeam?.Golfers} />
-        <h2 className="text-sm md:text-lg lg:text-xl text-light">{myTeam?.TeamName}</h2>
+        <h2 className="text-sm text-center md:text-lg lg:text-xl text-light">{myTeam?.TeamName}</h2>
         <div className="w-full bg-middle p-4 rounded-xl m-0">
             <Headers headers={headers} />
             <TeamData team={myTeam} rank={myTeam?.Placement} />
@@ -131,7 +131,7 @@ const LeaguesList: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center gap-4 w-full p-2 bg-dark">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {leagues.map((league, idx) => {
           const myTeam = teams.find((team) => team.LeagueId === league.id);
 

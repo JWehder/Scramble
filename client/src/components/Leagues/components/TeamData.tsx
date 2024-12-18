@@ -1,6 +1,6 @@
 import React from "react";
 import Starters from "../../Utils/components/Starters";
-import AnimatedTooltipStarters from "../../Golfers/components/StartersNew";
+import AnimatedTooltipStarters from "../../Golfers/components/AnimatedTooltipStarters";
 import Avatar from "../../Utils/components/Avatar";
 import TData from "../../Utils/components/TData";
 import { Team } from "../../../types/teams";

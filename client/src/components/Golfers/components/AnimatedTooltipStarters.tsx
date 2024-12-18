@@ -39,7 +39,7 @@ const AnimatedTooltipStarters: React.FC<AnimatedTooltipStartersProps> = ({ playe
     };
   
     return (
-      <div className="flex flex-row items-center justify-center w-full font-PTSans">
+      <div className="flex flex-row w-full font-PTSans">
         {players?.map((player, idx) => (
           <div
             key={player.id}
