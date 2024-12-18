@@ -8,6 +8,7 @@ import { useFetchAvailableGolfers } from "../../../hooks/golfers";
 import { useDispatch } from "react-redux";
 import { setSelectedGolfer } from "../state/golferSlice";
 import SkeletonTable from "../../Utils/components/SkeletonTable";
+import LoadingWidget from "../../Utils/components/LoadingWidget";
 
 export default function Golfers() {
     // Retrieve the league ID from the URL
@@ -66,6 +67,7 @@ export default function Golfers() {
             <div className="flex justify-center p-4">
                 <div ref={ref}></div>
                 {isFetching && <SkeletonTable />}
+                {isFetchingNextPage && <LoadingWidget />}
             </div>
         </div>
     );
