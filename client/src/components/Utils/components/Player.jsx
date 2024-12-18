@@ -4,9 +4,8 @@ import PlayerContent from "../../User/components/sidebar/PlayerContent";
 import PlayerTooltip from "../../User/components/sidebar/PlayerTooltip";
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { setPlayerModal } from '../../User/state/userSlice';
 
-export default function Player({ score = 0, imgUrl, name, size, active }) {
+export default function Player({ score = 0, imgUrl, name, size, active, handleClick }) {
 
     const dispatch = useDispatch();
 
@@ -38,10 +37,6 @@ export default function Player({ score = 0, imgUrl, name, size, active }) {
             badgeSize = '5';
             avatarSize = '14';
             break;    
-    }
-
-    function handleClick() {
-        dispatch(setPlayerModal());
     }
 
     return (

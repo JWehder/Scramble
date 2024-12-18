@@ -11,6 +11,7 @@ import os
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import pytz
 import sys
+import concurrent.futures
 
 # Adjust the paths for MacOS
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -84,52 +85,45 @@ def wait_for_dropdown_text_change(driver, select_element, original_text, timeout
         print("Timeout waiting for the dropdown text to change.")
 
 def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
-
     competitors_table = leaderboard
-
     golfers = []
 
     table_rows = competitors_table.find_elements(By.CSS_SELECTOR, "tr.PlayerRow__Overview")
-
-    for row in table_rows:
-
+    
+    # Helper function to handle individual golfer processing
+    def process_golfer(row):
         golfer_tournament_results = {
-        "Position": None,
-        "Name": None,
-        "Score": 0,
-        "R1": 0,
-        "R2": 0,
-        "R3": 0,
-        "R4": 0,
-        "TotalStrokes": None,
-        "Earnings": None,
-        "FedexPts": None,
-        "Rounds": [],
-        "WD": False,
-        "Cut": False
+            "Position": None,
+            "Name": None,
+            "Score": 0,
+            "R1": 0,
+            "R2": 0,
+            "R3": 0,
+            "R4": 0,
+            "TotalStrokes": None,
+            "Earnings": None,
+            "FedexPts": None,
+            "Rounds": [],
+            "WD": False,
+            "Cut": False
         }
 
-        # Assuming table_rows[0] is the desired table row to click
-        element_to_click = row
-
         # grab specifically the position element and assign it to the position key
-        golfer_tournament_results["Position"] = element_to_click.find_element(By.CSS_SELECTOR, "td.tl").text
-    
-        # grab specifically the golfers name element and assign it to the name key
-        golfer_full_name = element_to_click.find_element(By.CSS_SELECTOR, "a.AnchorLink")
-        golfer_full_name = golfer_full_name.text.split(' ')
+        golfer_tournament_results["Position"] = row.find_element(By.CSS_SELECTOR, "td.tl").text
+
+        # grab the golfers name element and assign it to the name key
+        golfer_full_name = row.find_element(By.CSS_SELECTOR, "a.AnchorLink").text.split(' ')
         golfer_first_name = golfer_full_name[0]
         golfer_last_name = " ".join(golfer_full_name[1:])
-
         golfer_tournament_results["Name"] = golfer_first_name + " " + golfer_last_name
 
         # If specific_golfers list is not empty and the current golfer is not in the list, skip this golfer
         if specific_golfers and golfer_tournament_results["Name"] not in specific_golfers:
-            continue
+            return None
 
-        # grab the remaining elements
-        remaining = element_to_click.find_elements(By.CSS_SELECTOR, "td.Table__TD")
-
+        # grab the remaining elements for other tournament data
+        remaining = row.find_elements(By.CSS_SELECTOR, "td.Table__TD")
+        int_fields = ["Score", "R1", "R2", "R3", "R4", "TotalStrokes"]
         for key, element in zip(golfer_tournament_results.keys(), remaining[1:]):
             if key == "Score" and element.text == "WD":
                 golfer_tournament_results["WD"] = True
@@ -137,38 +131,37 @@ def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
             elif key == "Score" and element.text == "CUT":
                 golfer_tournament_results["Cut"] = True
                 golfer_tournament_results["WD"] = False
-            golfer_tournament_results[key] = element.text
+            if key in int_fields:
+                try:
+                    golfer_tournament_results[key] = int(element.text)
+                except ValueError:
+                    golfer_tournament_results[key] = element.text
+            else:
+                golfer_tournament_results[key] = element.text
 
+        # Earnings processing
         golfer_tournament_results['Earnings'] = ''.join(re.findall(r'(\d+)', golfer_tournament_results['Earnings'])) if golfer_tournament_results['Earnings'] else ''
 
-        # Scroll to the element
+        # Scroll to the element and click to reveal more details
         actions = ActionChains(driver)
-        actions.move_to_element(element_to_click).perform()
-
-        # Now click the element
-        element_to_click.click()
+        actions.move_to_element(row).perform()
+        row.click()
 
         try:
+            # Wait for the player detail section to be visible
             player_detail = WebDriverWait(driver, 8).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, "div.Leaderboard__Player__Detail"))
             )
 
             select_button = player_detail.find_element(By.CSS_SELECTOR, "select.dropdown__select")
-
-            # Instantiate the select button
             select = Select(select_button)
 
+            # Parse round details
             round_detail = parse_round_details(player_detail, select.options[0].text, golfer_tournament_results["WD"], par)
             golfer_tournament_results['Rounds'].append(round_detail)
 
             for option in select.options[1:]:
-
-                # Select the next round
                 select.select_by_visible_text(option.text)
-
-                # Wait until the dropdown text changes
-                # wait_for_dropdown_text_change(driver, select_button, original_text)
-
                 round_detail = parse_round_details(player_detail, option.text, golfer_tournament_results["WD"], par)
                 golfer_tournament_results['Rounds'].append(round_detail)
 
@@ -176,20 +169,30 @@ def parse_leaderboard(par, leaderboard, driver, specific_golfers=[]):
 
             print(golfer_tournament_results["Name"], golfer_tournament_results["Score"])
 
-            golfers.append(golfer_tournament_results)
-
         except NoSuchElementException:
-            print("No select dropdown found for this player.")
-            # Handle the case where there's no dropdown as needed
-            golfers.append(golfer_tournament_results)
+            print(f"No select dropdown found for player {golfer_tournament_results['Name']}")
 
-        # Close the player detail by clicking the element again
-        element_to_click.click()
+        finally:
+            row.click()  # Close the player detail by clicking again
 
-        # Allow some time for the page to update before proceeding
-        WebDriverWait(driver, 2).until_not(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, "div.Leaderboard__Player__Detail"))
-        )
+            # Wait for the page to update before continuing
+            WebDriverWait(driver, 2).until_not(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, "div.Leaderboard__Player__Detail"))
+            )
+
+        return golfer_tournament_results
+
+    # Use ThreadPoolExecutor to process golfers in parallel
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+        for row in table_rows:
+            futures.append(executor.submit(process_golfer, row))
+
+        # Collect the results as they finish
+        for future in concurrent.futures.as_completed(futures):
+            golfer_result = future.result()
+            if golfer_result:  # Avoid adding None results
+                golfers.append(golfer_result)
 
     return golfers
 
@@ -222,65 +225,82 @@ def parse_round_details(player_detail, round_text, wd_bool, par):
     if not wd_bool:
         round_detail["Score"] = int(total_strokes) - int(parsed_par)
 
-    # Handle strokes and par scores, considering that some values might be "-"
-    hole_strokes = [int(match) if match != "-" else None for match in golfer_scores]
-    par_scores = [int(match) if match != '' else None for match in par_score_scores]
+    import numpy as np
 
+    # Handle strokes and par scores, considering that some values might be "-"
+    hole_strokes = np.array([int(match) if match != "-" else np.nan for match in golfer_scores], dtype=np.float32)
+    par_scores = np.array([int(match) if match != '' else np.nan for match in par_score_scores], dtype=np.float32)
+
+    # Handle strokes played and total par, using integers as they are whole numbers
     round_detail["StrokesPlayed"] = int(total_strokes)
     round_detail["TotalPar"] = int(parsed_par)
 
+    # Initialize the hole number
     hole = 1
 
-    for strokes, par_score in zip(hole_strokes, par_scores):
-        if strokes is not None and par_score is not None:
-            score = strokes - par_score
-        else:
-            score = None  # No score difference available
+    # Calculate net scores by subtracting par scores from hole strokes
+    net_scores = hole_strokes - par_scores
 
-        score_types = {
-            'albatross': score == -3 if score is not None else False,
-            'eagle': score == -2 if score is not None else False,
-            'birdie': score == -1 if score is not None else False,
-            'par': score == 0 if score is not None else False,
-            'bogey': score == 1 if score is not None else False,
-            'double_bogey': score == 2 if score is not None else False,
-            'worse_than_double_bogey': score > 2 if score is not None else False,
-            'no_score': score == 'None'
-        }
+    # Use numpy for efficient boolean masking for each score type
+    albatross = net_scores == -3
+    eagle = net_scores == -2
+    birdie = net_scores == -1
+    par = net_scores == 0
+    bogey = net_scores == 1
+    double_bogey = net_scores == 2
+    worse_than_double_bogey = net_scores > 2
+    no_score = np.isnan(net_scores)
+
+    # Initialize lists to store hole results and update round totals
+    round_detail["Holes"] = []
+    round_detail['Albatross'] = 0
+    round_detail['Eagles'] = 0
+    round_detail['Birdies'] = 0
+    round_detail['Pars'] = 0
+    round_detail['Bogeys'] = 0
+    round_detail['DoubleBogeys'] = 0
+    round_detail['WorseThanDoubleBogeys'] = 0
+
+    # Iterate over the holes and score types, calculating hole results
+    for i, (strokes, par_score) in enumerate(zip(hole_strokes, par_scores), start=1):
+        score = None if np.isnan(strokes) or np.isnan(par_score) else int(strokes - par_score)
 
         hole_result = {
-            'Strokes': strokes,
-            'Par': par_score,
+            'Strokes': int(strokes) if not np.isnan(strokes) else None,
+            'HolePar': int(par_score) if not np.isnan(par_score) else None,
             'NetScore': score,
             "HoleNumber": hole,
-            'Birdie': score_types['birdie'],
-            'Bogey': score_types['bogey'],
-            'Par': score_types['par'],
-            'Eagle': score_types['eagle'],
-            'Albatross': score_types['albatross'],
-            'DoubleBogey': score_types['double_bogey'],
-            'WorseThanDoubleBogey': score_types['worse_than_double_bogey'],
-            'NoScore': score_types['no_score']
+            'Birdie': birdie[i-1],
+            'Bogey': bogey[i-1],
+            'Par': par[i-1],
+            'Eagle': eagle[i-1],
+            'Albatross': albatross[i-1],
+            'DoubleBogey': double_bogey[i-1],
+            'WorseThanDoubleBogey': worse_than_double_bogey[i-1],
+            'NoScore': no_score[i-1]
         }
 
         round_detail["Holes"].append(hole_result)
-        hole += 1
 
-        if score_types['albatross']:
+        # Update round totals
+        if albatross[i-1]:
             round_detail['Albatross'] += 1
-        elif score_types['eagle']:
+        elif eagle[i-1]:
             round_detail['Eagles'] += 1
-        elif score_types['birdie']:
+        elif birdie[i-1]:
             round_detail['Birdies'] += 1
-        elif score_types['par']:
+        elif par[i-1]:
             round_detail['Pars'] += 1
-        elif score_types['bogey']:
+        elif bogey[i-1]:
             round_detail['Bogeys'] += 1
-        elif score_types['double_bogey']:
+        elif double_bogey[i-1]:
             round_detail['DoubleBogeys'] += 1
-        elif score_types['worse_than_double_bogey']:
+        elif worse_than_double_bogey[i-1]:
             round_detail['WorseThanDoubleBogeys'] += 1
 
+        hole += 1
+
+    # If WD (withdrawn), determine score from holes
     if wd_bool:
         round_detail["Score"] = determine_score_from_holes(round_detail["Holes"])
 
@@ -501,7 +521,7 @@ def parse_tournaments(tournaments):
 if __name__ == "__main__":
 
     # Define the cutoff date
-    cutoff_date = datetime(2024, 9, 24)
+    cutoff_date = datetime(2024, 12, 11)
 
     # Query tournaments that ended before August 21
     tournaments = db.tournaments.find({

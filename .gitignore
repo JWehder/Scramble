@@ -1,3 +1,5 @@
 .env
 .DS_Store
 scramble-credentials.json
+__pycache__/
+*.pyc

@@ -23,6 +23,7 @@ selenium = "*"
 pytz = "*"
 email-validator = "*"
 flask-mailman = "*"
+pytest = "*"
 
 [dev-packages]
 

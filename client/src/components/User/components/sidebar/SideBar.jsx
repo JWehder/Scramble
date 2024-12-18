@@ -5,6 +5,7 @@ import Tooltip from "../../../Utils/components/Tooltip";
 import SidebarContent from "./SidebarContent";
 import GlowingWrapper from "../../../Utils/components/GlowingWrapper";
 import User from "./User";
+import React from "react";
 
 export default function Sidebar() {
 
