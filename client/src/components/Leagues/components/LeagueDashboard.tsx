@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Leaderboard from '../../User/components/home/Leaderboard';
 import Golfers from '../../Golfers/components/Golfers';
 import SquigglyUnderline from "../../Utils/components/SquigglyLine"
-import Schedule from '../../User/components/home/Schedule';
+import Schedule from '../../Periods/components/Schedule';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../Utils/components/Button';
@@ -19,6 +19,7 @@ import { getLeague } from '../state/leagueSlice';
 import NewStandings from "./NewStandings"
 import { setSelectedTeam } from '../../Teams/state/teamsSlice';
 import { Team } from '../../../types/teams';
+import LoadingScreen from '../../Utils/components/LoadingScreen';
 
 export default function LeagueDashboard() {
     const dispatch = useDispatch<AppDispatch>();
@@ -59,6 +60,8 @@ export default function LeagueDashboard() {
         // Append "/settings" to the current path
         navigate(`${location.pathname}/settings`);
     };
+
+    console.log(selectedLeague);
 
     return (
         <div className='flex justify-center items-center w-full flex-col min-w-[950px] bg-dark'>

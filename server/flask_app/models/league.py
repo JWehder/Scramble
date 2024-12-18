@@ -30,6 +30,7 @@ class League(Base):
     LeagueSettings: Optional[Dict]
     FantasyLeagueSeasons: Optional[List[PyObjectId]] = []
     CurrentFantasyLeagueSeasonId: Optional[PyObjectId] = None
+    CurrentPeriodId: PyObjectId
     WaiverOrder: Optional[List[PyObjectId]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

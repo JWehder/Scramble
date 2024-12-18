@@ -16,18 +16,12 @@ import EditTournamentsButtons from "./EditTournamentsButtons";
 import { FantasyLeagueTournamentsResponse } from "../../../types/fantasyLeagueTournamentsResponse";
 import TimeZoneSelector from "./TimeZoneSelector";
 
-interface LeagueSettingsProps {
-  saveLeagueSettings: (settings: LeagueSettings) => void;
-}
-
 interface PointsPerScoreArgs {
   name: string;
   subname: string;
 }
 
-const LeagueSettingsPage: React.FC<LeagueSettingsProps> = ({
-    saveLeagueSettings
-  }) => {
+const LeagueSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { leagueId } = useParams<string>();
   const isEditMode = Boolean(leagueId);

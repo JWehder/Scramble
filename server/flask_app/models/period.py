@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, timezone
 from bson import ObjectId
@@ -26,7 +26,7 @@ class Period(Base):
     FantasyLeagueSeasonId: PyObjectId
     Standings: Optional[List[PyObjectId]] = []                                        
     FreeAgentSignings: Optional[Dict[str, List[PyObjectId]]] = {}
-    Matchups: Optional[List[Dict[PyObjectId, PyObjectId]]] = []
+    Matchups: Optional[List[Tuple[PyObjectId, PyObjectId]]] = []
     Drops: Optional[Dict[PyObjectId, List]] = {}
     TournamentId: PyObjectId
     TeamResults: Optional[List[PyObjectId]] = Field(default_factory=list)  # Unique per instance

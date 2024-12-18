@@ -96,7 +96,9 @@ const NewStandings = ({ changeUserSelectedTeam } :
         </div>
         <TableHeaders headers={headers} />
         {selectedLeagueTeams.map((team, index) => (
-          <TeamData even={index % 2 == 0} 
+          <TeamData 
+          key={team.id}
+          even={index % 2 == 0} 
           team={team} 
           onClick={() => changeUserSelectedTeam(team)} 
           />

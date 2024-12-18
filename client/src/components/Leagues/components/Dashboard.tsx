@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import SquigglyUnderline from "../../Utils/components/SquigglyLine"
-import Schedule from '../../User/components/home/Schedule';
+import Schedule from '../../Periods/components/Schedule';
 import LeaguesList from "./LeaguesList"
 import Button from '../../Utils/components/Button';
 import PlayerPage from '../../Golfers/components/player/PlayerPage';
